@@ -1,20 +1,23 @@
 import { z } from 'zod';
 
+import { ParsedTextSchema, type ParsedText } from '@/types/passage';
+
 /**
  * The single versioned study document (PLAN §4.2). This is the stable spine the
  * whole workbook hangs off: every phase writes into one section of it, and a fresh
  * session can plug a phase in without reshaping the doc.
  *
- * M1-minimal per PLAN §4.3: `passage.primary` is a single, nullable `ParsedText`
- * whose `blocks`/`notes` are left as pass-through `unknown[]` — the block/line model
- * and its logic are Stage 2's job (the Bible pipeline), so nothing is guessed here.
- * Verse IDs stay **plain strings** (tolerate a future `"1a"`; build no verse-0 /
- * letter-suffix / merged-range logic yet).
+ * `passage.primary` is a single, nullable {@link ParsedText} (M1: one primary
+ * translation; M3 widens it to a `Record`). The block/line model it now uses lives in
+ * `@/types/passage` (Stage 2). Verse IDs stay **plain strings** (tolerate a future
+ * `"1a"`; build no verse-0 / letter-suffix / merged-range logic yet).
  *
  * Every field carries a default so {@link hydrate} can fill gaps when loading an old
  * or partial document. Bump {@link CURRENT_SCHEMA_VERSION} only for true restructures.
  */
 export const CURRENT_SCHEMA_VERSION = 1;
+
+export { ParsedTextSchema, type ParsedText };
 
 // ---------------------------------------------------------------------------
 // Enums / small value types
@@ -62,20 +65,6 @@ export const VerseAnchorSchema = z.object({
   verseIds: z.array(z.string()).default([]),
 });
 export type VerseAnchor = z.infer<typeof VerseAnchorSchema>;
-
-// ---------------------------------------------------------------------------
-// Passage payload (Stage 2 owns the block/line model; here it is pass-through).
-// ---------------------------------------------------------------------------
-
-export const ParsedTextSchema = z.object({
-  translationId: z.string(),
-  versification: z.literal('kjv').default('kjv'),
-  // Stage 2 replaces these with the typed Block / StructuredNote model (PLAN §4.3).
-  // Left permissive so a persisted passage round-trips losslessly in the meantime.
-  blocks: z.array(z.unknown()).default([]),
-  notes: z.array(z.unknown()).default([]),
-});
-export type ParsedText = z.infer<typeof ParsedTextSchema>;
 
 // ---------------------------------------------------------------------------
 // Phase 1 — Setup

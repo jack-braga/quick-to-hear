@@ -38,9 +38,9 @@ phases. Every decision serves those two.
 | Schema/validation | **`zod`** | Study schema, project-file import, content-data validation. |
 | Forms | **`react-hook-form` + `@hookform/resolvers` (zod)** | Form-heavy app. |
 | Routing | **`react-router-dom` v6 with `HashRouter`** | *(hardening)* Avoids GitHub Pages deep-link/refresh 404s. Print routes as `#/print/:id/handout`. Copies `local-ledger`'s `App.tsx`. |
-| **Reference parsing** | **`@openbibleinfo/bcv_parser`** (MIT); **`set_options({versification_system:'kjv'})`** | *(research + review)* Buy, don't build. Outputs OSIS. **Must set `kjv`** — its default is ESV-style and would emit refs (3 John 15, Rev 12:18) our texts lack. |
+| **Reference parsing** | **`bible-passage-reference-parser`** (npm, openbibleinfo, v4, MIT); **`set_options({versification_system:'kjv'})`** | *(research + review; corrected Stage 2 — the `@openbibleinfo/bcv_parser` name 404s; this is the same library/author)* Buy, don't build. Outputs OSIS. **Must set `kjv`** — its default is ESV-style and would emit refs (3 John 15, Rev 12:18) our texts lack. |
 | **Versification** | **Anchor verse IDs to the `kjv` versification**, stored explicitly | *(review)* Not "translation-independent", and specifically **`kjv`** not "KJV/NRSV" (they differ). Bundled WEBBE/ASV/BSB all share KJV numbering → align by number-equality + a per-verse `present` flag. Cross-*versification* mapping (`reversify`/TVTMS) is **M3-only** (§4.3). |
-| **Bundled Bibles** | **WEBBE (primary, British, pinned) + ASV + BSB (CC0)** | *(user + research)* All English-tradition, safe to ship globally; **no KJV** (avoids the UK Crown-copyright caveat). WEBBE + ASV are free reuse from `twice-daily`; **BSB needs sourcing** (berean.bible USFM). See §4.5. |
+| **Bundled Bibles** | **WEBBE (primary, British, pinned) + ASV + BSB (CC0)** | *(user + research)* All English-tradition, safe to ship globally; **no KJV** (avoids the UK Crown-copyright caveat). WEBBE + ASV are free reuse from `twice-daily` and **shipped in Stage 2**; **BSB is deferred** (not in the eBible sources; owner to confirm the berean.bible USFM edition to pin — §8 #4). See §4.5. |
 | Print | **CSS `@media print` + `window.print()`** on `#/print` routes | No JS PDF lib unless guaranteed pagination/headers become required. Print forces a **light** palette (§4.8). |
 | Markdown export | Generated from the study model | Handout + leader's notes also export as `.md`. |
 | Help prose | **Markdown in `content/help/`**, loaded via `import.meta.glob(..., { query:'?raw', import:'default' })` | *(hardening: `{as:'raw'}` is deprecated in Vite 5.)* Rendered with `react-markdown`. Frontmatter split without `gray-matter` (needs Buffer polyfill). **Authored by the user — see `TEACHING-TEXT.md`.** |
@@ -210,9 +210,12 @@ Anchor to **`kjv`** specifically, **not "KJV/NRSV"** — they are *different* sy
 - **Block/line text model with verses nested in blocks (do not flatten).** `ParsedText
   = { translationId, versification:'kjv', blocks: Block[], notes: StructuredNote[] }`.
   A `Block` is one of:
-  - `{ kind:'p'|'q1'|'q2'|'b', verses: VerseSpan[] }` — prose / poetry (indent level) /
-    blank; **verses live inside their block** (a `p` holds many verses; a poetic verse
-    spans many `q` lines), which fixes the block↔verse relation explicitly.
+  - `{ kind:'p'|'q'|'b', verses: VerseSpan[] }` — prose / poetry stanza / blank;
+    **verses live inside their block** (a `p` holds many verses; a poetic verse spans
+    many lines), which fixes the block↔verse relation explicitly. *(Stage 2: the two
+    poetry kinds `q1|q2` were collapsed into one `q` stanza with indentation carried on
+    `Fragment.qlevel` — indentation is per-**line**, e.g. Ps 23:4 alternates q1/q2 within
+    one verse. Final kinds in code: `p|q|b|d|s1|s2`.)*
   - `{ kind:'d', text: Fragment[] }` — Psalm **superscription**, attached to the
     chapter, not verse 1.
   - `{ kind:'s1'|'s2', text, editorial:true }` — **editorial heading**, never "text
@@ -278,8 +281,12 @@ Anchor to **`kjv`** specifically, **not "KJV/NRSV"** — they are *different* sy
 - **Pin the WEBBE edition** to a specific eBible.org USFM release (WEB still updates);
   record the release/date in `scripts/build-bibles.ts`.
 - **Sourcing:** WEBBE + ASV are free reuse from `twice-daily` (`web-brit` = engwebpb =
-  WEBBE; `asv`). **BSB is not in `twice-daily`** — source its USFM from berean.bible
-  and run it through the same extended parser.
+  WEBBE; `asv`) and **were built + shipped in Stage 2** (`scripts/build-bibles.ts` →
+  `public/bibles/{webbe,asv}/*.json`). **BSB is not in `twice-daily`** — source its USFM
+  from berean.bible and run it through the same extended parser. **Stage-2 status: BSB
+  deferred** pending the owner confirming the exact USFM download/edition to pin (§8 #4);
+  the architecture is N-translation, so it's a data-only add (one row in
+  `src/lib/bible/translations.ts` + a source entry in `build-bibles.ts`, then rebuild).
 - **Reuse + extend `twice-daily`'s pipeline.** `twice-daily/scripts/parse-usfm.ts`
   already parses eBible USFM (sources on disk at `~/Documents/Projects/dailyOffice/*_usfm`),
   handles `\d` superscriptions and `\q` levels, has a book-names table, per-book JSON,

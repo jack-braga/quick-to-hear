@@ -11,7 +11,8 @@ import {
   putStudyFull,
   type ImportResult,
 } from '@/lib/storage';
-import { makeStudy, type Setup, type Study, type StudySummary } from '@/types/study';
+import type { ParsedText } from '@/types/passage';
+import { makeStudy, toSummary, type Setup, type Study, type StudySummary } from '@/types/study';
 
 /**
  * The study store (PLAN §2 — Zustand + selector subscriptions). It owns the Home
@@ -40,6 +41,11 @@ interface StudyState {
   closeStudy: () => void;
   updateSetup: (patch: Partial<Setup>) => void;
   applyToCurrent: (recipe: (study: Study) => Study) => void;
+  /** Confirm a parsed passage: persist body + passage together and refresh the row.
+   *  (The passage store isn't touched by keystroke autosave, so this is explicit.) */
+  setPassage: (primary: ParsedText | null) => Promise<void>;
+  /** Phase-2 read counter tap (autosaved with the body). */
+  incrementRead: () => void;
   deleteStudy: (id: string) => Promise<void>;
   importProjectFile: (text: string) => Promise<ImportResult>;
   clearError: () => void;
@@ -110,6 +116,23 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
   applyToCurrent: (recipe) =>
     set((s) => (s.current ? { current: touched(recipe(s.current)), dirty: true } : s)),
+
+  setPassage: async (primary) => {
+    const cur = get().current;
+    if (!cur) return;
+    const next = touched({ ...cur, passage: { primary } });
+    // Persist body + passage now (bundled passage is a re-derivable cache — §4.4).
+    set((s) => ({
+      current: next,
+      dirty: false,
+      studies: s.studies.map((row) => (row.id === next.id ? toSummary(next) : row)),
+    }));
+    await putStudyFull(next);
+    postStudyEvent({ type: 'saved', id: next.id, updatedAt: next.updatedAt });
+  },
+
+  incrementRead: () =>
+    get().applyToCurrent((study) => ({ ...study, read: { count: study.read.count + 1 } })),
 
   deleteStudy: async (id) => {
     await dbDeleteStudy(id);

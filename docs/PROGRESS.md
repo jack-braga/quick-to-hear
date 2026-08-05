@@ -12,26 +12,36 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 1 complete** — the study data model, IndexedDB storage
-  (with the passage payload split out), autosave, project-file export/import, and the
-  Home + minimal study-overview screens all landed and are verified end-to-end in a
-  real browser. A study now survives a reload and a full export → re-import.
+- **Phase of work:** **Stage 2 complete** — bundled Bibles (WEBBE + ASV), the verse
+  library (`bcv_parser` @ `kjv`, canonical IDs, ranges), the USFM→block/line build
+  pipeline, the runtime loader + `extractReading`, the real **Phase 1 (set up)** and
+  **Phase 2 (pray & read)** screens, and the serif passage renderer all landed and are
+  verified end-to-end in a real browser. A bundled passage now parses, displays
+  (narrative + poetry), and survives a full reload. **Stage 1 remains true below.**
 - **Scaffolded already (do not recreate):** `content/LICENSE` (CC BY-SA),
-  `content/README.md`, `content/help/**` (67 empty stubs), `content/method/*.yaml`
-  (9 skeletons), `scripts/gen-help-stubs.sh`, and `docs/` (SPEC, PLAN, PROGRESS,
-  TEACHING-TEXT, TEACHING-TEXT-AGENT-PROMPT, DEV-SESSION-PROMPT), CLAUDE.md, ROADMAP.md.
-- **Stage-1 spine (do not recreate):** `src/types/study.ts` (full `Study` zod schema
-  for all seven phases, defaulted-empty), `src/lib/storage/{db,hydrate,studies,index}.ts`,
-  `src/lib/{id,broadcast}.ts`, `src/store/study.ts`, `src/hooks/{useAutosave,useStorageEstimate}.ts`,
-  `src/pages/{Home,StudyOverview}.tsx`, `src/components/ui/{input,textarea}.tsx`.
-- **Next up:** Stage 2 — Bundled Bibles + verse lib (`bcv_parser` @ `kjv`) + Phase 1
-  setup + Phase 2 read (`PLAN.md` §6). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 2).
-  Stage 2 fills `passage.primary` (the `ParsedText` `blocks`/`notes` are `unknown[]`
-  pass-throughs today — Stage 2 tightens them) and builds the real Phase-1 form, which
-  **replaces** the Stage-1 `StudyOverview` placeholder hub.
+  `content/README.md`, `content/help/**` (67 stubs; Phases 3/5/6e now have authored
+  prose from the `teaching` branch), `content/method/*.yaml` (9 skeletons; `traps.yaml`
+  authored), `content/DEFERRALS.md`, `scripts/gen-help-stubs.sh`, and `docs/`, CLAUDE.md,
+  ROADMAP.md.
+- **Stage-1 spine (do not recreate):** `src/types/study.ts` (full `Study` zod schema),
+  `src/lib/storage/{db,hydrate,studies,index}.ts`, `src/lib/{id,broadcast}.ts`,
+  `src/store/study.ts`, `src/hooks/{useAutosave,useStorageEstimate}.ts`,
+  `src/pages/Home.tsx`, `src/components/ui/{input,textarea,button}.tsx`.
+  *(Stage 1's `StudyOverview.tsx` was **replaced** by the real Phase-1/2 routes — gone.)*
+- **Stage-2 spine (do not recreate):** `src/types/passage.ts` (Block/VerseSpan/Fragment/
+  StructuredNote/`ParsedText` — `study.ts` re-exports `ParsedText` from here),
+  `src/lib/verse/{books,ids,reference,index}.ts`, `src/lib/bible/{usfm,extract,loader,
+  translations,index}.ts`, `scripts/build-bibles.ts`, `public/bibles/{webbe,asv}/*.json`
+  + `manifest.json`, `src/components/passage/PassageView.tsx`, `src/components/StudyHeader.tsx`,
+  `src/lib/{download,setup-options}.ts`, `src/components/ui/select.tsx`,
+  `src/hooks/useOpenStudy.ts`, `src/pages/{Phase1Setup,Phase2Read,StudyNotFound}.tsx`.
+- **Next up:** Stage 3 — Phase 3 map (author's-break sections, named) + question marks
+  (verse/phrase/word) + the reusable `<VerseAnchorPicker>` (`PLAN.md` §6). Use
+  `docs/DEV-SESSION-PROMPT.md` (STAGE = 3). The picker's output types already exist
+  (`VerseAnchor`, `Mark.span` char-offset) in `study.ts`; anchor over the loaded
+  `passage.primary` verses (`allVerses(passage)` / `verseText(span)` in `@/types/passage`).
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
-  GitHub Pages source was already = "GitHub Actions"; no manual flip was needed. Both
-  `ci.yml` and `deploy.yml` went **green on the first push**.
+  Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
   (primary translation only) **with recycling** (Phases 1–7, no paste, no secondary
   translations).
@@ -74,7 +84,7 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 
 - [x] **Stage 0** — Scaffold + deploy + theming *(M1)*
 - [x] **Stage 1** — Model, storage (Zustand+idb+hydrate), autosave, project file, Home *(M1)*
-- [ ] **Stage 2** — Bundled Bibles + verse lib (bcv_parser) + Phase 1 + Phase 2 *(M1)*
+- [x] **Stage 2** — Bundled Bibles (WEBBE+ASV) + verse lib (bcv_parser) + Phase 1 + Phase 2 *(M1)* — BSB deferred (§8 #4)
 - [ ] **Stage 3** — Phase 3 map + verse-anchor picker *(M1)*
 - [ ] **Stage 4** — Phase 4 COMA + recycle-forward wiring *(M1)*
 - [ ] **Stage 5** — Phase 5 theme & aim (the hinge) *(M1)*
@@ -126,6 +136,35 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     `quarantine` (kept-but-unreadable blobs).
   - Sample passage refs to type: `Luke 1:5-25`, `Acts 2`, `John 1` (Stage 1 only stores
     them as free text — parsing + genre inference is Stage 2).
+
+- **Stage 2** — Bundled Bibles + verse lib + Phase 1 + Phase 2:
+  - **Regenerate the bundled Bibles** (only if the parser or sources change; output is
+    committed): `npm run build:bibles` → writes `public/bibles/{webbe,asv}/*.json` +
+    `manifest.json` (66 books each, ~14 MB total; per-book, runtime-fetched, **not**
+    precached). Sources: `~/Documents/Projects/dailyOffice/{engwebpb_usfm,eng-asv_usfm}`.
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; **64 unit tests**), then `npm run test:e2e` (2/2).
+  - Unit tests of note: `src/lib/verse/reference.test.ts` (`Luke 1:5-25`, cross-chapter
+    `Luke 1:5-2:10`, **`3 John 14-15`→`3John.1.14`** and **`Rev 12:17-18`→`Rev.12.17`**
+    under `kjv`, multi-passage flag, invalid→null), `src/lib/verse/ids.test.ts`,
+    `src/lib/verse/books.test.ts` (genre inference), `src/lib/bible/usfm.test.ts`
+    (poetry qlevels, superscription = `d` block, **Acts-8:37-style gap → `present:false`
+    + footnote kept**, `\wj` tag, footnote/xref captured, NFC), `src/lib/bible/extract.test.ts`
+    (range slice, superscription include, cross-chapter, **WEBBE→ASV textless-flag on
+    MATT.17.21**), `src/components/passage/PassageView.test.tsx`, `src/types/passage.test.ts`.
+  - **Manual flow (drive the app):** `npm run dev` → `http://localhost:8080/quick-to-hear/`
+    → **New study** → Phase 1: type `Luke 1:5-25` → **Load passage** (summary shows
+    "Luke 1:5-25 · WEBBE · 21 verses"; genre auto-infers **Gospels and Acts**) →
+    **Continue: Pray & read** → Phase 2 shows the narrative (paragraphs, superscript
+    verse numbers, WEBBE credit) + a tap **read counter**. Then back to Phase 1, load
+    `Psalm 23` → Phase 2 shows **poetry** (superscription "A Psalm by David." above v1,
+    q1/q2 indented lines). Then load `Matthew 17:20-22` (WEBBE) → switch **Primary
+    translation → ASV**: a warning flags **MATT.17.21 has no text** (present-vs-absent,
+    not an absent ID) and Phase 2 renders v21 as a numbered **gap** ("21 —"). **Reload
+    the page**: title + passage (incl. the gap) + read count all rehydrate from IDB.
+  - Sample refs to exercise the verse lib: `Luke 1:5-25`, `Luke 1:5-2:10`, `Psalm 23`,
+    `Acts 8:36-38` (v37 gap in WEBBE **and** ASV), `Matthew 17:20-22` (v21 present in
+    WEBBE, gapped in ASV), `3 John 14-15`, `Revelation 12:17-18`.
 
 ## Decision & deviation log
 
@@ -284,11 +323,85 @@ _Append-only. Newest last._
     **quarantined** the raw blob (existing study untouched). 0 console errors (only the
     pre-existing RR v7 future-flag warnings).
 
+- **Stage 2 built (this session).** New runtime dep **`bible-passage-reference-parser`**
+  (v4, openbibleinfo) + dev dep **`tsx`** (runs the build script). Delivered: the
+  block/line passage model (`src/types/passage.ts`; `study.ts` now re-exports `ParsedText`
+  from there, tightening the Stage-1 `unknown[]` stubs); the verse lib (`src/lib/verse/`:
+  66-book table with OSIS/USFM/genre, canonical `BOOK.CH.VS` IDs + ranges, and a
+  `bcv_parser` singleton pinned to `versification_system:'kjv'`); the pure USFM parser
+  (`src/lib/bible/usfm.ts`) + `scripts/build-bibles.ts` (extends `twice-daily`: poetry-line
+  arrays, `\s`/`\r` headings, tagged footnotes/xrefs/`\wj`, `d` superscriptions, per-verse
+  `present` flag, NFC) → `public/bibles/{webbe,asv}/*.json` (**committed**, 66 books each,
+  ~14 MB, runtime-fetched); the loader (`loadBook` fetch+memory-cache) + `extractReading`
+  (slice a range, keep in-range structure); `PassageView` (serif; superscript verse
+  numbers; poetry line breaks from `Fragment.qlevel`; editorial headings marked; honest
+  gap markers; quiet red-letter); real **Phase 1** (`Phase1Setup.tsx`: reference→parse→load,
+  genre inferred+confirm, translation switch with textless-verse flag, duration/group/
+  series/intro) and **Phase 2** (`Phase2Read.tsx`: quiet screen + tap counter); shared
+  `StudyHeader`, `useOpenStudy`, native `ui/select`, `lib/{download,setup-options}`;
+  interactive phase-nav (1–2 live, 3–7 disabled); routes `/study/:id` → `/1`, `/1`, `/2`.
+  - **Decisions / deviations (none silently override a PLAN §2 lock; flagged for the owner):**
+    - **Package name corrected:** PLAN wrote `@openbibleinfo/bcv_parser` (404 on npm). The
+      real package is **`bible-passage-reference-parser`** (same author, openbibleinfo, v4).
+      Same library, same API. *(PLAN §2/§4.3 updated.)*
+    - **Bundled set = WEBBE + ASV now; BSB deferred** (PLAN §8 open-Q4). BSB is **not** in
+      the local eBible sources and its USFM source/edition is unconfirmed by the owner —
+      pinning an unvetted source is a decision §8 reserves. Adding it later is data-only:
+      one row in `src/lib/bible/translations.ts` + `scripts/build-bibles.ts`, then
+      `npm run build:bibles`. All Stage-2 acceptance tests only need WEBBE + ASV. **Owner
+      action: confirm the BSB USFM download to pin (berean.bible).** *(PLAN §2/§4.5 noted.)*
+    - **Block-kind model:** collapsed PLAN's `q1|q2` block kinds into a single **`q`**
+      stanza with indentation on **`Fragment.qlevel`** (per-line, 0=prose/1–2=poetry) —
+      because indentation is a per-*line* property (Ps 23:4 alternates q1/q2/q1/q2 within
+      one verse). Kinds are `p|q|b|d|s1|s2`. This is *more* faithful to the poetry, and
+      PLAN §4.2 says the final shape lives in code. *(PLAN §4.3 noted.)*
+    - **Verse ID casing:** `BOOK.CH.VS` book part = **uppercased OSIS** (`LUKE.1.5`,
+      `PS.23.1`, `3JOHN.1.14`) — matches the PLAN §4.3 example, round-trips with `bcv`.
+    - **Gap verses come from USFM as `\v N \f…\f*`** (a verse marker whose only content is
+      a footnote explaining the omission). Rule: a verse whose text is empty after note
+      extraction → `present:false`, and the footnote is kept as a `StructuredNote`.
+      Verified: WEBBE Acts 8:37 & Matt-17:21-in-ASV are gaps; Matt 17:21 has text in WEBBE.
+    - **Phase-1 form uses controlled inputs → `updateSetup` (store is the single source of
+      truth), not `react-hook-form`.** *Deviation from PLAN §2's "per-field text in RHF,
+      commit on blur".* Rationale: the form is small; the Zustand store already holds the
+      doc with selector subscriptions, so RHF would add a second form-state layer + a sync
+      problem for little gain; the reference field needs an explicit **Load** action (async
+      parse+fetch), not a blur side-effect (matches SPEC's "review the parse" intent). RHF
+      can return for the heavier Phase-6 forms if whole-doc re-renders ever bite. **Owner:
+      accept, or ask for RHF?** `@hookform/resolvers`/`react-hook-form` were **not** added.
+    - **`setPassage` store action** persists body **+** passage together (bundled passage
+      is a re-derivable cache per §4.4; keystroke autosave never touches the passage store,
+      so the confirm step is explicit). Genre is **re-inferred on each Load** (a new
+      reference ⇒ a new default genre); the genre select still overrides freely.
+    - **Cross-book ranges** (e.g. `Matt 28 - Mark 1`) are **not** supported in M1 — the
+      loader clamps to the start book and Phase 1 warns. Single-book passages are the norm.
+    - Left the pre-existing **React Router v7 future-flag warnings** unsilenced (cosmetic).
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **64/64**
+    unit — up from 28); `test:e2e` **2/2**. **Browser walk-through (Playwright, 0 console
+    errors):** Luke 1:5-25 (narrative, paragraphs + verse numbers) and Psalm 23 (poetry
+    lines + indent + chapter-attached superscription) both display in WEBBE; the read
+    counter increments and **persists across navigation + a full reload**; switching primary
+    WEBBE→ASV on Matt 17:20-22 flags **MATT.17.21** as textless and renders it as a numbered
+    gap; the whole study (passage incl. gap, fields, read count) rehydrates from IndexedDB
+    after a hard reload. Build excludes the 14 MB of Bibles from precache (484 KB, 7 entries).
+
 ## Known issues / risks being carried
 
 - Paste parser (Stage 8) needs **real user-captured samples**; can't be built blind.
-- BSB needs sourcing (not in `twice-daily`) — source USFM from berean.bible (`PLAN.md` §4.5).
-- WEBBE still updates → **pin** the eBible release in `scripts/build-bibles.ts`.
+- **BSB deferred** (§8 #4) — not in the local eBible sources; **owner to confirm the
+  berean.bible USFM edition to pin**, then add one row in `translations.ts` +
+  `build-bibles.ts` and run `npm run build:bibles`. The app shows only WEBBE + ASV meanwhile.
+- WEBBE still updates → the pinned eBible source is the on-disk `engwebpb_usfm`; **record a
+  formal eBible release/date** in `scripts/build-bibles.ts` before public release (the
+  generated JSON is committed, so it won't drift until regenerated).
+- **Bundled Bibles add ~14 MB** to the repo/`dist` (`public/bibles/`, 66 books × 2). They
+  are runtime-fetched per book (~250 KB for Luke) and **excluded from the SW precache**
+  (runtime-cached instead), so first paint stays small; but the repo is now heavier.
+- `bcv_parser`'s `en` lang bundles into the main JS chunk (~455 KB / 122 KB gzip). Fine for
+  now; could be lazy-loaded in the Stage-10 PWA-harden pass if it matters.
+- **`translations.yaml` copyright lines are not yet wired to exports** — the Stage-2
+  translation registry (`src/lib/bible/translations.ts`) carries id/name only; the exact
+  copyright line (a functional requirement) is applied at Stage 7 via the method-YAML loader.
 - "Work is never lost" is only as strong as the user exporting project files; `hydrate`
   quarantine + durability mitigations (`PLAN.md` §4.4) are the honest backstop.
 - **Multi-tab guard is lightweight** (Stage 1): a `BroadcastChannel` `saved` event flags
@@ -296,5 +409,7 @@ _Append-only. Newest last._
   view/recover **quarantined** blobs (they're kept in IDB, invisible) — add one if it
   ever bites. `hydrate` strips unknown keys on parse, so a forward-compat field on a
   same-version doc is dropped (newer *versions* are refused, not stripped).
-- **Stage-1 `StudyOverview` is disposable** — Stage 2 replaces it with the real Phase-1
-  route; don't build on it. Its two fields write straight to the store (no RHF yet).
+- **`StudyOverview` (Stage 1) has been removed** — the real Phase-1/2 routes replace it.
+  Home's `/study/:id` links now redirect to `/study/:id/1`.
+- **Phase-3–7 routes fall through to NotFound** until built; the phase-nav renders 3–7 as
+  disabled steps and Phase 2's "Next" is disabled. Stage 3 wires `/study/:id/3`.

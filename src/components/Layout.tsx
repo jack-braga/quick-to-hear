@@ -1,26 +1,57 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { cn } from '@/lib/utils';
 
-// Placeholder for the persistent phase progress bar (SPEC's seven phases). The
-// stepper becomes interactive in Stage 1+ once a study exists; here it just shows
-// the intended structure so the shell reads as a workbook, not a blank page.
-const PHASES = ['1', '2', '3', '4', '5', '6', '7'];
+// The seven phases (SPEC). Phases 1–2 are built (Stage 2); 3–7 arrive in later stages
+// and render as disabled steps so the workbook's shape is always visible.
+const PHASES = [1, 2, 3, 4, 5, 6, 7] as const;
+const BUILT_PHASES = new Set<number>([1, 2]);
 
-function PhaseNavPlaceholder() {
+/** The persistent phase stepper. Interactive once a study is open (path `/study/:id/N`);
+ *  otherwise a quiet placeholder so the header still reads as a workbook. */
+function PhaseNav() {
+  const { pathname } = useLocation();
+  const m = /^\/study\/([^/]+)(?:\/(\d+))?/.exec(pathname);
+  const studyId = m?.[1];
+  const activePhase = m?.[2] ? Number(m[2]) : studyId ? 1 : 0;
+
   return (
-    <nav aria-label="Study phases (placeholder)" className="hidden items-center gap-1 sm:flex">
-      {PHASES.map((n) => (
-        <span
-          key={n}
-          aria-disabled="true"
-          title="Phase navigation appears once a study is open"
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-xs font-medium text-muted-foreground/70"
-        >
-          {n}
-        </span>
-      ))}
+    <nav aria-label="Study phases" className="hidden items-center gap-1 sm:flex">
+      {PHASES.map((n) => {
+        const active = n === activePhase;
+        const enabled = Boolean(studyId) && BUILT_PHASES.has(n);
+        const base =
+          'flex h-7 w-7 items-center justify-center rounded-full border text-xs font-medium transition-colors';
+        if (enabled) {
+          return (
+            <Link
+              key={n}
+              to={`/study/${studyId}/${n}`}
+              aria-current={active ? 'step' : undefined}
+              className={cn(
+                base,
+                active
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border text-foreground hover:bg-accent',
+              )}
+            >
+              {n}
+            </Link>
+          );
+        }
+        return (
+          <span
+            key={n}
+            aria-disabled="true"
+            title={studyId ? 'This phase arrives in a later build stage' : 'Open a study to begin'}
+            className={cn(base, 'border-border text-muted-foreground/60')}
+          >
+            {n}
+          </span>
+        );
+      })}
     </nav>
   );
 }
@@ -37,7 +68,7 @@ export function Layout({ children }: { children: ReactNode }) {
             </span>
           </Link>
           <div className="flex-1" />
-          <PhaseNavPlaceholder />
+          <PhaseNav />
           <ThemeToggle />
         </div>
       </header>

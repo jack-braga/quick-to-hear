@@ -23,6 +23,7 @@ function freshStudy(id: string, reference = ''): Study {
 const samplePassage: ParsedText = {
   translationId: 'webbe',
   versification: 'kjv',
+  reference: 'Luke 1:5-25',
   blocks: [],
   notes: [],
 };
