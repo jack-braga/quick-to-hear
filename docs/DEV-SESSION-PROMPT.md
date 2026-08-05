@@ -45,7 +45,8 @@ Hand off:
    "Next up"; fill "Test entry points" with the exact commands/URLs/sample passages
    that exercise what you built; append a decision/deviation-log entry for anything
    that diverged from PLAN (and fix PLAN if a decision actually changed).
-8. Commit (use the git-commit skill). Branch first if on main. Do NOT push unless I ask.
+8. Commit AND push to `main` (straight-to-main is the owner's policy — no users yet).
+   NEVER add Claude co-authorship to the commit message (no `Co-Authored-By: Claude`).
 9. Output, as your final message, a ready-to-paste prompt for the NEXT session: this
    same block with STAGE set to the next stage, plus a 3-5 line summary of what you
    built, what to watch for, and anything I need to decide before it starts.
@@ -63,6 +64,9 @@ questions; don't drip them.
   handoff clean. Resist "while I'm here" creep into the next stage.
 - **PROGRESS.md is the source of truth** for what's done — keep it honest; a ticked box
   that isn't really done breaks the next session.
+- **Commits: straight to `main`, push when done, never Claude co-authorship** (see
+  `CLAUDE.md`). A session in a git worktree is the exception — it commits to its own
+  branch, which is merged back afterwards.
 - **Open questions** (PLAN §8: worked-example passage, real paste samples, BSB
   sourcing, repo name) surface at the stage that needs them — the prompt tells the
   session to stop and ask rather than guess.

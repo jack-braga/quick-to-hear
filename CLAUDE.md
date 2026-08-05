@@ -30,6 +30,16 @@ template), `../krenoda` (theming, Zustand, vitest jsdom+fake-indexeddb).
 - The plan is designed for **fresh sessions to hand off cleanly** — keep
   `PROGRESS.md` accurate enough that a new agent can continue without you.
 
+## Commits & branching (owner policy)
+
+- **Never add Claude/Anthropic co-authorship to commit messages.** No
+  `Co-Authored-By: Claude …` trailer, ever. (A `Claude-Session:` link is fine.)
+- **Work straight to `main` and push** — the owner is happy with this while there
+  are no users yet. Dev-stage sessions **drive their own commit + push**; don't
+  wait to be asked. (Exception: a session running in a git worktree commits to its
+  own branch, then it's merged back — see `docs/DEV-SESSION-PROMPT.md`.)
+- Keep commits scoped to the stage; write a concise message.
+
 ## Inviolable rules (these override convenience)
 
 1. **Never generate the user's content.** No auto-written questions, theme, aim, or
