@@ -1,15 +1,15 @@
 # The four Christ-connection traps — Phase 5 (Christ & gospel test).
 # Each: `looksLike` (how the trap shows up) + `check` (the diagnostic question).
-# Related to Goldsworthy's biblical theology — cite ONLY if verified against a source
-# read this session (see content/README.md policy); otherwise ship uncited/flagged.
+# The trap concepts follow Goldsworthy (verified this session); the four-way table
+# and the check questions are the project's own. See content/README.md policy.
 
-attribution:            # inline credit string, ONLY if state: cited
-state: todo
-source:                 # e.g. PREACHING_THE_WHOLE_BIBLE... if verified
-flag:
+attribution: "The traps of moralism, Christless preaching, and the predictable 'Jesus bit' follow Graeme Goldsworthy, Preaching the Whole Bible as Christian Scripture (Eerdmans, 2000); the four-way table and the check questions are the project's own."
+state: cited
+source: "Goldsworthy, Preaching the Whole Bible as Christian Scripture (Eerdmans, 2000), Introduction and chs. 1-2."
+flag: "Allegory is not treated in the held Goldsworthy chapters (Introduction, chs. 1-2, start ch. 3); it and its check (the promise/covenant/office/institution/unsolved-problem list) ship as the project's own. If Goldsworthy's later chapters (esp. ch. 7) or Gospel and Kingdom become available, check his treatment of allegory/typology and of Christless preaching (ch. 9) and cite if matched."
 
 items:
-  - { id: moralism,          name: "Moralism",          looksLike: "", check: "" }
-  - { id: allegory,          name: "Allegory",          looksLike: "", check: "" }
-  - { id: christless-history,name: "Christless history", looksLike: "", check: "" }
-  - { id: flattening,        name: "Flattening",        looksLike: "", check: "" }
+  - { id: moralism,          name: "Moralism",          looksLike: "The character becomes an example to copy, and the passage turns into a lesson in being better.", check: "Could a devout non-Christian say the same thing? If yes, you have moralised." }
+  - { id: allegory,          name: "Allegory",          looksLike: "Christ is found under the text by resemblance, read in rather than followed through the passage's own line.", check: "Does the link run through a promise, a covenant, an office, an institution, or an unsolved problem, rather than a mere likeness?" }
+  - { id: christless-history,name: "Christless history", looksLike: "The exposition is accurate, but Jesus is incidental. You could give it and never mention him.", check: "Where does this passage sit on the line from Abraham to Christ?" }
+  - { id: flattening,        name: "Flattening",        looksLike: "Every study ends at the cross the same way, whatever the passage said.", check: "What does this passage add that another would not?" }
