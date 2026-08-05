@@ -20,9 +20,9 @@
   TEACHING-TEXT, TEACHING-TEXT-AGENT-PROMPT, DEV-SESSION-PROMPT), CLAUDE.md, ROADMAP.md.
 - **Next up:** Stage 1 — Study model, storage (Zustand + idb + hydrate), autosave,
   project file, Home (`PLAN.md` §6). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 1).
-- **One-time action for the owner:** enable GitHub Pages source = "GitHub Actions"
-  (Settings → Pages → Source) if the first `deploy.yml` run reports Pages isn't set up.
-  Target URL: https://jack-braga.github.io/quick-to-hear/
+- **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
+  GitHub Pages source was already = "GitHub Actions"; no manual flip was needed. Both
+  `ci.yml` and `deploy.yml` went **green on the first push**.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
   (primary translation only) **with recycling** (Phases 1–7, no paste, no secondary
   translations).
@@ -201,8 +201,9 @@ _Append-only. Newest last._
   - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, 5/5
     tests); `preview` serves 200 under `/quick-to-hear/` with all assets base-prefixed +
     SW/manifest generated; Playwright e2e 2/2 pass; browser check confirmed light/dark/system
-    toggle flips `<html>` class + `color-scheme` + `theme-color` and persists. **Live-URL +
-    CI-green are confirmed post-push** (see Pages one-time action above).
+    toggle flips `<html>` class + `color-scheme` + `theme-color` and persists. **Post-push:
+    `ci.yml` + `deploy.yml` both green; live URL serves the shell (HTTP 200), icon +
+    manifest reachable.**
 
 ## Known issues / risks being carried
 
