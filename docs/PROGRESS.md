@@ -12,14 +12,23 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 0 complete** — app scaffold, theming, CI/deploy, app shell
-  all landed and verified locally. The build now runs.
+- **Phase of work:** **Stage 1 complete** — the study data model, IndexedDB storage
+  (with the passage payload split out), autosave, project-file export/import, and the
+  Home + minimal study-overview screens all landed and are verified end-to-end in a
+  real browser. A study now survives a reload and a full export → re-import.
 - **Scaffolded already (do not recreate):** `content/LICENSE` (CC BY-SA),
   `content/README.md`, `content/help/**` (67 empty stubs), `content/method/*.yaml`
   (9 skeletons), `scripts/gen-help-stubs.sh`, and `docs/` (SPEC, PLAN, PROGRESS,
   TEACHING-TEXT, TEACHING-TEXT-AGENT-PROMPT, DEV-SESSION-PROMPT), CLAUDE.md, ROADMAP.md.
-- **Next up:** Stage 1 — Study model, storage (Zustand + idb + hydrate), autosave,
-  project file, Home (`PLAN.md` §6). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 1).
+- **Stage-1 spine (do not recreate):** `src/types/study.ts` (full `Study` zod schema
+  for all seven phases, defaulted-empty), `src/lib/storage/{db,hydrate,studies,index}.ts`,
+  `src/lib/{id,broadcast}.ts`, `src/store/study.ts`, `src/hooks/{useAutosave,useStorageEstimate}.ts`,
+  `src/pages/{Home,StudyOverview}.tsx`, `src/components/ui/{input,textarea}.tsx`.
+- **Next up:** Stage 2 — Bundled Bibles + verse lib (`bcv_parser` @ `kjv`) + Phase 1
+  setup + Phase 2 read (`PLAN.md` §6). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 2).
+  Stage 2 fills `passage.primary` (the `ParsedText` `blocks`/`notes` are `unknown[]`
+  pass-throughs today — Stage 2 tightens them) and builds the real Phase-1 form, which
+  **replaces** the Stage-1 `StudyOverview` placeholder hub.
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   GitHub Pages source was already = "GitHub Actions"; no manual flip was needed. Both
   `ci.yml` and `deploy.yml` went **green on the first push**.
@@ -64,7 +73,7 @@
 Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 
 - [x] **Stage 0** — Scaffold + deploy + theming *(M1)*
-- [ ] **Stage 1** — Model, storage (Zustand+idb+hydrate), autosave, project file, Home *(M1)*
+- [x] **Stage 1** — Model, storage (Zustand+idb+hydrate), autosave, project file, Home *(M1)*
 - [ ] **Stage 2** — Bundled Bibles + verse lib (bcv_parser) + Phase 1 + Phase 2 *(M1)*
 - [ ] **Stage 3** — Phase 3 map + verse-anchor picker *(M1)*
 - [ ] **Stage 4** — Phase 4 COMA + recycle-forward wiring *(M1)*
@@ -93,6 +102,30 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     `npx playwright install chromium`.
   - Unit tests of note: `src/lib/theme.test.ts` (resolveTheme + class toggle),
     `src/App.test.tsx` (Home renders under HashRouter, toggle present).
+
+- **Stage 1** — Model, storage, autosave, project file, Home:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; **28 unit tests**), then `npm run test:e2e` (2/2).
+  - Unit tests of note: `src/types/study.test.ts` (schema defaults + `toSummary`),
+    `src/lib/storage/hydrate.test.ts` (upgrades a partial doc, quarantines a bad blob /
+    a newer-version doc, never throws), `src/lib/storage/studies.test.ts` (CRUD,
+    **passage separation**, body-only autosave leaves passage intact, export/import
+    round-trip = fresh id, malformed import → friendly error + kept in quarantine),
+    `src/store/study.test.ts` (create/update/flushSave/delete/import/conflict).
+  - **Manual flow (drive the app):** `npm run dev` → open
+    `http://localhost:8080/quick-to-hear/` → **New study** (routes to `#/study/<uuid>`)
+    → type a **Passage reference** (`Luke 1:5-25`) + **Series note** → the save chip
+    shows "Saving…" then "Saved" → **reload the page** (clears the in-memory store):
+    the deep-linked study rehydrates from IndexedDB with both fields intact → **Export**
+    downloads `luke-1-5-25.qth.json` (envelope `quick-to-hear/study-project`) → **Delete**
+    → **Import project file** and pick that file: it restores under a **new** id →
+    importing a **non-JSON** file shows the friendly error and quarantines the blob
+    (existing studies untouched).
+  - **Inspect storage** (DevTools console): `indexedDB` DB `quicktohear` has stores
+    `studies` (body — **no `passage` key**), `passages` (payload, keyed by study id),
+    `quarantine` (kept-but-unreadable blobs).
+  - Sample passage refs to type: `Luke 1:5-25`, `Acts 2`, `John 1` (Stage 1 only stores
+    them as free text — parsing + genre inference is Stage 2).
 
 ## Decision & deviation log
 
@@ -205,6 +238,52 @@ _Append-only. Newest last._
     `ci.yml` + `deploy.yml` both green; live URL serves the shell (HTTP 200), icon +
     manifest reachable.**
 
+- **Stage 1 built (this session).** Added `zod` (only new runtime dep). Full `Study`
+  zod schema spine for all seven phases (`src/types/study.ts`), M1-minimal per §4.3:
+  `passage.primary` single + nullable with `blocks`/`notes` as pass-through `unknown[]`
+  (Stage 2 tightens); verse IDs plain strings; `build` a **discriminated union on
+  `format`** (`StudyBuild` | `TalkBuild` stub — §4.9 seam); `expectedAnswer` present on
+  every `Question` (the hard-block field). `hydrate()` (`src/lib/storage/hydrate.ts`) is
+  the single load path for **both** IDB-load and import: pure (caller passes `id`/`now`),
+  fills defaults, mirrors `build.format` from `setup.format`, **quarantine-keeps** on any
+  failure and **refuses** newer-schema docs (never strips unknown data blindly).
+  IndexedDB layer (`db.ts` + `studies.ts`): DB `quicktohear` v1, **three stores** —
+  `studies` (body **minus passage**, the autosave target), `passages` (payload, split so
+  keystroke autosave never re-serialises it — §4.4), `quarantine`. Zustand study store
+  (`src/store/study.ts`) with reducer-style actions; `useAutosave` (id-keyed 800 ms
+  debounce + flush on route-change / `visibilitychange` / `pagehide` / `beforeunload` +
+  one-shot `storage.persist()` + `BroadcastChannel` multi-tab guard via
+  `src/lib/broadcast.ts`); `useStorageEstimate` meter. Home rewritten (list / new / open /
+  delete / import + durability notice); minimal `StudyOverview` hub at `/study/:id`
+  (edit reference + series note; export / delete; conflict banner) — an explicit
+  Stage-1 placeholder the real Phase-1 form replaces. `crypto.randomUUID` ids via
+  `src/lib/id.ts`. shadcn `Input`/`Textarea` added.
+  - **Decisions (confirmed with the owner before building):**
+    - **Import always mints a fresh study id** (content preserved) — never overwrites an
+      existing study, so a trainee→trainer handoff can't clobber. Re-import appears as a
+      second study. (Verified live: import produced a new `#/study/<uuid>`.)
+    - **Built the whole `Study` schema spine now** (all phases, defaulted-empty), not
+      just setup — so later stages plug in without reshaping the doc.
+    - **`/study/:id` is a thin Stage-1 placeholder hub** (two set-up fields) purely to
+      make persistence demonstrable; Stage 2 replaces it with the real Phase-1 route.
+  - **Deviations (minor, none change a PLAN §2 decision):**
+    - **`react-hook-form` deferred to Stage 2** (Stage 1 has two demo fields — plain
+      controlled inputs → `updateSetup`; the "commit on blur via RHF" pattern lands with
+      the real Phase-1 form). Keeps deps lean per §2 hygiene. Only `zod` added this stage.
+    - **Delete uses an inline two-step confirm**, not a native `window.confirm`/modal
+      (native dialogs block automation + add a Radix dep). Import errors render inline
+      (no `sonner` yet).
+    - **`hydrate` refuses `schemaVersion > CURRENT`** (quarantine-keep) rather than
+      down-stripping a newer doc — an honest anti-data-loss guard beyond the §4.2 brief.
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, 28/28
+    unit); `test:e2e` 2/2. **Browser walk-through (Playwright):** New study → type →
+    autosave wrote a body **with no `passage` key** while `passages` held the split
+    payload → full page reload rehydrated both fields from IDB → Export produced a valid
+    `quick-to-hear/study-project` envelope (full study, passage re-joined) → Delete →
+    re-import restored under a fresh id → malformed import showed the friendly error and
+    **quarantined** the raw blob (existing study untouched). 0 console errors (only the
+    pre-existing RR v7 future-flag warnings).
+
 ## Known issues / risks being carried
 
 - Paste parser (Stage 8) needs **real user-captured samples**; can't be built blind.
@@ -212,3 +291,10 @@ _Append-only. Newest last._
 - WEBBE still updates → **pin** the eBible release in `scripts/build-bibles.ts`.
 - "Work is never lost" is only as strong as the user exporting project files; `hydrate`
   quarantine + durability mitigations (`PLAN.md` §4.4) are the honest backstop.
+- **Multi-tab guard is lightweight** (Stage 1): a `BroadcastChannel` `saved` event flags
+  a conflict + offers "Reload"; it does not merge concurrent edits. There is no UI yet to
+  view/recover **quarantined** blobs (they're kept in IDB, invisible) — add one if it
+  ever bites. `hydrate` strips unknown keys on parse, so a forward-compat field on a
+  same-version doc is dropped (newer *versions* are refused, not stripped).
+- **Stage-1 `StudyOverview` is disposable** — Stage 2 replaces it with the real Phase-1
+  route; don't build on it. Its two fields write straight to the store (no RHF yet).
