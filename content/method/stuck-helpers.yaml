@@ -1,10 +1,35 @@
 # "Stuck" helpers — Phase 5, available on demand (not forced).
 # Each: a short `name` and the `text` that walks the user through the technique.
-# Fill name/text; set state per content/README.md.
+# All project's own (spec Phase 5); ship uncited. Flags note loose sources for the sweep.
 
 items:
-  - { id: tell-it-back,          name: "", text: "", state: todo, source: , flag: }   # Tell the passage back in 3 sentences, aloud
-  - { id: first-vs-last-verse,   name: "", text: "", state: todo, source: , flag: }   # Compare the first verse to the last — what changed?
-  - { id: load-bearing-sentence, name: "", text: "", state: todo, source: , flag: }   # Find the one clause everything else serves
-  - { id: what-is-it-against,    name: "", text: "", state: todo, source: , flag: }   # What is the passage against?
-  - { id: bad-theme-attack,      name: "", text: "", state: todo, source: , flag: }   # Write a deliberately bad theme and attack it
+  - id: tell-it-back
+    name: "Tell it back"
+    text: "Close the Bible and say the passage back in three sentences, out loud. What you reach for first usually sits right on top of the theme."
+    state: uncited
+    source:
+    flag: "Loose cousin: ACS summarise-in-a-sentence-or-two (discussion template Q2 / sec. ii, held). The aloud-from-memory version is the project's own."
+  - id: first-vs-last-verse
+    name: "First verse, last verse"
+    text: "Read the first verse, then the last, and ask what has changed between them. The movement from one to the other is usually the point."
+    state: uncited
+    source:
+    flag:
+  - id: load-bearing-sentence
+    name: "The load-bearing sentence"
+    text: "Look for the clause the rest of the passage leans on. Take it away and the rest tends to lose its point. That sentence usually sits close to the theme."
+    state: uncited
+    source:
+    flag: "Main-idea / 'big idea' family (Robinson, Biblical Preaching, not held; ACS sec. ii, held). The load-bearing-clause framing is the project's own."
+  - id: what-is-it-against
+    name: "What is it against?"
+    text: "Try asking what the passage stands against. Often it pushes back on a fear, a false confidence, or a complacency, though not always. Name the opponent and the theme and aim often surface together."
+    state: uncited
+    source:
+    flag: "Resembles Bryan Chapell's Fallen Condition Focus (Christ-Centered Preaching, not held). Ships as a heuristic, uncited; if Chapell is obtained, check whether to cite or reword."
+  - id: bad-theme-attack
+    name: "Write a bad theme, then attack it"
+    text: "Write a theme you know is wrong, then pull it apart. Reacting to a bad sentence is easier than producing a good one from nothing, and the attack shows you what the real theme must include."
+    state: uncited
+    source:
+    flag:

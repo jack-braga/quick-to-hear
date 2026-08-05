@@ -1,14 +1,35 @@
 # Litmus tests.
 #   theme[]    — the 5 tests acknowledged on leaving Phase 5 (theme & aim).
 #   question[] — the 4 per-type inline tests shown in Phase 6e as a question is written.
-# Fill `text`; set state per content/README.md.
+# theme[] authored here (project's own; uncited; flags note loose sources for the sweep).
+# question[] authored in a later Phase 6 batch.
 
 theme:
-  - { id: author-recognise,      text: "", state: todo, source: , flag: }   # Would the author recognise it?
-  - { id: needs-this-passage,    text: "", state: todo, source: , flag: }   # Does it need THIS passage?
-  - { id: devout-non-christian,  text: "", state: todo, source: , flag: }   # Could a devout non-Christian affirm it?
-  - { id: everything-serves,     text: "", state: todo, source: , flag: }   # Does everything serve it; anything resist it?
-  - { id: contributes-uniquely,  text: "", state: todo, source: , flag: }   # What does this passage uniquely contribute?
+  - id: author-recognise
+    text: "Would the author recognise your theme as what he was doing? If he would blink at it, you have drifted."
+    state: uncited
+    source:
+    flag: "Authorial-intent test; standard evangelical hermeneutics (Fee & Stuart; Duvall & Hays, not held). Project's own phrasing."
+  - id: needs-this-passage
+    text: "Does your theme need this passage, or could you preach it just as well from three others? If it travels that easily, it is too general."
+    state: uncited
+    source:
+    flag: "Text-specificity / 'big idea' family (Robinson, Biblical Preaching, not held). Project's own phrasing."
+  - id: devout-non-christian
+    text: "Could a devout non-Christian affirm your theme just as it stands? If so, it has probably slipped into a moral lesson, and it is worth testing against the Christ and gospel step."
+    state: uncited
+    source:
+    flag: "Operationalises Goldsworthy's moralism critique (verified this session; see traps.yaml, cited). The devout-non-Christian test wording is the project's own."
+  - id: everything-serves
+    text: "Does everything in the passage serve your theme, and does anything resist it? What resists is worth a second look: it may be a flaw in the theme, the very thing the passage is pressing, or just a detail carrying its own weight."
+    state: uncited
+    source:
+    flag:
+  - id: contributes-uniquely
+    text: "What does this passage add that another would not? Name the thing only this text gives you."
+    state: uncited
+    source:
+    flag: "Text-specificity / 'big idea' family (Robinson, Biblical Preaching, not held). Project's own phrasing."
 
 question:
   - { id: context,     text: "", state: todo, source: , flag: }   # Can they answer from a verse you pointed them to?
