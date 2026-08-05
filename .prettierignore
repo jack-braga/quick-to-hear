@@ -1,0 +1,11 @@
+dist
+dev-dist
+coverage
+playwright-report
+test-results
+package-lock.json
+
+# User-authored content + docs (method YAML, help prose, planning docs) — never
+# reformat; the licensing/citation layout in these files is deliberate.
+content
+docs

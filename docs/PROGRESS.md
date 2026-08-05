@@ -12,14 +12,17 @@
 
 ## Current status
 
-- **Phase of work:** Planning + hardening complete; **content scaffolding in place**.
-  **No application code written yet.**
-- **Scaffolded already (do not recreate in Stage 0):** `content/LICENSE` (CC BY-SA),
+- **Phase of work:** **Stage 0 complete** — app scaffold, theming, CI/deploy, app shell
+  all landed and verified locally. The build now runs.
+- **Scaffolded already (do not recreate):** `content/LICENSE` (CC BY-SA),
   `content/README.md`, `content/help/**` (67 empty stubs), `content/method/*.yaml`
   (9 skeletons), `scripts/gen-help-stubs.sh`, and `docs/` (SPEC, PLAN, PROGRESS,
   TEACHING-TEXT, TEACHING-TEXT-AGENT-PROMPT, DEV-SESSION-PROMPT), CLAUDE.md, ROADMAP.md.
-- **Next up:** Stage 0 — Scaffold + deploy + theming (`PLAN.md` §6). Use the
-  `docs/DEV-SESSION-PROMPT.md` template (STAGE = 0) to run it in a fresh session.
+- **Next up:** Stage 1 — Study model, storage (Zustand + idb + hydrate), autosave,
+  project file, Home (`PLAN.md` §6). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 1).
+- **One-time action for the owner:** enable GitHub Pages source = "GitHub Actions"
+  (Settings → Pages → Source) if the first `deploy.yml` run reports Pages isn't set up.
+  Target URL: https://jack-braga.github.io/quick-to-hear/
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
   (primary translation only) **with recycling** (Phases 1–7, no paste, no secondary
   translations).
@@ -60,7 +63,7 @@
 
 Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 
-- [ ] **Stage 0** — Scaffold + deploy + theming *(M1)*
+- [x] **Stage 0** — Scaffold + deploy + theming *(M1)*
 - [ ] **Stage 1** — Model, storage (Zustand+idb+hydrate), autosave, project file, Home *(M1)*
 - [ ] **Stage 2** — Bundled Bibles + verse lib (bcv_parser) + Phase 1 + Phase 2 *(M1)*
 - [ ] **Stage 3** — Phase 3 map + verse-anchor picker *(M1)*
@@ -74,7 +77,22 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 
 ## Test entry points (fill in as stages land)
 
-- Stage 0: _(pending)_
+- **Stage 0** — Scaffold + deploy + theming:
+  - Install: `npm ci` (or `npm install`).
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; 5 unit tests).
+  - Dev shell: `npm run dev` → open the printed URL (Vite serves at `/quick-to-hear/`,
+    port 8080). Header shows title + phase-nav placeholder (1–7) + theme toggle.
+  - Theming: click the header toggle to cycle **light → dark → system**; it flips the
+    `<html>` class + `color-scheme` + `theme-color`, persists to `localStorage['qth/theme']`,
+    and `system` follows the OS (live `matchMedia` listener). No FOUC (seed in `index.html`).
+  - Prod serve under base path: `npm run build && npm run preview -- --port 4173`
+    → http://localhost:4173/quick-to-hear/ (200; all assets base-prefixed; SW + manifest).
+  - E2E smoke: `npm run test:e2e` (Playwright chromium; builds + previews first;
+    2 tests: shell boots, theme toggle flips `<html>`). First run locally needs
+    `npx playwright install chromium`.
+  - Unit tests of note: `src/lib/theme.test.ts` (resolveTheme + class toggle),
+    `src/App.test.tsx` (Home renders under HashRouter, toggle present).
 
 ## Decision & deviation log
 
@@ -148,6 +166,43 @@ _Append-only. Newest last._
   teaching prose — wire empty keys to a "guidance to be written" placeholder.
 - **Session workflow:** one build stage per Claude Code session, handing off via this
   file; bootstrap each with `docs/DEV-SESSION-PROMPT.md`.
+- **Stage 0 built (this session).** Vite 5 + React 18 + TS strict (`@vitejs/plugin-react-swc`);
+  Tailwind 3 (`darkMode:['class']`) + shadcn config (`components.json`, `@` alias, `cn`,
+  `ui/button`); custom **theme module** `src/lib/theme.ts` (krenoda-style Zustand
+  light/dark/system, `applyTheme` at import, `matchMedia` change listener) + FOUC seed in
+  `index.html` (`qth/theme`); **HashRouter** shell (`Layout` header = title + phase-nav
+  placeholder + `ThemeToggle`; `Home` + `NotFound`); `vite.config.ts` (`base:/quick-to-hear/`,
+  `@` alias, **VitePWA** with a **Bibles `runtimeCaching` stub** + base-aware
+  navigateFallback/start_url/scope); ESLint flat + Prettier; **Vitest jsdom + fake-indexeddb
+  + matchMedia stub** (`vitest.setup.ts`) with 5 tests; **Playwright** e2e smoke (`e2e/`,
+  `playwright.config.ts`); `ci.yml` (typecheck+lint+test+build **+ separate Playwright job**
+  `npx playwright install --with-deps chromium`) + `deploy.yml` (official Pages actions),
+  both pinging **`ntfy.sh/jsb-gh`**; root **MIT `LICENSE`**, `README.md`.
+  - **Deviations (all minor, none change a PLAN §2 decision):**
+    - **Deps:** installed only what Stage 0 needs (react, react-dom, react-router-dom,
+      zustand, `@radix-ui/react-slot`, cva/clsx/tailwind-merge, tailwindcss-animate,
+      lucide-react, idb, `@tailwindcss/typography`). The pruned local-ledger deps
+      (react-query/recharts/papaparse/embla/react-virtuoso/cmdk/input-otp/vaul/date-fns/
+      gh-pages/next-themes) were **never added**. `idb`/`zod`/`react-hook-form` etc. come in
+      at the stage that first uses them (Stage 1).
+    - **PWA icon:** manifest + favicon use a single self-contained **`public/icon.svg`**
+      placeholder (`sizes:any`, maskable). Raster PNG icons deferred to **Stage 10** (PWA
+      harden) rather than shipping a manifest that 404s.
+    - **tsconfig.app** is `strict:true` **plus** `noUnusedLocals`/`noUnusedParameters:true`
+      (tighter than local-ledger, which is non-strict) — matches the "verse-ID/anchor code
+      needs strict" intent; kept the code clean so the gate passes.
+    - **Guidance placeholder:** added `GuidancePlaceholder` (`components/`) rendering
+      "Guidance to be written (key)"; used once on Home to establish the convention. The
+      `useHelp`/method-YAML loader that will consume real keys lands when help UI is built
+      (Stage 4.7). No teaching prose written.
+    - **Router:** left React Router v6 future-flag warnings unsilenced (cosmetic; opting
+      into `v7_*` flags is a behaviour change best done deliberately later).
+    - **theme-color hexes:** light `#ffffff`, dark `#020817` (approx of the dark bg token).
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, 5/5
+    tests); `preview` serves 200 under `/quick-to-hear/` with all assets base-prefixed +
+    SW/manifest generated; Playwright e2e 2/2 pass; browser check confirmed light/dark/system
+    toggle flips `<html>` class + `color-scheme` + `theme-color` and persists. **Live-URL +
+    CI-green are confirmed post-push** (see Pages one-time action above).
 
 ## Known issues / risks being carried
 

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Quick to Hear">
+  <rect width="512" height="512" rx="96" fill="#0f172a" />
+  <!-- open book -->
+  <g fill="none" stroke="#e2e8f0" stroke-width="22" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 150 C 216 122, 158 118, 118 132 L 118 372 C 158 358, 216 362, 256 390 Z" />
+    <path d="M256 150 C 296 122, 354 118, 394 132 L 394 372 C 354 358, 296 362, 256 390 Z" />
+    <line x1="256" y1="150" x2="256" y2="390" />
+  </g>
+</svg>

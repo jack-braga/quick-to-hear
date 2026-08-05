@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/quick-to-hear/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick to Hear — Bible study workbook</title>
+    <meta
+      name="description"
+      content="A free, static, account-less browser workbook for preparing a Bible study: from a passage reference to a printable handout and leader's notes."
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script>
+      // No-FOUC theme bootstrap: resolve the stored/system theme before first paint
+      // so there's no light-flash on a dark preference. src/lib/theme.ts re-applies
+      // the same resolution once the module loads. Default preference is 'system'.
+      (function () {
+        try {
+          var t = localStorage.getItem('qth/theme') || 'system';
+          var dark =
+            t === 'dark' ||
+            (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
+          root.classList.toggle('dark', dark);
+          root.classList.toggle('light', !dark);
+          root.style.colorScheme = dark ? 'dark' : 'light';
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', dark ? '#020817' : '#ffffff');
+        } catch (e) {
+          /* keep the static light default */
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
