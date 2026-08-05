@@ -1,0 +1,15 @@
+# The four Christ-connection traps — Phase 5 (Christ & gospel test).
+# Each: `looksLike` (how the trap shows up) + `check` (the diagnostic question).
+# Related to Goldsworthy's biblical theology — cite ONLY if verified against a source
+# read this session (see content/README.md policy); otherwise ship uncited/flagged.
+
+attribution:            # inline credit string, ONLY if state: cited
+state: todo
+source:                 # e.g. PREACHING_THE_WHOLE_BIBLE... if verified
+flag:
+
+items:
+  - { id: moralism,          name: "Moralism",          looksLike: "", check: "" }
+  - { id: allegory,          name: "Allegory",          looksLike: "", check: "" }
+  - { id: christless-history,name: "Christless history", looksLike: "", check: "" }
+  - { id: flattening,        name: "Flattening",        looksLike: "", check: "" }

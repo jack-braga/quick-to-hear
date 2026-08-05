@@ -1,0 +1,23 @@
+# Soft question warnings — Phase 6e. All are advisory; the user can always override.
+# `trigger` documents the detection rule (implemented in code, src/lib/…);
+# `message` is the user-facing text explaining the risk. Fill `message`.
+
+items:
+  - id: yes-no
+    trigger: "question opens with Is / Are / Does / Did / Was"
+    message: ""
+    state: todo
+    source:
+    flag:
+  - id: leading
+    trigger: "contains \"doesn't\" or \"don't you think\""
+    message: ""
+    state: todo
+    source:
+    flag:
+  - id: double-barrelled
+    trigger: "two question marks, or 'and' followed by a second interrogative"
+    message: ""
+    state: todo
+    source:
+    flag:

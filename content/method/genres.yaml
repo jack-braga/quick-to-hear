@@ -1,0 +1,13 @@
+# The six genres — Phase 1 (selection/inference) and Phase 4 (reading tips).
+#   label      — display name (shown to the user)
+#   comaSet    — which key in coma.yaml drives Phase 4 prompts
+#   readingTip — one line on what this genre rewards attention to (Phase 4)
+# Labels are settled; fill `readingTip`; set state per content/README.md.
+
+items:
+  - { id: gospels-acts,  label: "Gospels and Acts",                          comaSet: gospels-acts,  readingTip: "", state: todo, source: , flag: }
+  - { id: ot-narrative,  label: "Old Testament narrative",                   comaSet: ot-narrative,  readingTip: "", state: todo, source: , flag: }
+  - { id: epistles,      label: "Epistles",                                  comaSet: epistles,      readingTip: "", state: todo, source: , flag: }
+  - { id: wisdom-poetry, label: "Hebrew wisdom literature and poetry",       comaSet: wisdom-poetry, readingTip: "", state: todo, source: , flag: }
+  - { id: prophetic,     label: "Prophetic literature",                      comaSet: prophetic,     readingTip: "", state: todo, source: , flag: }
+  - { id: apocalyptic,   label: "Apocalyptic literature",                    comaSet: apocalyptic,   readingTip: "", state: todo, source: , flag: }

@@ -1,0 +1,10 @@
+# "Stuck" helpers — Phase 5, available on demand (not forced).
+# Each: a short `name` and the `text` that walks the user through the technique.
+# Fill name/text; set state per content/README.md.
+
+items:
+  - { id: tell-it-back,          name: "", text: "", state: todo, source: , flag: }   # Tell the passage back in 3 sentences, aloud
+  - { id: first-vs-last-verse,   name: "", text: "", state: todo, source: , flag: }   # Compare the first verse to the last — what changed?
+  - { id: load-bearing-sentence, name: "", text: "", state: todo, source: , flag: }   # Find the one clause everything else serves
+  - { id: what-is-it-against,    name: "", text: "", state: todo, source: , flag: }   # What is the passage against?
+  - { id: bad-theme-attack,      name: "", text: "", state: todo, source: , flag: }   # Write a deliberately bad theme and attack it

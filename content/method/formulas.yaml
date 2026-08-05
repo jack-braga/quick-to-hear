@@ -1,0 +1,34 @@
+# Question formula library — Phase 6c.
+#
+# Each formula: a short name, a one-line explanation, and a scaffolded `stem` with
+# blanks (use ____ for blanks). Selecting a formula drops the stem into the brainstorm.
+# `genres` optionally narrows which genres it best suits. Fill `explanation`/`stem`;
+# set state per the content/README.md policy.
+
+groups:
+  observation:
+    - { id: count-or-list,        name: "Count or list",            explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: track-the-subject,    name: "Track the subject",        explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: compare,              name: "Compare",                  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: odd-grammar,          name: "Odd grammar",              explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: structure,            name: "Structure",                explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: absence,              name: "Absence",                  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+  meaning:
+    - { id: logic-and-connection, name: "Logic and connection",     explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: cause-and-purpose,    name: "Cause and purpose",        explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: proportion-emphasis,  name: "Proportion and emphasis",  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: counterfactual,       name: "Counterfactual",           explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: summary,              name: "Summary",                  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: original-hearing,     name: "Original hearing",         explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: theology-and-christ,  name: "Theology and Christ",      explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: tension-resolution,   name: "Tension and resolution",   explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+  context:
+    # The spec references "the context formats" without enumerating them.
+    # Add ids here as the method text is settled; placeholders below.
+    - { id: where-in-the-book,    name: "Where in the book",        explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: whats-just-happened,  name: "What's just happened",     explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+  application:
+    - { id: hunt-purpose-clauses, name: "Hunt for purpose clauses", explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: book-stated-purpose,  name: "Use the book's stated purpose", explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: locate-the-pressure,  name: "Locate the pressure",      explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - { id: invert-the-indicative,name: "Invert the indicative",    explanation: "", stem: "", genres: [], state: todo, source: , flag: }

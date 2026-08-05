@@ -1,0 +1,28 @@
+# Bundled translations — id -> display name + versification + the exact copyright line
+# auto-appended to every export (a functional requirement). These are LICENCE FACTS,
+# not teaching text, so they are pre-filled — but VERIFY each against the exact edition
+# actually shipped (the eBible.org / berean.bible USFM release pinned in
+# scripts/build-bibles.ts) before release; flagged accordingly.
+
+items:
+  - id: webbe
+    name: "World English Bible British Edition"
+    shortName: "WEBBE"
+    versification: kjv
+    copyrightLine: "World English Bible British Edition (WEBBE). Public domain."
+    state: flagged
+    flag: "Verify wording/edition against the pinned eBible.org WEBBE (engwebpb) release; confirm PD notice."
+  - id: asv
+    name: "American Standard Version (1901)"
+    shortName: "ASV"
+    versification: kjv
+    copyrightLine: "American Standard Version (1901). Public domain."
+    state: flagged
+    flag: "Verify against the eBible.org ASV release actually shipped (note: eBible ASV omits Matt 17:21)."
+  - id: bsb
+    name: "Berean Standard Bible"
+    shortName: "BSB"
+    versification: kjv
+    copyrightLine: "The Holy Bible, Berean Standard Bible, BSB. Public domain (CC0). Produced in cooperation with Bible Hub, Discovery Bible, OpenBible.com, and the Berean Bible Translation Committee."
+    state: flagged
+    flag: "Confirm the current BSB public-domain/attribution wording at berean.bible/licensing.htm against the pinned USFM."

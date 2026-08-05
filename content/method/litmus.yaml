@@ -1,0 +1,17 @@
+# Litmus tests.
+#   theme[]    — the 5 tests acknowledged on leaving Phase 5 (theme & aim).
+#   question[] — the 4 per-type inline tests shown in Phase 6e as a question is written.
+# Fill `text`; set state per content/README.md.
+
+theme:
+  - { id: author-recognise,      text: "", state: todo, source: , flag: }   # Would the author recognise it?
+  - { id: needs-this-passage,    text: "", state: todo, source: , flag: }   # Does it need THIS passage?
+  - { id: devout-non-christian,  text: "", state: todo, source: , flag: }   # Could a devout non-Christian affirm it?
+  - { id: everything-serves,     text: "", state: todo, source: , flag: }   # Does everything serve it; anything resist it?
+  - { id: contributes-uniquely,  text: "", state: todo, source: , flag: }   # What does this passage uniquely contribute?
+
+question:
+  - { id: context,     text: "", state: todo, source: , flag: }   # Can they answer from a verse you pointed them to?
+  - { id: observation, text: "", state: todo, source: , flag: }   # Can they answer by looking? Worth having?
+  - { id: meaning,     text: "", state: todo, source: , flag: }   # Answerable from observations already made?
+  - { id: application, text: "", state: todo, source: , flag: }   # Which aim component — know / feel / do?

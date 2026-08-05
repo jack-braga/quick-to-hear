@@ -1,0 +1,16 @@
+# Phase 7 audit checklist. `label` is the check (settled from the spec); `help` is the
+# one-line teaching text on why it matters / what to look for. `conditional` marks
+# checks that only apply in some cases. Fill `help`; set state per content/README.md.
+
+items:
+  - { id: serves-theme-aim,  label: "Every question serves the theme and aim",                 help: "", state: todo, source: , flag: }
+  - { id: expected-answer,   label: "Every question has an expected answer",                    help: "", state: todo, source: , flag: }
+  - { id: coverage,          label: "Coverage — every untouched section is tagged",             help: "", state: todo, source: , flag: }
+  - { id: type-balance,      label: "Balance across the four question types",                   help: "", state: todo, source: , flag: }
+  - { id: meaning-order,     label: "No meaning question precedes its supporting observations", help: "", state: todo, source: , flag: }
+  - { id: application-last,  label: "Application is last, and moves general before particular", help: "", state: todo, source: , flag: }
+  - { id: know-feel-do,      label: "Application covers know / feel / do",                      help: "", state: todo, source: , flag: }
+  - { id: time-vs-length,    label: "Total estimated time fits the session length",            help: "", state: todo, source: , flag: }
+  - { id: two-load-bearing,  label: "At least two load-bearing questions are marked",           help: "", state: todo, source: , flag: }
+  - { id: gospel-plain,      label: "A question that makes the gospel plain",                   help: "", conditional: "group is mixed or one-to-one with a not-yet-Christian", state: todo, source: , flag: }
+  - { id: prayer-point,      label: "A prayer point drawn from the passage",                    help: "", state: todo, source: , flag: }

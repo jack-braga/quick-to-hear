@@ -1,0 +1,31 @@
+Content in this directory (the tool's teaching text and method data) is licensed under
+
+    Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    https://creativecommons.org/licenses/by-sa/4.0/
+
+The full legal text is at the URL above; the human-readable summary: you may share and
+adapt this material for any purpose, provided you give appropriate credit and license
+your adaptations under the same terms.
+
+This licence covers ONLY the CC BY-SA material in this directory. The project's source
+code (everything outside content/) is licensed separately under the MIT License; see
+the repository-root LICENSE.
+
+------------------------------------------------------------------------------
+EXCEPTIONS — third-party material included by permission, NOT under CC BY-SA
+------------------------------------------------------------------------------
+
+COMA question sets (content/method/coma.yaml)
+    Reproduced verbatim from David Helm, "One-to-One Bible Reading"
+    © Matthias Media and Holy Trinity Church, 2011. Used by permission.
+    These questions are NOT CC BY-SA. Attribution to Matthias Media and Holy
+    Trinity Church must be displayed wherever they appear.
+
+Bible text (content/bibles/ and public/bibles/, added later)
+    Public-domain / CC0 translations only (WEBBE, ASV, BSB). Each carries its
+    own copyright/attribution line via content/method/translations.yaml. Not
+    CC BY-SA.
+
+Where teaching text quotes or paraphrases a cited third-party source, that source is
+credited inline; such quotations remain the property of their rights-holders and are
+used under fair-dealing / permission as noted, not relicensed under CC BY-SA.

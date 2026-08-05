@@ -1,0 +1,45 @@
+# COMA question sets — Phase 4.
+#
+# VERBATIM, BY PERMISSION. The question text below is reproduced verbatim from
+# David Helm, "One-to-One Bible Reading" (c) Matthias Media & Holy Trinity Church,
+# 2011. It is NOT CC BY-SA. The `attribution` string MUST render on screen wherever
+# COMA content appears (not only on the attribution page).
+#
+# Fill each genre's four lists with the exact permitted prompts. Leave lists empty
+# until the verbatim text is entered; set state: cited when done.
+
+attribution: "COMA questions from David Helm, One-to-One Bible Reading (Matthias Media & Holy Trinity Church, 2011), used by permission."
+state: todo            # -> cited once verbatim text is entered against the source
+source: OTOBR-Sheets-for-copying-A4.pdf
+
+genres:
+  gospels-acts:
+    context: []
+    observation: []
+    meaning: []
+    application: []
+  ot-narrative:
+    context: []
+    observation: []
+    meaning: []
+    application: []
+  epistles:
+    context: []
+    observation: []
+    meaning: []
+    application: []
+  wisdom-poetry:
+    context: []
+    observation: []
+    meaning: []
+    application: []
+  prophetic:
+    context: []
+    observation: []
+    meaning: []
+    application: []
+  apocalyptic:
+    context: []
+    observation: []
+    meaning: []
+    application: []
