@@ -3,10 +3,10 @@ key: global.guidance-toggle
 title: Guidance detail toggle
 phase: global
 tiers: [inline]
-state: todo        # todo -> cited | uncited | flagged (see content/README.md)
-source:            # inline attribution string, ONLY when state: cited
-flag:              # what would settle it + where to look, ONLY when state: flagged
+state: uncited
+source:
+flag:
 ---
 
 <!-- inline -->
-
+Full guidance shows every note and 'tell me more'; inline keeps just the one-line prompts beside each field. It starts on full. Switch to inline once the method is second nature.
