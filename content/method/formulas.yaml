@@ -7,12 +7,54 @@
 
 groups:
   observation:
-    - { id: count-or-list,        name: "Count or list",            explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: track-the-subject,    name: "Track the subject",        explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: compare,              name: "Compare",                  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: odd-grammar,          name: "Odd grammar",              explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: structure,            name: "Structure",                explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: absence,              name: "Absence",                  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - id: count-or-list
+      name: "Count or list"
+      explanation: "Pick a word or idea that recurs and have the group count or list every instance. Repetition is the author raising his voice."
+      stem: "List every place ____ appears in verses ____. What is the author pressing by repeating it?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive-study observation move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: track-the-subject
+      name: "Track the subject"
+      explanation: "Follow one person or thing through the passage and watch what it does and what is done to it. The grammar often carries the point."
+      stem: "Follow ____ through the passage. What does ____ do, and what is done to ____?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive-study observation move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: compare
+      name: "Compare"
+      explanation: "Set two people, moments, or ideas side by side and ask what the difference teaches. Authors often make a point by contrast."
+      stem: "Compare ____ with ____. What is different, and why does the difference matter?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive-study observation move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: odd-grammar
+      name: "Odd grammar"
+      explanation: "Notice a word choice or construction that seems odd, abrupt, or overworked, and ask why it was written that way."
+      stem: "Why does the author say ____ rather than the plainer way of putting it? What does that wording add?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive-study observation move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: structure
+      name: "Structure"
+      explanation: "Ask how the passage is built: where it turns, what frames what, what sits at its centre or its ends."
+      stem: "How is this passage built? What does its shape, from ____ to ____, show?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive-study observation move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: absence
+      name: "Absence"
+      explanation: "Notice what is missing, unsaid, or left unanswered. What an author leaves out can be as loud as what he includes."
+      stem: "What would you expect to be here that is not? What does the silence about ____ tell us?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive-study observation move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
   meaning:
     - { id: logic-and-connection, name: "Logic and connection",     explanation: "", stem: "", genres: [], state: todo, source: , flag: }
     - { id: cause-and-purpose,    name: "Cause and purpose",        explanation: "", stem: "", genres: [], state: todo, source: , flag: }
@@ -23,10 +65,24 @@ groups:
     - { id: theology-and-christ,  name: "Theology and Christ",      explanation: "", stem: "", genres: [], state: todo, source: , flag: }
     - { id: tension-resolution,   name: "Tension and resolution",   explanation: "", stem: "", genres: [], state: todo, source: , flag: }
   context:
-    # The spec references "the context formats" without enumerating them.
-    # Add ids here as the method text is settled; placeholders below.
-    - { id: where-in-the-book,    name: "Where in the book",        explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: whats-just-happened,  name: "What's just happened",     explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    # The spec references "the context formats" without enumerating them; these two
+    # are the project's own choice (see each item's flag).
+    - id: where-in-the-book
+      name: "Where in the book"
+      explanation: "Place the passage in the flow of the whole book: what has led here, and where it is heading."
+      stem: "Where does this passage sit in the whole of ____? What has led up to it, and where is it heading?"
+      genres: []
+      state: uncited
+      source:
+      flag: "The spec names 'the context formats' without listing them; these two are the project's own choice. If Fee & Stuart, How to Read the Bible for All Its Worth (historical/literary context) or Sweatman become available, check for a standard set and reconcile."
+    - id: whats-just-happened
+      name: "What's just happened"
+      explanation: "Look at the verses immediately before, so the group begins already knowing what has just happened."
+      stem: "What happens in the verses right before ____, and how does it set up what we are about to read?"
+      genres: []
+      state: uncited
+      source:
+      flag: "The spec names 'the context formats' without listing them; these two are the project's own choice. If Fee & Stuart, How to Read the Bible for All Its Worth (historical/literary context) or Sweatman become available, check for a standard set and reconcile."
   application:
     - { id: hunt-purpose-clauses, name: "Hunt for purpose clauses", explanation: "", stem: "", genres: [], state: todo, source: , flag: }
     - { id: book-stated-purpose,  name: "Use the book's stated purpose", explanation: "", stem: "", genres: [], state: todo, source: , flag: }
