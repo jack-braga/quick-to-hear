@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { BookOpen, ChevronDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import { GuidancePlaceholder } from '@/components/GuidancePlaceholder';
@@ -23,10 +23,55 @@ function Prose({ children, className }: { children: string; className?: string }
   );
 }
 
+/** A collapsible "tell me more" / "see a worked example" tier, sharing one disclosure
+ *  pattern. The revealed body is set off with a left rule so it reads as subordinate. */
+function Disclosure({
+  testId,
+  openLabel,
+  closedLabel,
+  icon,
+  children,
+}: {
+  testId: string;
+  openLabel: string;
+  closedLabel: string;
+  icon?: React.ReactNode;
+  children: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  return (
+    <div>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+        data-testid={testId}
+        className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+      >
+        {icon ?? (
+          <ChevronDown
+            aria-hidden
+            className={cn('size-3 transition-transform', open && 'rotate-180')}
+          />
+        )}
+        {open ? openLabel : closedLabel}
+      </button>
+      {open && (
+        <div id={panelId} className="mt-1 border-l-2 border-border pl-3">
+          <Prose>{children}</Prose>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /**
  * Guidance at the moment of need (Inviolable rule 5). Renders a help key's authored
  * prose: the inline [I] tier always, the expandable [E] tier behind a "Tell me more"
- * disclosure when the global guidance toggle is on `full`. Any inline source credit
+ * disclosure, and the [X] worked example behind a "See a worked example" disclosure —
+ * both only when the global guidance toggle is on `full`. Any inline source credit
  * ([SPEC §7] — credits travel with the text) renders beneath.
  *
  * Falls back to the "guidance to be written" placeholder when a key has no inline prose
@@ -34,9 +79,7 @@ function Prose({ children, className }: { children: string; className?: string }
  * for {@link GuidancePlaceholder} everywhere.
  */
 export function Help({ helpKey, className }: { helpKey: string; className?: string }) {
-  const { entry, hasContent, showExpandable } = useHelp(helpKey);
-  const [open, setOpen] = useState(false);
-  const panelId = useId();
+  const { entry, hasContent, showExpandable, showExample } = useHelp(helpKey);
 
   if (!entry || !hasContent) return <GuidancePlaceholder helpKey={helpKey} />;
 
@@ -50,27 +93,24 @@ export function Help({ helpKey, className }: { helpKey: string; className?: stri
       <Prose>{entry.inline}</Prose>
 
       {showExpandable && (
-        <div>
-          <button
-            type="button"
-            aria-expanded={open}
-            aria-controls={panelId}
-            onClick={() => setOpen((v) => !v)}
-            data-testid={`help-more-${helpKey}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-          >
-            <ChevronDown
-              aria-hidden
-              className={cn('size-3 transition-transform', open && 'rotate-180')}
-            />
-            {open ? 'Show less' : 'Tell me more'}
-          </button>
-          {open && (
-            <div id={panelId} className="mt-1 border-l-2 border-border pl-3">
-              <Prose>{entry.expandable}</Prose>
-            </div>
-          )}
-        </div>
+        <Disclosure
+          testId={`help-more-${helpKey}`}
+          closedLabel="Tell me more"
+          openLabel="Show less"
+        >
+          {entry.expandable}
+        </Disclosure>
+      )}
+
+      {showExample && (
+        <Disclosure
+          testId={`help-example-${helpKey}`}
+          closedLabel="See a worked example"
+          openLabel="Hide the worked example"
+          icon={<BookOpen aria-hidden className="size-3" />}
+        >
+          {entry.example}
+        </Disclosure>
       )}
 
       {entry.source && (

@@ -151,6 +151,66 @@ describe('handout — defined by exclusion (the guard, both ways)', () => {
   });
 });
 
+describe('handout — support placement by function (SPEC 6f)', () => {
+  function placementStudy(): Study {
+    const base = makeStudy('s2', '2026-08-06T00:00:00.000Z');
+    return {
+      ...base,
+      setup: { ...base.setup, reference: 'Galatians 3:6-9' },
+      passage: { translations: { webbe: PASSAGE }, primaryId: 'webbe' },
+      build: makeBuild({
+        questions: [q({ id: 'q1', type: 'meaning', text: 'What has God promised Abraham?', anchor: { verseIds: ['LUKE.1.5'] } })],
+        supportPassages: [
+          { id: 'quote', reference: 'Galatians 3:8', type: 'quoted', text: null, attachedToQuestionId: 'q1' },
+          { id: 'ctx', reference: 'Genesis 12:1-3', type: 'context', text: null, attachedToQuestionId: 'q1' },
+        ],
+        order: ['q1'],
+      }),
+    };
+  }
+
+  it('prints context ABOVE the question and quoted BELOW it', () => {
+    const md = handoutToMarkdown(handoutModel(placementStudy(), OPTS));
+    const ctx = md.indexOf('Genesis 12:1-3');
+    const question = md.indexOf('**1.** What has God promised Abraham?');
+    const quote = md.indexOf('Galatians 3:8');
+    expect(ctx).toBeGreaterThanOrEqual(0);
+    expect(quote).toBeGreaterThanOrEqual(0);
+    // context → question → quoted, in that document order.
+    expect(ctx).toBeLessThan(question);
+    expect(question).toBeLessThan(quote);
+    // Function labels are present on the support blocks.
+    expect(md).toContain('**Context: Genesis 12:1-3**');
+    expect(md).toContain('**Quoted: Galatians 3:8**');
+  });
+});
+
+describe('pastoral note is leader-only', () => {
+  const PASTORAL_NOTE = 'Sarah lost her father last month — raise privately.';
+  function pastoralStudy(): Study {
+    const base = makeStudy('s3', '2026-08-06T00:00:00.000Z');
+    return {
+      ...base,
+      passage: { translations: { webbe: PASSAGE }, primaryId: 'webbe' },
+      build: makeBuild({
+        questions: [
+          q({ id: 'q1', type: 'application', text: 'How have you seen God keep a promise?', pastoralFlag: true, pastoralNote: PASTORAL_NOTE }),
+        ],
+        order: ['q1'],
+      }),
+    };
+  }
+
+  it("appears in the leader's notes but NOT in the handout", () => {
+    const study = pastoralStudy();
+    const leaderMd = leaderToMarkdown(leaderModel(study, OPTS));
+    const handoutMd = handoutToMarkdown(handoutModel(study, OPTS));
+    expect(leaderMd).toContain('## Pastoral sensitivity');
+    expect(leaderMd).toContain(PASTORAL_NOTE);
+    expect(handoutMd).not.toContain(PASTORAL_NOTE);
+  });
+});
+
 describe("leader's notes — everything", () => {
   const md = leaderToMarkdown(leaderModel(sampleStudy(), OPTS));
 

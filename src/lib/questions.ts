@@ -209,6 +209,7 @@ export type QuestionDraft = Pick<
   | 'aimComponent'
   | 'wrongTurns'
   | 'pastoralFlag'
+  | 'pastoralNote'
 >;
 
 /** A fresh draft for a brand-new question of the given type (nothing pre-written). */
@@ -242,7 +243,11 @@ export function questionFromDraft(
   if (draft.gospelPlain) q.gospelPlain = true;
   if (draft.aimComponent) q.aimComponent = draft.aimComponent;
   if (draft.wrongTurns?.trim()) q.wrongTurns = draft.wrongTurns.trim();
-  if (draft.pastoralFlag) q.pastoralFlag = true;
+  if (draft.pastoralFlag) {
+    q.pastoralFlag = true;
+    // Only keep the note when the flag is actually set — clearing the flag drops the note.
+    if (draft.pastoralNote?.trim()) q.pastoralNote = draft.pastoralNote.trim();
+  }
   if (sourceCandidateId) q.sourceCandidateId = sourceCandidateId;
   return q;
 }
@@ -260,6 +265,7 @@ export function draftFromQuestion(q: Question): QuestionDraft {
     aimComponent: q.aimComponent,
     wrongTurns: q.wrongTurns,
     pastoralFlag: q.pastoralFlag,
+    pastoralNote: q.pastoralNote,
   };
 }
 

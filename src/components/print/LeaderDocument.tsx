@@ -162,9 +162,23 @@ export function LeaderDocument({ model }: { model: LeaderModel }) {
 
       {model.pastoralNumbers.length > 0 && (
         <Section title="Pastoral sensitivity">
-          <p className="text-[0.95rem]">
+          <p className="text-[0.95rem] text-muted-foreground">
             Handle with care: {model.pastoralNumbers.map((n) => `Q${n}`).join(', ')}.
           </p>
+          <ul className="mt-1 space-y-1.5 text-[0.95rem]" data-testid="leader-pastoral">
+            {model.questions
+              .filter((q) => q.pastoralFlag)
+              .map((q) => (
+                <li key={q.number}>
+                  <span className="font-semibold">Q{q.number}.</span> {q.text}
+                  {q.pastoralNote && (
+                    <span className="mt-0.5 block text-sm italic text-muted-foreground">
+                      {q.pastoralNote}
+                    </span>
+                  )}
+                </li>
+              ))}
+          </ul>
         </Section>
       )}
 

@@ -7,6 +7,8 @@ import path from 'path';
 // must resolve through `import.meta.env.BASE_URL`, and the PWA's navigateFallback /
 // start_url / scope must all carry the base (the gotcha local-ledger already solved).
 const BASE = '/quick-to-hear/';
+// A regex matching the runtime-cached Bible routes under BASE, derived so it can't drift.
+const BIBLES_RE = new RegExp('^' + BASE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 'bibles/');
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -18,19 +20,25 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // `prompt`: a new deployed version surfaces a "Reload" toast rather than reloading
+      // silently, so the user controls when their in-progress study reloads (Stage 10).
+      registerType: 'prompt',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         navigateFallback: `${BASE}index.html`,
-        // Full Bibles blow the 2 MiB precache budget, so they are runtime-cached,
-        // not precached. This is a stub route: `public/bibles/**` lands in M1 (Stage 2).
+        // Navigations to Bible JSON must hit the runtime cache / network, never fall back
+        // to the app shell (which would poison the cache with index.html for a book URL).
+        navigateFallbackDenylist: [BIBLES_RE],
+        cleanupOutdatedCaches: true,
+        // Full Bibles blow the 2 MiB precache budget, so they are runtime-cached per book
+        // (not precached): a book fetched once stays available offline for a year.
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith(`${BASE}bibles/`),
             handler: 'CacheFirst',
             options: {
               cacheName: 'qth-bibles',
-              expiration: { maxEntries: 128, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
@@ -46,9 +54,19 @@ export default defineConfig({
         display: 'standalone',
         start_url: BASE,
         scope: BASE,
-        // Scalable placeholder icon (Stage 0). Raster PNGs are added in the PWA
-        // hardening stage (Stage 10). SVG covers install + favicon in the meantime.
-        icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
+        icons: [
+          // Raster PNGs (generated from icon.svg via `npm run build:icons`) for install
+          // targets that don't take an SVG; the SVG stays as the scalable "any" icon.
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          {
+            src: 'icons/icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+        ],
       },
     }),
   ],

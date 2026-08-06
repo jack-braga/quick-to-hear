@@ -8,16 +8,20 @@ import { z } from 'zod';
  * `/quick-to-hear/`), then split into tiers.
  *
  * Each file is a leading `--- frontmatter ---` block + a body divided by tier-marker
- * comments (`<!-- inline -->`, `<!-- expandable -->`, `<!-- page -->`). We split the
- * frontmatter **by hand** (no `gray-matter` — it needs a Buffer polyfill in the browser,
- * see the PROGRESS decision log) and parse only the small YAML block with `js-yaml`.
+ * comments (`<!-- inline -->`, `<!-- expandable -->`, `<!-- example -->`, `<!-- page -->`).
+ * We split the frontmatter **by hand** (no `gray-matter` — it needs a Buffer polyfill in
+ * the browser, see the PROGRESS decision log) and parse only the small YAML block with
+ * `js-yaml`.
  *
- * The three tiers map to SPEC §5's [I]/[E]/[X]: `inline` is always shown; `expandable`
- * is the "tell me more" detail, hidden when the global guidance toggle is on `brief`;
- * `page` is a standalone page (only the attribution page uses it today). Authored prose
- * is trusted content, but we still tolerate a malformed file — it degrades to empty
- * fields (→ the "guidance to be written" placeholder) rather than throwing, so the
- * build never blocks on content.
+ * The tiers map to SPEC §5's [I]/[E]/[X]: `inline` is always shown; `expandable` is the
+ * "tell me more" detail, hidden when the global guidance toggle is on `brief`; `example`
+ * is the [X] worked example — one canonical passage carried through the step, revealed on
+ * request in `full` mode (Stage 10); `page` is a standalone page (only the attribution
+ * page uses it today). Authored prose is trusted content, but we still tolerate a
+ * malformed file — it degrades to empty fields (→ the "guidance to be written"
+ * placeholder, or simply nothing for the optional example) rather than throwing, so the
+ * build never blocks on content and a filled `<!-- example -->` block appears with no code
+ * change.
  */
 
 const RAW_HELP = import.meta.glob('/content/help/**/*.md', {
@@ -50,11 +54,14 @@ export interface HelpEntry {
   inline: string;
   /** [E] — the "tell me more" detail. Empty when absent. */
   expandable: string;
-  /** [X]/page — standalone content (only the attribution page uses it today). */
+  /** [X] — the worked example (one canonical passage through this step). Empty when
+   *  absent, which is the common case until the teaching session fills it in. */
+  example: string;
+  /** page — standalone content (only the attribution page uses it today). */
   page: string;
 }
 
-const TIER_RE = /<!--\s*(inline|expandable|page)\s*-->/g;
+const TIER_RE = /<!--\s*(inline|expandable|example|page)\s*-->/g;
 
 const nn = (v: string | null | undefined): string | null => (v == null || v === '' ? null : v);
 
@@ -78,15 +85,16 @@ export function parseHelp(raw: string, fallbackKey = ''): HelpEntry {
     }
   }
 
-  const tiers: Record<'inline' | 'expandable' | 'page', string> = {
+  const tiers: Record<'inline' | 'expandable' | 'example' | 'page', string> = {
     inline: '',
     expandable: '',
+    example: '',
     page: '',
   };
   const markers = [...body.matchAll(TIER_RE)];
   for (let i = 0; i < markers.length; i++) {
     const m = markers[i];
-    const name = m[1] as 'inline' | 'expandable' | 'page';
+    const name = m[1] as 'inline' | 'expandable' | 'example' | 'page';
     const start = (m.index ?? 0) + m[0].length;
     const end = i + 1 < markers.length ? (markers[i + 1].index ?? body.length) : body.length;
     tiers[name] = body.slice(start, end).trim();
@@ -101,6 +109,7 @@ export function parseHelp(raw: string, fallbackKey = ''): HelpEntry {
     flag: nn(fm.flag),
     inline: tiers.inline,
     expandable: tiers.expandable,
+    example: tiers.example,
     page: tiers.page,
   };
 }

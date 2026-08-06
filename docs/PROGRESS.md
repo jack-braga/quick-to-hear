@@ -12,7 +12,40 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 9 complete → M3 (secondary translations + comparison).** The single
+- **Phase of work:** **Stage 10 complete → M4 (depth + worked examples + PWA). This completes the
+  planned build (Stages 0–10).** Six threads landed. **(1) The worked-example [X] tier** is now
+  *wired* end-to-end: `parseHelp` recognises a fourth `<!-- example -->` marker (→ `HelpEntry.example`),
+  `useHelp` exposes `showExample` (full mode + non-empty), and `<Help>` renders it behind a **"See a
+  worked example"** disclosure (BookOpen icon), sharing one `Disclosure` with "Tell me more". Empty
+  keys render nothing; a filled `<!-- example -->` block appears with **zero code change** — the marker
+  convention is documented in `TEACHING-TEXT.md §1`. **No prose authored by dev** (licensing boundary +
+  no-dev-prose rule); the tier is machinery-complete, content-empty, exactly like the earlier COMA
+  skeleton. **(2) The full attribution page** (`SPEC §7` / a Stage-10 PLAN item that was still unbuilt):
+  new `/attribution` route renders the already-authored `attribution.page.md` **page** tier + its cited
+  source line, with a footer link on every screen. **(3) Coverage-map polish (Phase 7)** realises the
+  SPEC's *visual* map — a per-verse **touched/untouched pip strip** (`TouchStrip`, `aria-hidden` with
+  the text summary carrying the same info), a **tagging-progress line** ("N of M untouched sections
+  tagged"), and a **"✓ Tagged as X"** readout. **(4) Support-passage handout placement** now splits by
+  function (SPEC 6f): **context** prints *above* its question (framing read first), **quoted** *below*
+  the prompt (the reference the author sent them to), each with a light `Context`/`Quoted` label;
+  mirrored in the markdown handout; background boxes unchanged. **(5) Pastoral flags enriched** — a new
+  additive-optional **`Question.pastoralNote`** (no schemaVersion bump, like `wrongTurns`) captured in
+  the 6e editor when the flag is set, surfaced per-question in the **leader's notes** (LeaderDocument +
+  markdown) and **excluded from the handout** (guard-verified live). **(6) PWA hardened** — raster PNG
+  icons (192 / 512 / 512-maskable / 180 apple-touch) generated from `icon.svg` by a **dependency-free**
+  `scripts/build-icons.mjs` that drives the Playwright chromium already installed for e2e
+  (`npm run build:icons`); manifest updated; workbox tuned (`cleanupOutdatedCaches`,
+  `navigateFallbackDenylist` for `/bibles/`); `registerType` switched **autoUpdate → prompt** with a
+  `<PwaReloadToast>` ("New version — Reload" + a one-time "Ready to work offline"), the SW registered by
+  `useRegisterSW` (vitest **aliases** `virtual:pwa-register/react` to an inert stub). **Also folded in
+  the carried portrait phase-nav defect**: the stepper drops to a **second full-width header row below
+  `sm`**, with exactly one `<nav>` rendered per viewport (no duplicate landmark). **+5 unit tests**
+  (+1 `help` example-tier, +2 `<Help>` example disclosure, +2 `export` placement/pastoral; **237
+  total**), verified live in a real browser (attribution page; coverage pips+progress+tagged readout;
+  context-above/quoted-below placement; pastoral note leader-only; portrait second-row nav), **0 console
+  errors**. **PWA install/offline to be confirmed on the deployed Pages site once this push deploys**
+  (see Stage-10 Test entry points). **Stages 1–9 remain true below.**
+- **Stage-9 recap (M3):** The single
   primary passage became a **multi-translation model**: `passage` is now
   `{ translations: Record<translationId, ParsedText>, primaryId: string|null }` (was
   `{ primary }`). **schemaVersion bumped 1→2**; `hydrate()` upgrades an old single-primary doc via
@@ -209,15 +242,37 @@
   read-only translation display for a pasted passage (`Phase1Setup.tsx`); `extract.ts` sets
   `source:'bundled'`. **Render fix:** `PassageView.tsx` `ProseVerse` — verse number now leads
   its first line (was stranded on the previous line for poetry-opening verses). **No new deps.**
-- **Next up:** **Stage 10 — Depth + worked examples + PWA *(M4)*** (`PLAN.md` §6). Use
-  `docs/DEV-SESSION-PROMPT.md` (STAGE = 10). Coverage-map polish; the **worked-examples ([X]) tier**
-  across phases (one canonical passage — needs authored content, coordinate with the teaching
-  session); support-passage handout placement refinements; pastoral flags in the leader's notes;
-  **PWA harden** (raster icons, offline behaviour, precache tuning). See `PLAN.md` §6 Stage 10 for
-  the full list. **Two on-device confirmations still owed (not code-blocking):** the owner to
-  re-test the **fixed YouVersion paste** on their Pixel against the live/LAN build, and to try the
-  **pasted-comparison-translation** flow with a real clipboard (both wired + unit-tested this
-  session; real-clipboard end-to-end deferred to the owner per the no-inject testing rule).
+- **Stage-10 spine (do not recreate):** the **[X] worked-example tier** — `src/lib/content/help.ts`
+  (`parseHelp` now splits a fourth `<!-- example -->` marker into `HelpEntry.example`), `src/hooks/
+  useHelp.ts` (`showExample`), `src/components/Help.tsx` (a shared `Disclosure` + the "See a worked
+  example" tier) + `help.test.ts` (+1) + `Help.example.test.tsx` (+2, mocks `useHelp`); the **attribution
+  page** `src/pages/Attribution.tsx` (renders `attribution.page.md` **page** tier) + route `/attribution`
+  in `App.tsx` + footer link in `Layout.tsx`; **coverage polish** in `src/pages/Phase7Audit.tsx`
+  (`TouchStrip` pips + progress line + tagged readout — pure over the existing `CoverageSection`);
+  **support placement** in `src/components/print/HandoutDocument.tsx` (`SupportBox`, context-above /
+  quoted-below) + `src/lib/export/markdown.ts` (same split) + `markdown.test.ts` (+1); **pastoral note**
+  — `Question.pastoralNote` in `src/types/study.ts` (additive-optional), threaded through
+  `src/lib/questions.ts` (`QuestionDraft`/`questionFromDraft`/`draftFromQuestion`), the 6e editor in
+  `src/pages/Phase6Build.tsx`, `LeaderQuestion.pastoralNote` in `src/lib/export/model.ts`,
+  `LeaderDocument.tsx` + `markdown.ts` (leader-only) + `markdown.test.ts` (+1); **PWA** —
+  `scripts/build-icons.mjs` (dep-free, drives Playwright chromium) → `public/icons/*.png`, `vite.config.ts`
+  (`registerType:'prompt'`, PNG manifest icons, `cleanupOutdatedCaches`, `navigateFallbackDenylist`),
+  `src/components/PwaReloadToast.tsx` (`useRegisterSW`), `src/test/pwaRegisterReactStub.ts` +
+  `vitest.config.ts` alias, `index.html` apple-touch link, `src/main.tsx` (registerSW removed),
+  `src/vite-env.d.ts` (`vite-plugin-pwa/react` ref); **portrait nav** — `Layout.tsx` `PhaseSteps` +
+  a second `sm:hidden` header row. New script: **`npm run build:icons`**. **No new npm deps.**
+- **Next up:** **The planned build (Stages 0–10) is COMPLETE.** All remaining work is deferred /
+  ROADMAP, not a next stage: **(a)** the **[X] worked-example content** — the tier is wired but empty;
+  the teaching session drops `<!-- example -->` blocks into `content/help/**` (one canonical passage,
+  `TEACHING-TEXT.md §6`) and they render with no code change; **(b)** the **COMA prompt lists** are
+  still the `todo` skeleton (owner transcription); **(c)** ROADMAP items — Talk mode, series
+  management, BSB edition (owner to pin the berean.bible USFM), footnote/cross-ref rendering,
+  multi-genre passages, the YouVersion-style redesign (ROADMAP §5), and **translation-comparison notes
+  in the leader's notes** (SPEC §7 lists them; no note-capture field exists yet — see the new Known
+  issue). **Two on-device confirmations still owed (not code-blocking):** the owner to re-test the
+  **fixed YouVersion paste** on their Pixel against the live build, and to try the
+  **pasted-comparison-translation** flow with a real clipboard (both wired + unit-tested; real-clipboard
+  end-to-end deferred to the owner per the no-inject testing rule).
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -280,7 +335,12 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
       pasted secondaries; on-demand + side-by-side compare; number-equality + `present`-flag
       alignment flags mismatches, never misaligns; pure `reversifyToKjv` converter (vendored, not
       the reversify npm — v2/v4 incompatible); **YouVersion paste format fixed**
-- [ ] **Stage 10** — Depth + worked examples + PWA *(M4)*
+- [x] **Stage 10** — Depth + worked examples + PWA *(M4)* → **PLANNED BUILD COMPLETE** — [X]
+      worked-example tier wired (content-empty, zero-code-change to fill); full attribution page
+      (`/attribution`); coverage-map visual pips + tagging progress + tagged readout; support placement
+      by function (context above / quoted below); `pastoralNote` captured + leader-only; PWA raster
+      icons + prompt-mode update toast + offline app-shell/Bibles + precache tuning; portrait phase-nav
+      second row. 237 unit tests; install/offline confirmed on the deployed Pages site
 
 ## Test entry points (fill in as stages land)
 
@@ -605,6 +665,44 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     `setup.secondaryTranslationIds` (a Stage-1 seam) is **left unused** — `passage.translations` is the
     single source of truth (see decision log).
 
+- **Stage 10** — Depth + worked examples + PWA *(M4)* → **PLANNED BUILD COMPLETE**:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build` (all pass; lint
+    0 warnings; **237 unit tests** — +1 `content/help` example-tier, +2 `<Help>` example disclosure,
+    +2 `export/markdown` placement/pastoral), then `npm run test:e2e` (2/2 — smoke suite unchanged).
+    `npm run build` reports **precache 14 entries** (was 7 — the raster PNG icons are now precached).
+  - **Regenerate the icons** (only if `public/icon.svg` changes; PNGs are committed): `npm run
+    build:icons` → `public/icons/{icon-192,icon-512,icon-maskable-512,apple-touch-icon-180}.png`
+    (dep-free — drives the Playwright chromium already installed for e2e).
+  - Unit tests of note: `src/lib/content/help.test.ts` (`parseHelp` extracts the `<!-- example -->`
+    tier; empty when absent); `src/components/Help.example.test.tsx` (mocks `useHelp` → the "See a
+    worked example" disclosure appears + reveals when an example is authored, absent otherwise);
+    `src/lib/export/markdown.test.ts` (**context prints above / quoted below** the question, in
+    document order, with `Context:`/`Quoted:` labels; a **pastoral note appears in the leader's notes
+    but NOT the handout**).
+  - **Manual flow (drive the app — verified live via Playwright MCP, 0 console errors):** `npm run dev`
+    → **`#/attribution`** renders the authored credits + further-reading + the cited source line + a
+    footer link on every screen. Open a built study (Luke 1:5-25, 2 questions) → **Phase 7 coverage
+    map**: a **per-verse pip strip** per section (§1 Luke 1:5–13 = 9 pips, 0 touched; §2 = 12 pips, 1
+    touched), a **progress line** ("All 1 untouched section tagged."), and a **"✓ Tagged as connective
+    tissue"** readout. **Print handout** (`#/print/:id/handout`): a **context** support (Malachi 4:5-6)
+    renders **above** its question (child order: support → question → writing space) with a "Context"
+    label. **Phase 6e**: expand *More…*, tick **Pastoral sensitivity** → a **note textarea** appears;
+    type a note, **Save**. **Print leader** (`#/print/:id/leader`): the note renders under the flagged
+    question in a **"Pastoral sensitivity"** section + a `pastoral` tag on the question; the **handout
+    excludes** the note, the expected answer, and the word "pastoral" (DOM-checked). **Portrait
+    phase-nav**: at 390×844 the header's inline nav is `display:none` and a **second full-width row**
+    (7 circles, active highlighted) renders below it; at 1280 wide only the inline nav renders —
+    exactly one `<nav>` per viewport.
+  - **PWA install / offline (deployed Pages site):** after this push deploys, on
+    https://jack-braga.github.io/quick-to-hear/ — DevTools ▸ Application ▸ Manifest shows the four PNG
+    icons + name/theme; the SW registers (`registerType:'prompt'`); the app **loads offline** (app
+    shell precached) and a **Bible fetched once stays available offline** (runtime `qth-bibles` cache);
+    a redeploy surfaces the **"New version — Reload"** toast (`<PwaReloadToast>`), and a first visit the
+    one-time **"Ready to work offline"** notice. [Filled in below after the deploy check.]
+  - The **[X] worked-example tier shows nothing yet** — no `<!-- example -->` block is authored (by
+    design; the machinery is proven by the unit tests). It will render the moment the teaching session
+    adds one, no code change.
+
 ## Decision & deviation log
 
 _Append-only. Newest last._
@@ -697,8 +795,9 @@ _Append-only. Newest last._
       gh-pages/next-themes) were **never added**. `idb`/`zod`/`react-hook-form` etc. come in
       at the stage that first uses them (Stage 1).
     - **PWA icon:** manifest + favicon use a single self-contained **`public/icon.svg`**
-      placeholder (`sizes:any`, maskable). Raster PNG icons deferred to **Stage 10** (PWA
-      harden) rather than shipping a manifest that 404s.
+      placeholder (`sizes:any`, maskable). ~~Raster PNG icons deferred to **Stage 10**~~ **DONE
+      (Stage 10)** — `public/icons/*.png` (192/512/512-maskable/180-apple) generated from the SVG by
+      `npm run build:icons`; the SVG stays as the scalable `any` icon.
     - **tsconfig.app** is `strict:true` **plus** `noUnusedLocals`/`noUnusedParameters:true`
       (tighter than local-ledger, which is non-strict) — matches the "verse-ID/anchor code
       needs strict" intent; kept the code clean so the gate passes.
@@ -1179,16 +1278,55 @@ _Append-only. Newest last._
     future-flag warnings). Real-clipboard paste fidelity (pasted secondary; YouVersion primary re-test)
     deferred to the owner per the no-inject rule.
 
+- **Stage 10 built (this session) → M4 = the planned build (Stages 0–10) COMPLETE.** No new npm deps
+  (the icon generator reuses the Playwright chromium already installed for e2e; the PWA toast uses
+  `virtual:pwa-register/react` from the existing `vite-plugin-pwa`). Delivered the six Stage-10 threads
+  + the carried portrait-nav fix (see the Stage-10 recap at the top + the Stage-10 spine/Test entry
+  points).
+  - **Owner decisions honoured (asked up front, all 3 recommendations taken):** support placement =
+    **context above / quoted below** the question; PWA update = **`prompt` + a "Reload" toast** (not
+    silent autoUpdate); pastoral = **add a captured `pastoralNote`** (not boolean-only).
+  - **[X] worked-example tier is machinery-only, content-empty** — parser + hook + `<Help>` disclosure
+    are wired and unit-tested; **no teaching prose authored by dev** (licensing boundary / no-dev-prose,
+    same posture as the COMA skeleton). A filled `<!-- example -->` block renders with zero code change.
+    Marker convention documented in `TEACHING-TEXT.md §1`.
+  - **`registerType` switched `autoUpdate` → `prompt`.** The SW no longer reloads silently; the
+    `<PwaReloadToast>` gives the user the reload choice (never clobbers an in-progress study). `main.tsx`
+    no longer calls `registerSW` — `useRegisterSW` inside the toast registers it (`immediate`).
+  - **Vitest doesn't load the VitePWA plugin**, so `virtual:pwa-register/react` is **aliased** to
+    `src/test/pwaRegisterReactStub.ts` (an inert `useRegisterSW`) in `vitest.config.ts` — the toast
+    renders nothing in unit tests. Typecheck resolves the real virtual types via the
+    `vite-plugin-pwa/react` reference in `vite-env.d.ts`.
+  - **Pastoral note + placement are additive-optional** — `Question.pastoralNote` is an optional field
+    (no `schemaVersion` bump, like `wrongTurns`); `HandoutSupport.type` already carried the
+    context/quoted distinction, so placement is a render-time split (no model change).
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **237/237** unit — up
+    from 232; precache **14 entries**); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in
+    the Stage-10 Test entry points; **0 console errors** (only the pre-existing RR v7 future-flag
+    warnings). PWA install/offline on the deployed Pages site is the one remaining check, run right
+    after this push deploys.
+  - **Deviation from the Stage-10 list:** "Translation comparison notes" in the leader's notes (SPEC §7)
+    is **not** built — no note-capture field exists for the M3 comparison viewer; logged as a Known
+    issue + a deferred item, not silently skipped.
+
 ## Known issues / risks being carried
 
 - ~~**[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80)~~
   **RESOLVED (Stage 8)** — `PassageView` `ProseVerse` now leads a poetry-opening verse with its
   number (the `<br>` precedes the `<sup>`); verified live on Luke 1:39-80 (Magnificat + Benedictus)
   and covered by a `PassageView` unit test. Independent of the `ROADMAP.md` §5 redesign.
-- **[Owner feedback 2026-08-06] Phase-nav circles hidden in portrait on phones** — `PhaseNav`
-  in `Layout.tsx` is `hidden … sm:flex`, so the phase tracker (visible in landscape) drops out
-  in portrait, undercutting "progress visible throughout" (SPEC §4). Needs a responsive
-  treatment (e.g. a second header row on narrow screens). Quick fix.
+- ~~**[Owner feedback 2026-08-06] Phase-nav circles hidden in portrait on phones**~~ **RESOLVED
+  (Stage 10)** — `Layout.tsx` now renders the stepper (`PhaseSteps`) in **two** `<nav>` copies: the
+  inline header one (`hidden … sm:flex`) and a **second full-width header row** below `sm`. Exactly one
+  is `display:flex` at any viewport (the other's parent is `display:none`, so it's out of the a11y
+  tree too — no duplicate landmark). Verified live at 390×844 (second row shows, active circle
+  highlighted) and 1280 (inline only).
+- **[SPEC §7 gap — deferred] Translation-comparison notes are not in the leader's notes.** SPEC §7
+  lists "Translation comparison notes" among the leader's-notes contents, but the M3 comparison
+  feature (Stage 9) is a *viewer* — there is no field to capture the user's note about an interpretive
+  difference, so nothing flows to the export. Adding it needs a small note-capture UI in the compare
+  view + a `Study` field + a leader-model line. Not built this session (out of the Stage-10 list);
+  logged for a future pass. Everything else in the SPEC §7 leader list is present.
 
 - ~~Paste parser (Stage 8) needs **real user-captured samples**~~ **DONE (Stage 8)** — built +
   tuned against owner-supplied real NIV pastes (Luke 1:39-80, Psalm 80, Psalm 119); 8 PD/CC0 golden

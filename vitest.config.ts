@@ -9,6 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // The VitePWA build plugin provides this virtual module; the unit-test config
+      // doesn't load that plugin, so point it at an inert stub (see the file's comment).
+      'virtual:pwa-register/react': path.resolve(__dirname, './src/test/pwaRegisterReactStub.ts'),
     },
   },
   test: {

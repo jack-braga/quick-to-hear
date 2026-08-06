@@ -190,6 +190,9 @@ export const QuestionSchema = z.object({
   aimComponent: AimComponentSchema.optional(),
   wrongTurns: z.string().optional(),
   pastoralFlag: z.boolean().optional(),
+  // Optional free-text note captured when the pastoral flag is set (who is in the middle
+  // of this, and whether to raise it privately). Additive-optional — no schema bump.
+  pastoralNote: z.string().optional(),
   sourceCandidateId: z.string().optional(),
   supportPassageIds: z.array(z.string()).optional(),
   returnQuestion: z.string().optional(),

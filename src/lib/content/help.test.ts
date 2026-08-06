@@ -52,6 +52,28 @@ describe('parseHelp (frontmatter + tiers, hand-split — no gray-matter)', () =>
     const entry = parseHelp(['---', 'key: empty', 'tiers: [inline]', '---', '<!-- inline -->', ''].join('\n'));
     expect(entry.inline).toBe('');
     expect(entry.expandable).toBe('');
+    // The optional [X] worked example is empty until the teaching session fills it.
+    expect(entry.example).toBe('');
+  });
+
+  it('extracts the [X] worked-example tier when a `<!-- example -->` block is present', () => {
+    const entry = parseHelp(
+      [
+        '---',
+        'key: p5.demo',
+        'tiers: [inline, example]',
+        '---',
+        '<!-- inline -->',
+        'The one-sentence version.',
+        '',
+        '<!-- example -->',
+        'For Luke 1:5-25 the theme is that God keeps his word even when we cannot see how.',
+      ].join('\n'),
+    );
+    expect(entry.inline).toBe('The one-sentence version.');
+    expect(entry.example).toMatch(/Luke 1:5-25/);
+    // The example tier is independent of expandable — absence of one never hides the other.
+    expect(entry.expandable).toBe('');
   });
 
   it('uses the fallback key when frontmatter omits one, and never throws on junk', () => {

@@ -149,6 +149,8 @@ export interface LeaderQuestion {
   aimComponent?: AimComponent;
   wrongTurns?: string;
   pastoralFlag: boolean;
+  /** The leader-only note captured with the pastoral flag (who/what to handle privately). */
+  pastoralNote?: string;
   support: { reference: string; type: SupportPassage['type']; returnQuestion?: string }[];
 }
 
@@ -197,6 +199,9 @@ export function leaderModel(study: Study, opts: ExportOptions): LeaderModel {
     ...(q.aimComponent ? { aimComponent: q.aimComponent } : {}),
     ...(q.wrongTurns?.trim() ? { wrongTurns: q.wrongTurns.trim() } : {}),
     pastoralFlag: q.pastoralFlag === true,
+    ...(q.pastoralFlag === true && q.pastoralNote?.trim()
+      ? { pastoralNote: q.pastoralNote.trim() }
+      : {}),
     support: build
       ? build.supportPassages
           .filter((s) => s.attachedToQuestionId === q.id)

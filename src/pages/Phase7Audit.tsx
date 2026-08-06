@@ -53,6 +53,34 @@ function rangeLabel(section: CoverageSection): string {
   return `${verseRefLabel(first)}–${lastPart}`;
 }
 
+/** A compact verse-by-verse strip: one pip per verse, filled where a question's anchor
+ *  touches it. This is the SPEC's "visual map of the passage showing which verses no
+ *  question touches" (Phase 7), made literal. The pips are decorative — the text summary
+ *  beside them carries the same information for screen readers. */
+function TouchStrip({ section }: { section: CoverageSection }) {
+  const touched = new Set(section.touchedVerseIds);
+  return (
+    <div className="flex flex-wrap gap-1" aria-hidden data-testid="coverage-strip">
+      {section.verseIds.map((vid) => {
+        const isTouched = touched.has(vid);
+        return (
+          <span
+            key={vid}
+            title={`${verseRefLabel(vid)} — ${isTouched ? 'a question touches this' : 'untouched'}`}
+            data-touched={isTouched || undefined}
+            className={cn(
+              'h-2.5 w-2.5 rounded-full border',
+              isTouched
+                ? 'border-primary bg-primary'
+                : 'border-muted-foreground/40 bg-transparent',
+            )}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function CoverageCard({
   study,
   onTag,
@@ -61,6 +89,9 @@ function CoverageCard({
   onTag: (sectionId: string, tag: CoverageTag) => void;
 }) {
   const cov = coverageMap(study);
+  const untouchedCount = cov.untouchedSections.length;
+  const untaggedCount = cov.untaggedUntouched.length;
+  const taggedCount = untouchedCount - untaggedCount;
 
   return (
     <div className="space-y-3" data-testid="coverage-card">
@@ -74,63 +105,88 @@ function CoverageCard({
           to see the coverage map.
         </p>
       ) : (
-        <ul className="space-y-2" data-testid="coverage-list">
-          {cov.sections.map((s) => {
-            const untouched = s.isUntouched;
-            return (
-              <li
-                key={s.id}
-                data-testid="coverage-row"
-                data-section-id={s.id}
-                data-untouched={untouched || undefined}
-                className={cn(
-                  'rounded-md border p-3',
-                  untouched && !s.tag
-                    ? 'border-warning/50 bg-warning/10'
-                    : 'border-border bg-card',
-                )}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {rangeLabel(s)} ·{' '}
-                      {untouched
-                        ? 'no question touches this'
-                        : s.untouchedVerseIds.length === 0
-                          ? 'every verse has a question'
-                          : `${s.touchedVerseIds.length} of ${s.verseIds.length} verses touched`}
-                    </p>
-                  </div>
-                  {untouched && (
-                    <div className="flex gap-1" role="group" aria-label={`Tag ${s.name}`}>
-                      {COVERAGE_TAGS.map((t) => {
-                        const active = s.tag === t;
-                        return (
-                          <button
-                            key={t}
-                            type="button"
-                            aria-pressed={active}
-                            data-testid={`coverage-tag-${s.id}-${t}`}
-                            onClick={() => onTag(s.id, t)}
-                            className={cn(
-                              'rounded-md border px-2 py-1 text-xs font-medium transition-colors',
-                              active
-                                ? 'border-primary bg-primary text-primary-foreground'
-                                : 'border-border text-foreground hover:bg-accent',
-                            )}
-                          >
-                            {COVERAGE_TAG_LABELS[t]}
-                          </button>
-                        );
-                      })}
-                    </div>
+        <>
+          {untouchedCount > 0 && (
+            <p className="text-xs font-medium" data-testid="coverage-progress">
+              {untaggedCount === 0 ? (
+                <span className="text-success">
+                  All {untouchedCount} untouched section{untouchedCount === 1 ? '' : 's'} tagged.
+                </span>
+              ) : (
+                <span className="text-warning">
+                  {taggedCount} of {untouchedCount} untouched sections tagged — {untaggedCount} to
+                  go.
+                </span>
+              )}
+            </p>
+          )}
+          <ul className="space-y-2" data-testid="coverage-list">
+            {cov.sections.map((s) => {
+              const untouched = s.isUntouched;
+              return (
+                <li
+                  key={s.id}
+                  data-testid="coverage-row"
+                  data-section-id={s.id}
+                  data-untouched={untouched || undefined}
+                  data-tag={s.tag ?? undefined}
+                  className={cn(
+                    'space-y-2 rounded-md border p-3',
+                    untouched && !s.tag
+                      ? 'border-warning/50 bg-warning/10'
+                      : 'border-border bg-card',
                   )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">{s.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {rangeLabel(s)} ·{' '}
+                        {untouched
+                          ? 'no question touches this'
+                          : s.untouchedVerseIds.length === 0
+                            ? 'every verse has a question'
+                            : `${s.touchedVerseIds.length} of ${s.verseIds.length} verses touched`}
+                      </p>
+                    </div>
+                    {untouched && (
+                      <div className="flex gap-1" role="group" aria-label={`Tag ${s.name}`}>
+                        {COVERAGE_TAGS.map((t) => {
+                          const active = s.tag === t;
+                          return (
+                            <button
+                              key={t}
+                              type="button"
+                              aria-pressed={active}
+                              data-testid={`coverage-tag-${s.id}-${t}`}
+                              onClick={() => onTag(s.id, t)}
+                              className={cn(
+                                'rounded-md border px-2 py-1 text-xs font-medium transition-colors',
+                                active
+                                  ? 'border-primary bg-primary text-primary-foreground'
+                                  : 'border-border text-foreground hover:bg-accent',
+                              )}
+                            >
+                              {COVERAGE_TAG_LABELS[t]}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  <TouchStrip section={s} />
+
+                  {untouched && s.tag && (
+                    <p className="text-xs text-success" data-testid={`coverage-tagged-${s.id}`}>
+                      ✓ Tagged as {COVERAGE_TAG_LABELS[s.tag].toLowerCase()} — click again to clear.
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   );

@@ -38,7 +38,13 @@ as enrichment.
 
 ### Format each piece will live in
 - Prose ([I]/[E]/[X]) → Markdown files in `content/help/`, one file per location key,
-  with frontmatter `{ key, tier, source? }`.
+  with frontmatter `{ key, tier, source? }`. Within the body, each tier is delimited by an
+  HTML-comment marker: `<!-- inline -->` (the [I] line, always shown), `<!-- expandable -->`
+  (the [E] "Tell me more" detail), and `<!-- example -->` (the **[X] worked example**). The
+  markers may appear in any order; a tier is simply whatever prose sits under its marker.
+  **The [X] tier is wired but empty** (Stage 10): drop a `<!-- example -->` block into any
+  help file and it renders automatically as a "See a worked example" disclosure (full
+  guidance mode) — no code change. Leave it out and nothing shows.
 - Structured method text (formula stems, COMA sets, litmus tests, trap rows, genre
   one-liners) → YAML in `content/method/`, so the app can render them programmatically
   and keep the attribution attached.

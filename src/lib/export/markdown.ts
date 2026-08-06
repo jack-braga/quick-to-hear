@@ -1,6 +1,6 @@
 import { verseText, type ParsedText } from '@/types/passage';
 import { parseVerseId } from '@/lib/verse/ids';
-import type { HandoutModel, LeaderModel } from './model';
+import type { HandoutModel, HandoutSupport, LeaderModel } from './model';
 
 /**
  * Markdown renderers for the two artefacts (SPEC Phase 7: "each available as markdown").
@@ -81,12 +81,18 @@ export function handoutToMarkdown(m: HandoutModel): string {
 
   if (m.questions.length) {
     out.push('## Questions');
+    const supportBlock = (s: HandoutSupport): string => {
+      const label = s.type === 'context' ? 'Context' : 'Quoted';
+      const head = `> **${label}: ${s.reference}**`;
+      const body = s.text ? `\n>\n> ${passageToMarkdown(s.text).replace(/\n/g, '\n> ')}` : '';
+      const ret = s.returnQuestion ? `\n> \n> _${s.returnQuestion}_` : '';
+      return `${head}${body}${ret}`;
+    };
     for (const q of m.questions) {
+      // Context frames the question (above); quoted passages follow the prompt (below). SPEC 6f.
+      for (const s of q.support.filter((s) => s.type === 'context')) out.push(supportBlock(s));
       out.push(`**${q.number}.** ${q.text}`);
-      for (const s of q.support) {
-        out.push(`> **${s.reference}**${s.text ? `\n>\n> ${passageToMarkdown(s.text).replace(/\n/g, '\n> ')}` : ''}`);
-        if (s.returnQuestion) out.push(`> \n> _${s.returnQuestion}_`);
-      }
+      for (const s of q.support.filter((s) => s.type === 'quoted')) out.push(supportBlock(s));
       out.push(writingSpace().trim());
     }
   }
@@ -169,6 +175,12 @@ export function leaderToMarkdown(m: LeaderModel): string {
   if (m.pastoralNumbers.length) {
     out.push('## Pastoral sensitivity');
     out.push(`Handle with care: ${m.pastoralNumbers.map((n) => `Q${n}`).join(', ')}.`);
+    out.push(
+      m.questions
+        .filter((q) => q.pastoralFlag)
+        .map((q) => `- **Q${q.number}.** ${q.text}${q.pastoralNote ? `\n  _${q.pastoralNote}_` : ''}`)
+        .join('\n'),
+    );
   }
 
   if (m.prayerPoint) {

@@ -732,10 +732,20 @@ function QuestionEditor({
               </span>
             </label>
             {draft.pastoralFlag && (
-              <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                Who in your group is in the middle of this — and should you raise it privately
-                instead?
-              </p>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground" htmlFor="editor-pastoral-note">
+                  Who in your group is in the middle of this — and should you raise it privately
+                  instead?
+                </label>
+                <Textarea
+                  id="editor-pastoral-note"
+                  data-testid="editor-pastoral-note"
+                  value={draft.pastoralNote ?? ''}
+                  placeholder="A private note to yourself — appears only in the leader's notes."
+                  onChange={(e) => patch({ pastoralNote: e.target.value })}
+                  className="min-h-12"
+                />
+              </div>
             )}
           </div>
         )}

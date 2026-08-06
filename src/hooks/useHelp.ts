@@ -7,6 +7,10 @@ export interface UseHelp {
   hasContent: boolean;
   /** Offer the expandable "tell me more" tier? (guidance `full` + the tier exists). */
   showExpandable: boolean;
+  /** Offer the [X] worked-example tier? (guidance `full` + an authored example exists).
+   *  False for every key until the teaching session fills a `<!-- example -->` block —
+   *  the disclosure then appears with no code change (Stage 10). */
+  showExample: boolean;
 }
 
 /**
@@ -21,5 +25,6 @@ export function useHelp(key: string): UseHelp {
     entry,
     hasContent: (entry?.inline.length ?? 0) > 0,
     showExpandable: mode === 'full' && (entry?.expandable.length ?? 0) > 0,
+    showExample: mode === 'full' && (entry?.example.length ?? 0) > 0,
   };
 }

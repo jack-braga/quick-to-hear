@@ -1,7 +1,9 @@
 import { HashRouter, Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom';
 
 import { Layout } from '@/components/Layout';
+import { PwaReloadToast } from '@/components/PwaReloadToast';
 import { useAutosave } from '@/hooks/useAutosave';
+import Attribution from '@/pages/Attribution';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/NotFound';
 import Phase1Setup from '@/pages/Phase1Setup';
@@ -42,6 +44,7 @@ function AppRoutes() {
       <Route path="/print/:id/leader" element={<PrintLeader />} />
       <Route element={<Chrome />}>
         <Route path="/" element={<Home />} />
+        <Route path="/attribution" element={<Attribution />} />
         <Route path="/study/:id" element={<StudyIndexRedirect />} />
         <Route path="/study/:id/1" element={<Phase1Setup />} />
         <Route path="/study/:id/paste" element={<PasteReview />} />
@@ -61,6 +64,7 @@ export default function App() {
   return (
     <HashRouter>
       <AppRoutes />
+      <PwaReloadToast />
     </HashRouter>
   );
 }
