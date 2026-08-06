@@ -3,10 +3,10 @@ key: p6c.generate
 title: Generate wide
 phase: 6
 tiers: [inline]
-state: todo        # todo -> cited | uncited | flagged (see content/README.md)
-source:            # inline attribution string, ONLY when state: cited
-flag:              # what would settle it + where to look, ONLY when state: flagged
+state: uncited
+source:
+flag:
 ---
 
 <!-- inline -->
-
+Dump every question you can think of, good or bad, without stopping to judge. Generating and filtering are separate jobs; do the cutting later.
