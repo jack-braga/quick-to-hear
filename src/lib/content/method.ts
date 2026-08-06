@@ -51,6 +51,10 @@ export const ComaContentSchema = z.object({
   attribution: z.string().min(1),
   state: z.string().default('todo'),
   source: z.string().nullish(),
+  // Authored user-facing notice shown wherever COMA prompts would appear while `state`
+  // is not `cited`, so no one mistakes the empty grid for Helm's real questions. Set in
+  // the content file (do not author it here); stops showing once state → cited.
+  placeholder: z.string().nullish(),
   genres: z.record(ComaGenreSetSchema).default({}),
 });
 export type ComaContent = z.infer<typeof ComaContentSchema>;

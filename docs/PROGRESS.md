@@ -247,9 +247,11 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     `npm run dev` → `http://localhost:8080/quick-to-hear/` → **New study** → Phase 1:
     `Luke 1:5-25` → **Load passage** (genre auto-infers **Gospels and Acts**) → **phase-nav
     step 4** (now enabled) → Phase 4: the **Matthias Media / HTC attribution renders** at the
-    top (`[data-testid="coma-attribution"]`); the four COMA categories show composers +
-    anchor pickers; a **"prompts pending"** notice shows because `coma.yaml` lists are the
-    empty skeleton. Add a **Meaning** note ("Why does Zechariah doubt…") anchored to
+    top (`[data-testid="coma-attribution"]`); the authored **`coma.placeholder`** safety notice
+    renders ("…not David Helm's real COMA questions…", `[data-testid="coma-placeholder"]`,
+    shown while `state !== 'cited'`) and the authored **genre reading tip** (from `genres.yaml`,
+    Batch 5b) shows for Gospels-and-Acts; the four COMA categories show composers + anchor
+    pickers. Add a **Meaning** note ("Why does Zechariah doubt…") anchored to
     **Luke 1:18** → it **surfaces in the recycle panel as a MEANING question candidate**.
     Click **Keep for Phase 6** → it shows **"In Phase 6 pool ✓"**. **Edit** the source note
     text → the pooled candidate keeps its **snapshot** ("Why does Zechariah doubt…") and gains
@@ -532,7 +534,12 @@ _Append-only. Newest last._
       six genre lists from the file, the schema **tolerates empty lists**, and the UI shows the
       composers + a "prompts pending" notice. Filling the file later needs **zero code change**.
       The **`attribution` string is present in the file and renders on screen** regardless
-      (Inviolable rule 8) — verified live.
+      (Inviolable rule 8) — verified live. **Integrated with teaching Batch 5b** (which merged
+      to main mid-session): the page renders the authored **`coma.placeholder`** notice (gated
+      on `state !== 'cited'`) instead of any dev-written prose, and the authored **`genres.yaml`
+      `readingTip`** now renders as the genre reading guidance. Loader schema gained an optional
+      `placeholder`; Phase-4 `p4.*` help prose is authored too but still shows via
+      `GuidancePlaceholder` (the `useHelp` renderer is Stage 5's to build).
     - **Recycle-forward = copy-on-promote at the source→candidate hop (this stage), with the
       candidate→question hop reserved for Stage 6.** A Phase-3 mark / anchored Phase-4 note is a
       **live source** (`deriveRecycleSources`); the user opts it into the pool with **"Keep for

@@ -31,6 +31,11 @@ describe('parseComa (real coma.yaml)', () => {
     expect(coma.state).toBe('todo');
     expect(coma.genres['epistles']!.meaning).toEqual([]);
   });
+
+  it('carries the authored placeholder notice (shown until state → cited)', () => {
+    expect(coma.placeholder).toBeTruthy();
+    expect(coma.placeholder).toMatch(/placeholder/i);
+  });
 });
 
 describe('parseComa (validation)', () => {

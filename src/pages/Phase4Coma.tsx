@@ -361,12 +361,10 @@ export default function Phase4Coma() {
   const genre = study.setup.genre;
   const comaSet: ComaGenreSet | null = comaSetForGenre(genre);
   const readingTip = readingTipForGenre(genre);
-  const attribution = comaContent().attribution;
-  const promptsAuthored =
-    comaSet != null &&
-    [comaSet.context, comaSet.observation, comaSet.meaning, comaSet.application].some(
-      (l) => l.length > 0,
-    );
+  const coma = comaContent();
+  // Show the authored placeholder (a safety notice, not Helm's real prompts) until the
+  // verbatim sets are transcribed and `state` flips to `cited`.
+  const showPlaceholder = coma.state !== 'cited' && Boolean(coma.placeholder);
 
   const addNote = (category: QuestionType, note: Note) =>
     applyToCurrent((s) => ({
@@ -406,7 +404,7 @@ export default function Phase4Coma() {
         data-testid="coma-attribution"
         className="rounded-md border-l-2 border-primary/40 bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
       >
-        {attribution}
+        {coma.attribution}
       </p>
 
       <GuidancePlaceholder helpKey="p4.overview" />
@@ -439,13 +437,18 @@ export default function Phase4Coma() {
                 to see genre-specific prompts.
               </p>
             )}
-            {genre && !promptsAuthored && (
-              <p className="text-xs italic text-muted-foreground" data-testid="coma-prompts-pending">
-                Genre prompts (verbatim from <em>One-to-One Bible Reading</em>) are added to the
-                method data separately. The four note areas below are ready to use now.
-              </p>
-            )}
           </div>
+
+          {/* Authored safety notice while the verbatim COMA sets aren't transcribed yet. */}
+          {showPlaceholder && (
+            <p
+              role="note"
+              data-testid="coma-placeholder"
+              className="rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-sm text-warning"
+            >
+              {coma.placeholder}
+            </p>
+          )}
 
           {/* The four categories */}
           <div className="space-y-8">
