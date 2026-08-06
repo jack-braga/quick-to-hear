@@ -4,10 +4,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 
-// The seven phases (SPEC). Phases 1–2 are built (Stage 2); 3–7 arrive in later stages
+// The seven phases (SPEC). Phases 1–3 are built (Stage 3); 4–7 arrive in later stages
 // and render as disabled steps so the workbook's shape is always visible.
 const PHASES = [1, 2, 3, 4, 5, 6, 7] as const;
-const BUILT_PHASES = new Set<number>([1, 2]);
+const BUILT_PHASES = new Set<number>([1, 2, 3]);
 
 /** The persistent phase stepper. Interactive once a study is open (path `/study/:id/N`);
  *  otherwise a quiet placeholder so the header still reads as a workbook. */

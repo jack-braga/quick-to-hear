@@ -12,12 +12,14 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 2 complete** — bundled Bibles (WEBBE + ASV), the verse
-  library (`bcv_parser` @ `kjv`, canonical IDs, ranges), the USFM→block/line build
-  pipeline, the runtime loader + `extractReading`, the real **Phase 1 (set up)** and
-  **Phase 2 (pray & read)** screens, and the serif passage renderer all landed and are
-  verified end-to-end in a real browser. A bundled passage now parses, displays
-  (narrative + poetry), and survives a full reload. **Stage 1 remains true below.**
+- **Phase of work:** **Stage 3 complete** — **Phase 3 (map the passage)**: author's-break
+  **sections** (named, a live contiguous partition you split/merge), **question marks**
+  (verse/phrase/word with sub-verse char-offset spans that **degrade to whole-verse** when
+  the text changes), and the reusable **`<VerseAnchorPicker>`** (one/many verses → sorted
+  `VerseAnchor`). Verified end-to-end in a real browser (Playwright MCP): Luke 1:5-25 split
+  into 3 named sections, a phrase + a word marked, all persisted across a full reload, and
+  both sub-verse marks degraded to whole-verse when the primary was switched WEBBE→ASV.
+  **Stages 1–2 remain true below.**
 - **Scaffolded already (do not recreate):** `content/LICENSE` (CC BY-SA),
   `content/README.md`, `content/help/**` (67 stubs; Phases 3/5/6e now have authored
   prose from the `teaching` branch), `content/method/*.yaml` (9 skeletons; `traps.yaml`
@@ -35,11 +37,21 @@
   + `manifest.json`, `src/components/passage/PassageView.tsx`, `src/components/StudyHeader.tsx`,
   `src/lib/{download,setup-options}.ts`, `src/components/ui/select.tsx`,
   `src/hooks/useOpenStudy.ts`, `src/pages/{Phase1Setup,Phase2Read,StudyNotFound}.tsx`.
-- **Next up:** Stage 3 — Phase 3 map (author's-break sections, named) + question marks
-  (verse/phrase/word) + the reusable `<VerseAnchorPicker>` (`PLAN.md` §6). Use
-  `docs/DEV-SESSION-PROMPT.md` (STAGE = 3). The picker's output types already exist
-  (`VerseAnchor`, `Mark.span` char-offset) in `study.ts`; anchor over the loaded
-  `passage.primary` verses (`allVerses(passage)` / `verseText(span)` in `@/types/passage`).
+- **Stage-3 spine (do not recreate):** `src/lib/map.ts` (pure Phase-3 logic — section
+  split/merge/rename + partition validation, verse tokenizer, `makeVerseMark`/`makeSpanMark`,
+  **`reconcileMarks`** degrade-on-text-change, ref/chip labels) + `src/lib/map.test.ts`
+  (20 tests); `src/components/passage/VerseAnchorPicker.tsx` (+ `.test.tsx`, 3 tests) — the
+  reusable picker for Phases 3/4/6; `src/pages/Phase3Map.tsx` (StructureEditor + MarkComposer
+  + MarkList). Wiring: `reconcileMarks` called inside `store/study.ts` `setPassage` (the one
+  text-change choke point); route `/study/:id/3` in `App.tsx`; phase 3 enabled in
+  `Layout.tsx` `BUILT_PHASES`; Phase 2's "Next" now links to `/3`.
+- **Next up:** Stage 4 — Phase 4 COMA + recycle-forward wiring (`PLAN.md` §6, SPEC Phase 4).
+  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 4). Genre → which COMA prompts (verbatim Helm
+  sets from `coma.yaml` + Matthias Media/HTC attribution on screen); anchored notes reuse
+  **`<VerseAnchorPicker>`** (multi-select); **recycling** — Phase 3 `map.marks` →
+  candidate background boxes, Phase 4 notes → candidate questions of matching type, with
+  provenance + copy-on-promote (§4.2). The Stage-4.7 help loader (`useHelp` + method-YAML)
+  is still unbuilt — dev stages keep wiring keys to `GuidancePlaceholder`.
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -85,7 +97,7 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 - [x] **Stage 0** — Scaffold + deploy + theming *(M1)*
 - [x] **Stage 1** — Model, storage (Zustand+idb+hydrate), autosave, project file, Home *(M1)*
 - [x] **Stage 2** — Bundled Bibles (WEBBE+ASV) + verse lib (bcv_parser) + Phase 1 + Phase 2 *(M1)* — BSB deferred (§8 #4)
-- [ ] **Stage 3** — Phase 3 map + verse-anchor picker *(M1)*
+- [x] **Stage 3** — Phase 3 map + verse-anchor picker *(M1)*
 - [ ] **Stage 4** — Phase 4 COMA + recycle-forward wiring *(M1)*
 - [ ] **Stage 5** — Phase 5 theme & aim (the hinge) *(M1)*
 - [ ] **Stage 6** — Phase 6 build the questions *(M1)*
@@ -165,6 +177,33 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
   - Sample refs to exercise the verse lib: `Luke 1:5-25`, `Luke 1:5-2:10`, `Psalm 23`,
     `Acts 8:36-38` (v37 gap in WEBBE **and** ASV), `Matthew 17:20-22` (v21 present in
     WEBBE, gapped in ASV), `3 John 14-15`, `Revelation 12:17-18`.
+
+- **Stage 3** — Phase 3 map + verse-anchor picker:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; **87 unit tests** — +20 `map` +3 `VerseAnchorPicker`),
+    then `npm run test:e2e` (2/2 — smoke suite unchanged; full happy-path e2e is Stage 7).
+  - Unit tests of note: `src/lib/map.test.ts` (section partition validity, split preserves
+    the first section + tiles the passage, merge-up keeps the prior name, rename;
+    `tokenizeVerse` offsets; `makeVerseMark`/`makeSpanMark`; **`reconcileMarks` degrades a
+    span mark to whole-verse when the substring changes / the verse becomes a gap, refreshes
+    a verse-mark snapshot, and never discards an orphaned mark**), `src/components/passage/
+    VerseAnchorPicker.test.tsx` (one toggle per verse, gap verses disabled, multi-select
+    accumulates in canonical order, single-select keeps ≤1).
+  - **Manual flow (drive the app — verified live via Playwright MCP):** `npm run dev` →
+    `http://localhost:8080/quick-to-hear/` → **New study** → Phase 1: `Luke 1:5-25` →
+    **Load passage** (21 verses, WEBBE) → **phase-nav step 3** (now enabled) → Phase 3:
+    **Divide into sections** → name §1, click **Split here** after v7 and after v23 → three
+    named contiguous sections (5–7 / 8–23 / 24–25 = 21 verses). Then **mark**: pick "A phrase",
+    verse **Luke 1:18**, tap first+last word to select "How can I be sure of this?", **Add**;
+    pick "A word", verse **Luke 1:15**, tap "strong", **Add**. **Reload** → deep-link
+    `#/study/<id>/3` rehydrates all 3 named sections + both marks from IDB. Then Phase 1 →
+    **switch Primary WEBBE→ASV** → back to Phase 3: both sub-verse marks now show **kind
+    "verse"** with the ASV whole-verse text (the char offsets no longer matched → degraded),
+    while the sections kept their names (verse IDs are stable across the bundle's shared KJV
+    numbering). 0 console errors (only the pre-existing RR v7 future-flag warnings).
+  - Inspect the persisted map (DevTools): IDB DB `quicktohear`, store `studies`, the study's
+    `map.sections` (start/end verse IDs + names) and `map.marks` (`kind`, `verseId`,
+    `span?{start,end}`, `text`) — part of the autosaved **body**, not the `passages` payload.
 
 ## Decision & deviation log
 
@@ -385,6 +424,39 @@ _Append-only. Newest last._
     gap; the whole study (passage incl. gap, fields, read count) rehydrates from IndexedDB
     after a hard reload. Build excludes the 14 MB of Bibles from precache (484 KB, 7 entries).
 
+- **Stage 3 built (this session).** No new deps. Delivered Phase 3 (map): the reusable
+  `<VerseAnchorPicker>`, author's-break sections, and verse/phrase/word question marks with
+  degrade-on-text-change. All Phase-3 logic is **pure** in `src/lib/map.ts` (ids passed in,
+  not generated) so it's unit-tested directly; the page (`Phase3Map.tsx`) and store just wrap
+  it via the existing `applyToCurrent` recipe action.
+  - **Decisions / deviations (none override a PLAN §2 lock; flagged for the owner):**
+    - **Sections are a live contiguous partition, edited by split/merge**, not free-floating
+      ranges. Rationale: SPEC 3a is "*divide* the passage into sections" — a partition is the
+      faithful model, it makes the author's-breaks discipline concrete (every verse in exactly
+      one section, no gaps/overlaps), and it feeds Phase 6a weighting + the Phase 7 coverage
+      map cleanly. The stored shape is still `Section{startVerseId,endVerseId,name,weight?}`
+      exactly as `study.ts` defines; `sectionsMatchPassage()` validates the partition and, when
+      stored sections don't fit the loaded passage (e.g. after a **reference change**), the UI
+      falls back to the "Divide into sections" seed rather than corrupting or silently wiping.
+    - **Sub-verse marks store char offsets *and* the exact selected substring**; the substring
+      is the degrade check. `reconcileMarks` (PLAN §4.3's "degrade to whole-verse if the text
+      changes") runs in **`setPassage`** — the single choke point for a text change (initial
+      load, **translation switch**, future re-parse). A span mark whose substring no longer
+      matches → whole-verse mark (span dropped, text refreshed); an orphaned mark (verse not in
+      the new passage) is **kept untouched**, never discarded (Principle 7). Sections anchor by
+      verse ID only, so a within-bundle translation switch (identical KJV numbering) leaves them
+      valid — verified live.
+    - **Phrase/word selection is by tapping word tokens** (a pure `tokenizeVerse` over the
+      verse's NFC text gives `[start,end)` offsets), not native text-selection — deterministic,
+      accessible, and Playwright-drivable. Word = one token; phrase = a contiguous run (tap
+      first, tap last).
+    - **Phase 3 uses controlled inputs + the store's `applyToCurrent` recipe**, not
+      `react-hook-form` — the **same call the owner is still being asked to confirm from Stage 2**
+      (controlled-inputs-vs-RHF). Section names / marks are small, low-frequency edits that
+      autosave with the body; RHF would add a second state layer for no gain here. No new deps.
+    - Marks are shown filtered to the loaded passage in **canonical verse order**; the mark
+      `text` doubles as the snapshot Phase 6 will recycle into a candidate background box.
+
 ## Known issues / risks being carried
 
 - Paste parser (Stage 8) needs **real user-captured samples**; can't be built blind.
@@ -411,5 +483,10 @@ _Append-only. Newest last._
   same-version doc is dropped (newer *versions* are refused, not stripped).
 - **`StudyOverview` (Stage 1) has been removed** — the real Phase-1/2 routes replace it.
   Home's `/study/:id` links now redirect to `/study/:id/1`.
-- **Phase-3–7 routes fall through to NotFound** until built; the phase-nav renders 3–7 as
-  disabled steps and Phase 2's "Next" is disabled. Stage 3 wires `/study/:id/3`.
+- **Phase-4–7 routes fall through to NotFound** until built; the phase-nav renders 4–7 as
+  disabled steps and Phase 3's "Next: COMA" is disabled. Stage 4 wires `/study/:id/4`.
+- **Reference-change orphaning (M1 edge, by design):** loading a *different* reference over
+  an existing map leaves old sections invalid (UI offers re-divide) and old marks orphaned
+  (kept in the doc, hidden from the passage view — never discarded). Switching *translation*
+  within the bundle is fine (same verse IDs). Revisit if a "clear the map on reference change"
+  prompt is ever wanted.

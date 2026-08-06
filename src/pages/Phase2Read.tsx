@@ -90,8 +90,8 @@ export default function Phase2Read() {
         <Button variant="outline" asChild>
           <Link to={`/study/${study.id}/1`}>← Back to set up</Link>
         </Button>
-        <Button variant="ghost" disabled title="Phase 3 (Map the passage) arrives in the next build stage">
-          Next: Map the passage →
+        <Button asChild>
+          <Link to={`/study/${study.id}/3`}>Next: Map the passage →</Link>
         </Button>
       </div>
     </div>

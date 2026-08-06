@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import { postStudyEvent } from '@/lib/broadcast';
 import { newId, nowIso } from '@/lib/id';
+import { reconcileMarks } from '@/lib/map';
 import {
   deleteStudy as dbDeleteStudy,
   getStudy,
@@ -120,7 +121,11 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   setPassage: async (primary) => {
     const cur = get().current;
     if (!cur) return;
-    const next = touched({ ...cur, passage: { primary } });
+    // The passage text changed — degrade any sub-verse marks whose text no longer
+    // matches (PLAN §4.3). This is the single choke point for a text change (initial
+    // load, translation switch, re-parse), so it's the right place to reconcile.
+    const map = primary ? reconcileMarks(cur.map, primary) : cur.map;
+    const next = touched({ ...cur, passage: { primary }, map });
     // Persist body + passage now (bundled passage is a re-derivable cache — §4.4).
     set((s) => ({
       current: next,
