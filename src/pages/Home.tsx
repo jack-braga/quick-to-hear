@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FileUp, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { GuidancePlaceholder } from '@/components/GuidancePlaceholder';
+import { Help } from '@/components/Help';
 import { Button } from '@/components/ui/button';
 import { useStorageEstimate } from '@/hooks/useStorageEstimate';
 import { useStudyStore } from '@/store/study';
@@ -111,7 +111,7 @@ export default function Home() {
             onChange={onImportFile}
           />
         </div>
-        <GuidancePlaceholder helpKey="home.intro" />
+        <Help helpKey="home.intro" />
       </section>
 
       {error && (

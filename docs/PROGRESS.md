@@ -12,7 +12,21 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 4 complete** — **Phase 4 (COMA)** + **recycle-forward wiring**.
+- **Phase of work:** **Stage 5 complete** — **Phase 5 (Theme & aim — the hinge)** + the
+  **help-markdown loader** (`useHelp` + `<Help>` three tiers + global guidance toggle).
+  The two-sentence core (theme frame + author-aim frame), the **group aim** that flows from
+  the author's aim, the **know/feel/do** breakdown, the **five on-demand stuck helpers**, the
+  **Christ & gospel test** (route sentence + the **four traps** as ack checkboxes, with the
+  **Goldsworthy attribution** stored in `traps.yaml` so it can't drift), and the **five litmus
+  tests acknowledged on exit** (soft acks via `litmusAcks`/`trapAcks` — **not** a hard block;
+  the only hard block remains Phase 6e). **"Faithfulness ≠ certainty"** leads the phase as a
+  reassurance callout. This is the **first stage that renders real help prose**: the markdown
+  half of the content loader (`src/lib/content/help.ts` — root-absolute glob, hand-split
+  frontmatter (no gray-matter), `react-markdown`) now backs a `<Help>` component that **replaced
+  every `GuidancePlaceholder`** in Phases 1–5 (unauthored keys still fall back to the placeholder,
+  so the build never blocks on content). New dep: **`react-markdown`**. Verified end-to-end in a
+  real browser (Playwright MCP) — see Test entry points. **Stages 1–4 remain true below.**
+- **Stage-4 recap:** **Phase 4 (COMA)** + **recycle-forward wiring**.
   Genre-driven COMA note grid (Context/Observation/Meaning/Application), each with a
   free-form note composer + reused **`<VerseAnchorPicker>`** (multi-select) for anchoring;
   **Matthias Media / HTC attribution renders on screen** (stored in `coma.yaml`, can't drift
@@ -66,15 +80,30 @@
   COMA note CRUD inline via `applyToCurrent`; route `/study/:id/4` in `App.tsx`; phase 4 in
   `Layout.tsx` `BUILT_PHASES`; Phase 3's "Next: COMA" now links to `/4`. New deps:
   **`js-yaml`** (dep) + **`@types/js-yaml`** (devDep).
-- **Next up:** Stage 5 — Phase 5 theme & aim (the hinge) (`PLAN.md` §6, SPEC Phase 5).
-  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 5). Theme/author-aim frames; group aim;
-  know/feel/do; 5 on-demand stuck helpers; litmus tests acknowledged on exit; Christ/gospel
-  route + traps table; "faithfulness ≠ certainty". **Phase 5 help + `litmus.yaml theme[]` +
-  `traps.yaml` + `stuck-helpers.yaml` are already authored** (teaching Batches 1–3), so Stage 5
-  is the first stage that can render **real** help prose — it likely wants the **`useHelp` +
-  `<Help>` three-tier loader + global guidance toggle** (PLAN §4.7) built now (still unbuilt;
-  Stage 4 kept wiring help keys to `GuidancePlaceholder`, but the method-YAML half of the
-  loader now exists in `src/lib/content/` and is the pattern to extend for help markdown).
+- **Stage-5 spine (do not recreate):** the **help-markdown loader** `src/lib/content/help.ts`
+  (`parseHelp` pure — hand-split frontmatter + `<!-- inline|expandable|page -->` tiers; no
+  gray-matter — + `helpEntry`/`hasHelp` accessors over a root-absolute `import.meta.glob`) +
+  `help.test.ts` (7); the **global guidance store** `src/lib/guidance.ts` (`useGuidance`,
+  full/brief, localStorage `qth/guidance`, default full); the `useHelp(key)` hook
+  (`src/hooks/useHelp.ts`); the **`<Help>`** component (`src/components/Help.tsx` — inline
+  always, expandable behind "Tell me more" in full mode, inline source credit beneath, falls
+  back to `GuidancePlaceholder`) + `Help.test.tsx` (3); the header **`<GuidanceToggle>`**
+  (`src/components/GuidanceToggle.tsx`); the method-loader extensions in
+  `src/lib/content/method.ts` (`parseLitmus`/`litmusThemeTests`, `parseTraps`/`trapsContent`,
+  `parseStuckHelpers`/`stuckHelpers`) + `method.test.ts` (+9); `src/pages/Phase5ThemeAim.tsx`.
+  Wiring: route `/study/:id/5` in `App.tsx`; phase 5 in `Layout.tsx` `BUILT_PHASES` +
+  `<GuidanceToggle>` added to the header; Phase 4's "Next: Theme & aim" now links to `/5`;
+  **every `GuidancePlaceholder` call in Phases 1–5 swapped to `<Help>`**. New dep:
+  **`react-markdown`**. Phase 5 writes into the existing `themeAim` (no schema change).
+- **Next up:** Stage 6 — Phase 6 build the questions (`PLAN.md` §6, SPEC Phase 6).
+  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 6). Weighting (6a) → question budget (6b) →
+  generate from COMA/recycled candidates (6c) → cut (6d) → **the one hard block: no question
+  is promoted without an expected answer (6e)** → support passages / return questions (6f) →
+  sequence (6g) → prayer point (6h). The `build` (discriminated on `format`) already has
+  `candidates`/`questions`/`supportPassages`/`prayerPoint`/`order`; `Question.expectedAnswer`
+  is the always-present hard-block field. `litmus.yaml question[]` is now authored (teaching)
+  and the `<Help>` loader is built — so Phase 6 renders real per-type litmus + help prose with
+  no new content plumbing.
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -123,7 +152,7 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 - [x] **Stage 3** — Phase 3 map + verse-anchor picker *(M1)*
 - [x] **Stage 4** — Phase 4 COMA + recycle-forward wiring *(M1)* — COMA prompt text is the
       empty `todo` skeleton (owner-transcribed later); machinery + attribution complete
-- [ ] **Stage 5** — Phase 5 theme & aim (the hinge) *(M1)*
+- [x] **Stage 5** — Phase 5 theme & aim (the hinge) + help-markdown loader (`<Help>`) *(M1)*
 - [ ] **Stage 6** — Phase 6 build the questions *(M1)*
 - [ ] **Stage 7** — Phase 7 audit + exports → **M1 complete**
 - [ ] **Stage 8** — Paste ingest + normalisation + review screen *(M2)*
@@ -267,6 +296,38 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     transcription** (see `content/COMA-TRANSCRIPTION.md` if the teaching session wrote it, or
     the teaching HANDOVER Batch 5); the loader + UI render them the moment the file is filled,
     **no code change**.
+
+- **Stage 5** — Phase 5 theme & aim (the hinge) + help-markdown loader:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; **126 unit tests** — +7 `content/help` +9 `content/method`
+    litmus/traps/stuck +3 `<Help>`), then `npm run test:e2e` (2/2 — smoke suite unchanged).
+  - Unit tests of note: `src/lib/content/help.test.ts` (`parseHelp` hand-splits frontmatter
+    from a two-tier body **without gray-matter**, captures a cited `source`, tolerates a `#`
+    comment in frontmatter + a junk file without throwing, uses the fallback key when
+    frontmatter omits one; `helpEntry` resolves a real key / returns null for an absent one);
+    `src/lib/content/method.test.ts` (five authored `litmus.theme` tests with the expected ids;
+    `litmusThemeTests()` drops empty-text seeds; four `traps.items` with looksLike+check +
+    **cited Goldsworthy attribution required non-empty**; five `stuck-helpers`);
+    `src/components/Help.test.tsx` (renders real inline prose; **"Tell me more" shows in full,
+    hides in brief**; falls back to the placeholder for an unwritten key).
+  - **Manual flow (drive the app — verified live via Playwright MCP, 0 console errors):**
+    `npm run dev` → New study → Phase 1: `Luke 1:5-25` → **Load passage** → **phase-nav step 5**
+    (now enabled) → Phase 5: the **"faithfulness ≠ certainty"** callout + all fields render with
+    **real help prose** (not placeholders) — theme/author-aim frames each with a "Tell me more",
+    the **Christ-route** help carries its inline **Goldsworthy source credit**. Fill theme /
+    author-aim / group-aim / know / feel / do / christ-route. Open **"Feeling stuck? Five ways
+    in"** → the 5 helpers render. Tick all **four traps** (moralism/allegory/christless-history/
+    flattening) — the **Goldsworthy `traps.yaml` attribution** renders beneath. Click **"Review
+    the litmus tests →"** → the 5 tests reveal; tick each → **"5 of 5 acknowledged"** (soft — the
+    disabled "Next: Build the questions" is disabled only because Phase 6 isn't built, never a
+    block). **Hard reload** (`location.reload()`, clears the in-memory store) → all 7 fields, the
+    4 trap acks, and 5/5 litmus acks **rehydrate from IndexedDB**, litmus panel auto-reveals.
+    Toggle the header **guidance control** full→brief → the six "Tell me more" buttons disappear
+    while all six inline help blocks stay; persists to `localStorage['qth/guidance']`.
+  - Inspect the persisted data (DevTools): IDB DB `quicktohear`, store `studies`, the study's
+    `themeAim.{theme,authorAim,groupAim,know,feel,doField,christRoute,litmusAcks,trapAcks}` —
+    autosaved **body**. `litmusAcks`/`trapAcks` are `Record<id,bool>` keyed by the method-YAML
+    ids, so unknown/added ids are tolerated independently of `schemaVersion`.
 
 ## Decision & deviation log
 
@@ -573,6 +634,60 @@ _Append-only. Newest last._
     unit — up from 87); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test
     entry points above; 0 console errors (only the pre-existing RR v7 future-flag warnings).
 
+- **Stage 5 built (this session).** New dep: **`react-markdown`** (PLAN §2's named help
+  renderer; `gray-matter` deliberately avoided — Buffer polyfill — so frontmatter is
+  hand-split). Delivered Phase 5 (theme & aim, the hinge) **and the help-markdown half of the
+  content loader** (§4.7), the piece Stage 4 left unbuilt. All load-bearing parsing is **pure**
+  (`parseHelp`, `parseLitmus`/`parseTraps`/`parseStuckHelpers`) and unit-tested against the real
+  shipped files; the page + store wrap it.
+  - **Decisions / deviations (none override a PLAN §2 lock; flagged for the owner):**
+    - **Help loader = root-absolute glob + hand-split frontmatter + `react-markdown`.**
+      `import.meta.glob('/content/help/**/*.md', {query:'?raw', import:'default', eager:true})`,
+      keyed by filename basename (so `p5.theme` resolves regardless of phase folder). Frontmatter
+      is split with a small regex (leading `--- … ---`, tolerant of BOM/CRLF) and the YAML block
+      parsed with `js-yaml`; the body splits on `<!-- inline|expandable|page -->` markers. The
+      three tiers map to SPEC §5's **[I]/[E]/[X]** — but authored content only uses `inline` +
+      `expandable` (+ one `page` for the attribution page); there is **no `example`/[X] tier in
+      content yet**, so `<Help>` renders inline + expandable and the [X] worked-example tier is a
+      later content+UI addition. A malformed file **degrades to empty tiers** (→ placeholder),
+      never throws — the build never blocks on content.
+    - **`<Help>` is a drop-in for `GuidancePlaceholder`** — it falls back to the exact same
+      placeholder for any key with no inline prose, so **every `GuidancePlaceholder` call in
+      Phases 1–5 was swapped to `<Help>`** in one pass. Phases 1/2/4 keys that are still `todo`
+      keep showing the placeholder (unchanged UX); Phases 3 + 5 (authored) now show real prose.
+      `GuidancePlaceholder` is **kept** as the fallback primitive (still imported by `<Help>`).
+    - **Global guidance toggle = a header control + `qth/guidance` localStorage store**
+      (`src/lib/guidance.ts`, modelled on `src/lib/theme.ts`; default **full**). `full` shows
+      inline + "Tell me more"; `brief` collapses to inline only. Inline **source credits** (the
+      `source:` frontmatter, e.g. Goldsworthy on `p5.christ-route`) render beneath the help in
+      both modes — attribution isn't "detail" (SPEC §7). Placed next to the theme toggle; like
+      the phase-nav it is `sm:`-visible via the header (the portrait-header defect in Known
+      issues is unchanged — a separate quick fix).
+    - **Litmus tests are a soft, on-exit review, revealed by a "Review the litmus tests →"
+      button** ("presented as the user leaves the phase", SPEC §5) — five ack checkboxes →
+      `themeAim.litmusAcks[id]` with a running "n of 5 acknowledged". **Not a hard block** (the
+      only hard block is Phase 6e); the panel **auto-reveals on reload when any ack exists** so
+      the review survives a refresh. The **four traps** are ack checkboxes → `themeAim.trapAcks`.
+      Ack ids come from `litmus.yaml`/`traps.yaml`, and the model stores them as `Record<id,bool>`
+      so a content-side id change never needs a schema bump.
+    - **Traps rendered as a responsive card list, not the SPEC's literal table** — a table
+      overflows in portrait (the logged phone defect); cards carry the same Trap / Looks like /
+      Check content + the ack checkbox and read cleanly on narrow screens.
+    - **"Faithfulness ≠ certainty" leads the phase** as a reassurance callout (not buried at the
+      bottom as in the SPEC's prose order) — it is the ★★ "this is where users quit" message, so
+      it frames the theme field rather than following it.
+    - **Phase 5 uses controlled inputs + `applyToCurrent`**, not `react-hook-form` — the **same
+      still-open owner call** carried from Stages 2/3/4. Theme/aim fields autosave with the body.
+    - **No schema change** — Phase 5 writes into the `themeAim` block that already existed in
+      `src/types/study.ts` (`theme/authorAim/groupAim/know/feel/doField/christRoute/litmusAcks/
+      trapAcks`). `doField` (not `do`) because `do` is reserved.
+  - **Owner request captured (mid-session, 2026-08-06):** a passage can carry **more than one
+    genre** (Luke 1:39–80 = narrative + Magnificat/Benedictus poetry) — logged to **`ROADMAP.md`
+    §6** ("defer to much later, just make a note"). Not touched this stage.
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **126/126**
+    unit — up from 106); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test
+    entry points above; 0 console errors (only the pre-existing RR v7 future-flag warnings).
+
 ## Known issues / risks being carried
 
 - **[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80):
@@ -607,8 +722,9 @@ _Append-only. Newest last._
   same-version doc is dropped (newer *versions* are refused, not stripped).
 - **`StudyOverview` (Stage 1) has been removed** — the real Phase-1/2 routes replace it.
   Home's `/study/:id` links now redirect to `/study/:id/1`.
-- **Phase-5–7 routes fall through to NotFound** until built; the phase-nav renders 5–7 as
-  disabled steps and Phase 4's "Next: Theme & aim" is disabled. Stage 5 wires `/study/:id/5`.
+- **Phase-6–7 routes fall through to NotFound** until built; the phase-nav renders 6–7 as
+  disabled steps and Phase 5's "Next: Build the questions" is disabled. Stage 6 wires
+  `/study/:id/6`. (Phase 5's route `/study/:id/5` landed in Stage 5.)
 - **Reference-change orphaning (M1 edge, by design):** loading a *different* reference over
   an existing map leaves old sections invalid (UI offers re-divide) and old marks orphaned
   (kept in the doc, hidden from the passage view — never discarded). Switching *translation*

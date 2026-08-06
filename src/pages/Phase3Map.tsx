@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Scissors, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
-import { GuidancePlaceholder } from '@/components/GuidancePlaceholder';
+import { Help } from '@/components/Help';
 import { VerseAnchorPicker } from '@/components/passage/VerseAnchorPicker';
 import { StudyHeader } from '@/components/StudyHeader';
 import { Button } from '@/components/ui/button';
@@ -436,9 +436,9 @@ export default function Phase3Map() {
           <section className="space-y-3">
             <div>
               <h3 className="text-sm font-semibold">a. Divide into sections</h3>
-              <GuidancePlaceholder helpKey="p3.structure" />
+              <Help helpKey="p3.structure" />
               <div className="mt-2">
-                <GuidancePlaceholder helpKey="p3.boundaries" />
+                <Help helpKey="p3.boundaries" />
               </div>
             </div>
             <StructureEditor passage={passage} sections={map.sections} onSections={setSections} />
@@ -448,7 +448,7 @@ export default function Phase3Map() {
           <section className="space-y-3">
             <div>
               <h3 className="text-sm font-semibold">b. Mark what you don’t understand</h3>
-              <GuidancePlaceholder helpKey="p3.marks" />
+              <Help helpKey="p3.marks" />
             </div>
             <MarkComposer passage={passage} onAdd={addMark} />
             <MarkList passage={passage} marks={map.marks} onRemove={removeMark} />

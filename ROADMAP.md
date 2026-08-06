@@ -109,3 +109,28 @@ the existing model, not a rewrite**.
 **Related near-term defects (fix independently of this spike):** poetry/verse-number
 rendering in `PassageView` (see PROGRESS "Known issues"); phase-nav hidden in portrait
 on phones. These are bugs, not part of this redesign.
+
+## 6. Mixed genres within one passage (multi-genre selection)
+
+**Want (owner feedback, 2026-08-06):** let a passage carry **more than one genre / text
+type**, because real passages mix them. Luke 1:39–80 is the motivating case: it is
+narrative that contains Mary's Magnificat and Zechariah's Benedictus — poetry / psalm /
+prophetic hymns embedded in prose. Today `setup.genre` is a **single** `Genre`, so the
+COMA prompt set (Phase 4) and the genre reading tip are chosen for the whole passage as
+if it were one type.
+
+**Why deferred:** the single-genre model is correct for the common case and drives real
+behaviour (COMA prompt selection, reading tips, Phase-1 inference). Going multi-genre
+touches the model (`setup.genre: Genre` → a set, or per-section genre on `map.sections`),
+the Phase-4 prompt UI (which set applies where), and Phase-1 inference. It is worth a
+deliberate design pass, not an inline change. **Owner said: "defer to much later, just
+make a note."**
+
+**Sketch of the eventual design (not committed):**
+- Likely **per-section** genre rather than a bare passage-level set — sections already
+  exist (`map.sections`, Phase 3) and a section is the natural unit that carries one text
+  type. A section could gain an optional `genre?: Genre`; Phase 4 then shows the matching
+  COMA set per section, falling back to the passage-level genre.
+- Or a passage-level `genres: Genre[]` with the user choosing which set to view. Simpler
+  model, coarser fit.
+- Phase-1 inference would suggest the dominant genre + flag that the passage looks mixed.

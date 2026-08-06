@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
-import { GuidancePlaceholder } from '@/components/GuidancePlaceholder';
+import { Help } from '@/components/Help';
 import { PassageView } from '@/components/passage/PassageView';
 import { StudyHeader } from '@/components/StudyHeader';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ export default function Phase2Read() {
           {/* Pray */}
           <section className="space-y-2 rounded-lg border border-border bg-card p-4">
             <h3 className="text-sm font-semibold">Pray before you begin</h3>
-            <GuidancePlaceholder helpKey="p2.pray" />
+            <Help helpKey="p2.pray" />
           </section>
 
           {/* The passage — the subject of the screen */}
@@ -62,7 +62,7 @@ export default function Phase2Read() {
           {/* Read instruction + counter */}
           <section className="space-y-3 rounded-lg border border-border bg-card p-4">
             <h3 className="text-sm font-semibold">Read it three or four times</h3>
-            <GuidancePlaceholder helpKey="p2.read" />
+            <Help helpKey="p2.read" />
             <div className="flex flex-wrap items-center gap-4 pt-1">
               <Button onClick={incrementRead}>
                 <Check aria-hidden />
@@ -81,7 +81,7 @@ export default function Phase2Read() {
                 </button>
               )}
             </div>
-            <GuidancePlaceholder helpKey="p2.counter" />
+            <Help helpKey="p2.counter" />
           </section>
         </>
       )}

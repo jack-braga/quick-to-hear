@@ -8,6 +8,7 @@ import Phase1Setup from '@/pages/Phase1Setup';
 import Phase2Read from '@/pages/Phase2Read';
 import Phase3Map from '@/pages/Phase3Map';
 import Phase4Coma from '@/pages/Phase4Coma';
+import Phase5ThemeAim from '@/pages/Phase5ThemeAim';
 
 /** `/study/:id` → the first phase (deep links + old bookmarks still work). */
 function StudyIndexRedirect() {
@@ -16,7 +17,7 @@ function StudyIndexRedirect() {
 }
 
 // HashRouter avoids GitHub Pages deep-link/refresh 404s (PLAN §2). `useAutosave` is
-// mounted once inside the router (it flushes on route change). Phases 5–7 land in later
+// mounted once inside the router (it flushes on route change). Phases 6–7 land in later
 // stages; their routes fall through to NotFound until then.
 function AppRoutes() {
   useAutosave();
@@ -29,6 +30,7 @@ function AppRoutes() {
         <Route path="/study/:id/2" element={<Phase2Read />} />
         <Route path="/study/:id/3" element={<Phase3Map />} />
         <Route path="/study/:id/4" element={<Phase4Coma />} />
+        <Route path="/study/:id/5" element={<Phase5ThemeAim />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

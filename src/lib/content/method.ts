@@ -117,3 +117,100 @@ export function readingTipForGenre(genre: string | null | undefined): string {
   if (!genre) return '';
   return genreItems().find((g) => g.id === genre)?.readingTip ?? '';
 }
+
+// ---------------------------------------------------------------------------
+// litmus.yaml — the theme[] tests (Phase 5, on exit) + question[] tests (Phase 6)
+// ---------------------------------------------------------------------------
+
+export const LitmusTestSchema = z.object({
+  id: z.string(),
+  text: z.string().default(''),
+  state: z.string().nullish(),
+  source: z.string().nullish(),
+  flag: z.string().nullish(),
+});
+export type LitmusTest = z.infer<typeof LitmusTestSchema>;
+
+export const LitmusContentSchema = z.object({
+  theme: z.array(LitmusTestSchema).default([]),
+  question: z.array(LitmusTestSchema).default([]),
+});
+export type LitmusContent = z.infer<typeof LitmusContentSchema>;
+
+/** Parse + validate a `litmus.yaml` string. */
+export function parseLitmus(raw: string): LitmusContent {
+  return LitmusContentSchema.parse(loadYaml(raw));
+}
+
+let _litmus: LitmusContent | undefined;
+function litmus(): LitmusContent {
+  return (_litmus ??= parseLitmus(rawMethod('litmus.yaml')));
+}
+
+/** The theme litmus tests acknowledged on leaving Phase 5 — empty-text entries (the
+ *  not-yet-authored `question[]` seeds) are never returned here. */
+export function litmusThemeTests(): LitmusTest[] {
+  return litmus().theme.filter((t) => t.text.trim().length > 0);
+}
+
+// ---------------------------------------------------------------------------
+// traps.yaml — the four Christ-connection traps (Phase 5, Christ & gospel test)
+// ---------------------------------------------------------------------------
+
+export const TrapItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  looksLike: z.string(),
+  check: z.string(),
+});
+export type TrapItem = z.infer<typeof TrapItemSchema>;
+
+export const TrapsContentSchema = z.object({
+  // Non-empty is enforced: the trap concepts follow Goldsworthy and the credit must show
+  // wherever they appear (SPEC §7).
+  attribution: z.string().min(1),
+  state: z.string().nullish(),
+  source: z.string().nullish(),
+  flag: z.string().nullish(),
+  items: z.array(TrapItemSchema).default([]),
+});
+export type TrapsContent = z.infer<typeof TrapsContentSchema>;
+
+/** Parse + validate a `traps.yaml` string. Throws (zod) without a non-empty attribution. */
+export function parseTraps(raw: string): TrapsContent {
+  return TrapsContentSchema.parse(loadYaml(raw));
+}
+
+let _traps: TrapsContent | undefined;
+export function trapsContent(): TrapsContent {
+  return (_traps ??= parseTraps(rawMethod('traps.yaml')));
+}
+
+// ---------------------------------------------------------------------------
+// stuck-helpers.yaml — Phase 5, available on demand (not forced)
+// ---------------------------------------------------------------------------
+
+export const StuckHelperSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  text: z.string().default(''),
+  state: z.string().nullish(),
+  source: z.string().nullish(),
+  flag: z.string().nullish(),
+});
+export type StuckHelper = z.infer<typeof StuckHelperSchema>;
+
+export const StuckHelpersContentSchema = z.object({
+  items: z.array(StuckHelperSchema).default([]),
+});
+export type StuckHelpersContent = z.infer<typeof StuckHelpersContentSchema>;
+
+/** Parse + validate a `stuck-helpers.yaml` string into its item list. */
+export function parseStuckHelpers(raw: string): StuckHelper[] {
+  return StuckHelpersContentSchema.parse(loadYaml(raw)).items;
+}
+
+let _stuck: StuckHelper[] | undefined;
+export function stuckHelpers(): StuckHelper[] {
+  return (_stuck ??= parseStuckHelpers(rawMethod('stuck-helpers.yaml')));
+}

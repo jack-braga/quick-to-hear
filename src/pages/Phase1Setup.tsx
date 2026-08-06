@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { BookOpen, Loader2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
-import { GuidancePlaceholder } from '@/components/GuidancePlaceholder';
+import { Help } from '@/components/Help';
 import { StudyHeader } from '@/components/StudyHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,7 +144,7 @@ export default function Phase1Setup() {
             Load passage
           </Button>
         </div>
-        <GuidancePlaceholder helpKey="p1.reference" />
+        <Help helpKey="p1.reference" />
 
         {error && (
           <p role="alert" className="text-sm text-destructive">
@@ -182,7 +182,7 @@ export default function Phase1Setup() {
             {textless.join(', ')}). Any anchors there will need re-checking.
           </p>
         )}
-        <GuidancePlaceholder helpKey="p1.primary" />
+        <Help helpKey="p1.primary" />
       </section>
 
       {/* Genre (inferred, overridable) */}
@@ -207,7 +207,7 @@ export default function Phase1Setup() {
             Determines which COMA prompts appear in Phase 4: {GENRE_LABELS[setup.genre]}.
           </p>
         )}
-        <GuidancePlaceholder helpKey="p1.genre" />
+        <Help helpKey="p1.genre" />
       </section>
 
       {/* Format (study only in M1) */}
@@ -217,7 +217,7 @@ export default function Phase1Setup() {
           Bible study
           <span className="ml-2 text-xs">· Talk mode comes later</span>
         </div>
-        <GuidancePlaceholder helpKey="p1.format" />
+        <Help helpKey="p1.format" />
       </section>
 
       {/* Duration + group */}
@@ -240,7 +240,7 @@ export default function Phase1Setup() {
               </option>
             ))}
           </Select>
-          <GuidancePlaceholder helpKey="p1.duration" />
+          <Help helpKey="p1.duration" />
         </section>
 
         <section className="space-y-2">
@@ -263,7 +263,7 @@ export default function Phase1Setup() {
               </option>
             ))}
           </Select>
-          <GuidancePlaceholder helpKey="p1.group" />
+          <Help helpKey="p1.group" />
         </section>
       </div>
 
@@ -278,7 +278,7 @@ export default function Phase1Setup() {
           placeholder="e.g. Week 3 of 8 through Luke 1–2"
           onChange={(e) => updateSetup({ seriesNote: e.target.value })}
         />
-        <GuidancePlaceholder helpKey="p1.series" />
+        <Help helpKey="p1.series" />
       </section>
 
       <section className="space-y-2">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
-import { GuidancePlaceholder } from '@/components/GuidancePlaceholder';
+import { Help } from '@/components/Help';
 import { VerseAnchorPicker } from '@/components/passage/VerseAnchorPicker';
 import { StudyHeader } from '@/components/StudyHeader';
 import { Button } from '@/components/ui/button';
@@ -147,7 +147,7 @@ function ComaCategory({
     <section data-testid={`coma-${category}`} className="space-y-3">
       <div>
         <h3 className="text-sm font-semibold">{label}</h3>
-        <GuidancePlaceholder helpKey={helpKey} />
+        <Help helpKey={helpKey} />
       </div>
 
       {prompts.length > 0 && (
@@ -407,7 +407,7 @@ export default function Phase4Coma() {
         {coma.attribution}
       </p>
 
-      <GuidancePlaceholder helpKey="p4.overview" />
+      <Help helpKey="p4.overview" />
 
       {!passage ? (
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
@@ -426,7 +426,7 @@ export default function Phase4Coma() {
                 {readingTip}
               </p>
             ) : (
-              <GuidancePlaceholder helpKey="p4.genre-reading" />
+              <Help helpKey="p4.genre-reading" />
             )}
             {!genre && (
               <p className="text-xs text-warning">
@@ -476,12 +476,8 @@ export default function Phase4Coma() {
         <Button variant="outline" asChild>
           <Link to={`/study/${study.id}/3`}>← Back to map</Link>
         </Button>
-        <Button
-          variant="ghost"
-          disabled
-          title="Phase 5 (Theme & aim) arrives in the next build stage"
-        >
-          Next: Theme &amp; aim →
+        <Button asChild>
+          <Link to={`/study/${study.id}/5`}>Next: Theme &amp; aim →</Link>
         </Button>
       </div>
     </div>
