@@ -12,6 +12,12 @@ attribution: "COMA questions from David Helm, One-to-One Bible Reading (Matthias
 state: todo            # -> cited once verbatim text is entered against the source
 source: OTOBR-Sheets-for-copying-A4.pdf
 
+# placeholder: a user-visible notice. Render it wherever COMA prompts would appear while
+# `state` is not `cited`, so no one mistakes the empty grid for Helm's real questions. It
+# stops showing once the verbatim sets are entered and state -> cited. The manual
+# transcription task is documented in content/COMA-TRANSCRIPTION.md.
+placeholder: "Not entered yet. What appears here is a placeholder, not David Helm's real COMA questions. The permitted verbatim text must be copied in before this tool is used."
+
 genres:
   gospels-acts:
     context: []

@@ -26,6 +26,18 @@ Status: **deferred for a later sweep.** The two genuinely new tiers ("avoid", "s
 would need the app to render new tiers, so they are partly dev work as well — note for a
 dev session; out of the teaching-text remit.
 
+**Suggested external resources — videos, summaries, commentaries (owner, 2026-08-06).**
+Very non-essential; schedule **near the end**. Ideas for extending the resources / Further
+Reading layer beyond books:
+
+- Suggest **BibleProject videos** and **TGC book summaries** alongside the passage or book.
+- Add **commentaries** as pointers (Calvin; TGC; etc.).
+
+Status: **deferred, low priority.** Licensing caveat — link out rather than reproduce.
+Calvin's commentaries are public domain (could be linked or, later, excerpted); BibleProject
+and TGC content is not ours to reproduce, so these are signposts / links only. Fits as an
+optional extension of the Phase E Further Reading page, not core method text.
+
 ---
 
 ## 2. Citation / quote sweep
