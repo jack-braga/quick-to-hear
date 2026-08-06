@@ -3,10 +3,10 @@ key: global.progress
 title: How the phases fit together
 phase: global
 tiers: [inline]
-state: todo        # todo -> cited | uncited | flagged (see content/README.md)
-source:            # inline attribution string, ONLY when state: cited
-flag:              # what would settle it + where to look, ONLY when state: flagged
+state: uncited
+source:
+flag:
 ---
 
 <!-- inline -->
-
+Seven phases, from the passage to a printable study. They run in order, but nothing is locked: move back whenever you want to rethink an earlier step.
