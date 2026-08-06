@@ -65,6 +65,7 @@ export function extractReading(book: BuiltBook, opts: ExtractOptions): ParsedTex
     translationId: book.translationId,
     versification: 'kjv',
     reference: opts.reference,
+    source: 'bundled',
     blocks,
     notes,
   };

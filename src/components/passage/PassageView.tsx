@@ -62,8 +62,15 @@ function VerseNo({ n }: { n: string }) {
 const INDENT = ['', 'pl-4', 'pl-8', 'pl-12'] as const;
 
 /** Inline content of one verse's lines (used inside a prose paragraph). Poetry lines
- *  inside prose break with a <br> and indent. */
-function ProseVerse({ span }: { span: VerseSpan }) {
+ *  inside prose break with a <br> and indent.
+ *
+ *  The verse number leads the verse's **first rendered line** — placed *after* any
+ *  leading line break, never before it. Emitting it before the loop (as an earlier
+ *  version did) stranded the number at the tail of the previous line whenever a verse
+ *  opened directly on poetry (e.g. the Magnificat, Luke 1:46-55, sits in a prose block
+ *  with poetry `qlevel`s). `firstInBlock` suppresses the leading break for the block's
+ *  opening line so a block that starts on poetry gets no blank top line. */
+function ProseVerse({ span, firstInBlock = false }: { span: VerseSpan; firstInBlock?: boolean }) {
   const n = verseNumber(span.verseId);
   if (!span.present) {
     return (
@@ -76,10 +83,10 @@ function ProseVerse({ span }: { span: VerseSpan }) {
   const lines = verseToLines(span);
   return (
     <span data-verse={span.verseId}>
-      <VerseNo n={n} />
       {lines.map((line, i) => (
         <ReactFragment key={i}>
-          {line.indent >= 1 && <br />}
+          {line.indent >= 1 && !(firstInBlock && i === 0) && <br />}
+          {i === 0 && <VerseNo n={n} />}
           <span className={line.indent >= 1 ? cn('inline-block', INDENT[Math.min(line.indent, 3)]) : undefined}>
             {line.frags.map((f, j) => (
               <FragmentText key={j} f={f} />
@@ -152,8 +159,8 @@ function BlockView({ block }: { block: Block }) {
     default:
       return (
         <p className="my-3 leading-relaxed">
-          {block.verses.map((v) => (
-            <ProseVerse key={v.verseId} span={v} />
+          {block.verses.map((v, i) => (
+            <ProseVerse key={v.verseId} span={v} firstInBlock={i === 0} />
           ))}
         </p>
       );

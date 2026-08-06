@@ -143,3 +143,30 @@ make a note."**
 - Or a passage-level `genres: Genre[]` with the user choosing which set to view. Simpler
   model, coarser fit.
 - Phase-1 inference would suggest the dominant genre + flag that the passage looks mixed.
+
+## 7. Footnotes, cross-references & rich passage rendering
+
+**Want (owner, 2026-08-06):** show the translator **footnotes** and **cross-references**
+the bundled Bibles carry (and the ones recovered from a paste), plus any other rich text
+that is captured but not yet displayed.
+
+**Current state (captured, not shown):** the Stage-2 USFM parser already **tags and keeps**
+footnotes/xrefs as `StructuredNote{verseId,kind,text}` on `ParsedText.notes` (NFC-normalised,
+never stripped — PLAN §4.3), and the Stage-8 paste normaliser captures a trailing "Footnotes"
+block into `PasteAnalysis.notes`. But **nothing renders them** — `PassageView` shows no
+footnote markers or a notes list, and the pasted notes are dropped at assemble (the reader is
+deliberately minimal: *the passage is the subject*, Principle 1). Red-letter (`\wj`) **is**
+rendered; verse gaps **are** shown. Footnotes/xrefs are the main captured-but-hidden data.
+
+**Why deferred (owner: "defer anything not fully built, note it on the todo"):** rendering
+notes well is its own design (inline superscript markers + an on-demand popover or a per-verse
+notes strip, kept subordinate so it never out-competes the text). Not needed for the M2 paste
+milestone; the data is already preserved, so wiring the display later is additive — no model
+change.
+
+**Sketch of the eventual design (not committed):**
+- Render a small superscript marker at each note's `verseId` in `PassageView`, revealing the
+  note text on tap/hover (kept quiet, like the verse numbers).
+- Optionally list the notes beneath the passage (leader's notes / handout could include them).
+- Carry pasted `PasteAnalysis.notes` through `assembleParsedText` onto `ParsedText.notes` so a
+  pasted passage's footnotes survive to the same renderer.

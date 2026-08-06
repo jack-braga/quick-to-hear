@@ -12,7 +12,31 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 7 complete → M1 COMPLETE.** **Phase 7 (Check & export)** — the
+- **Phase of work:** **Stage 8 complete → M2 first stage (paste ingest).** A **second way to get
+  a passage into Phase 1** — pasting text copied from an app/site — normalised into the same
+  block/line `ParsedText` model the bundled loader produces, behind a **mandatory review screen**.
+  The **pure normaliser** (`src/lib/paste/`) strips app chrome (leading reference/translation
+  lines, "Read full chapter", the trailing "Footnotes" block → captured as notes), NFC-normalises
+  + folds NBSP/zero-width/bidi, recovers the reference (`bcv`) + translation (matched to a bundled
+  id or kept as a custom name), detects verse markers **at the start of a line *and* mid-line**
+  (monotonic gate so content numbers don't masquerade), classifies prose / **poetry (line breaks +
+  indent preserved)** / editorial headings + superscriptions, strips inline footnote letters
+  (`[a]`), and **flags** every low-confidence call. Two pure stages: `analysePaste(raw)` →
+  editable `PasteSegment[]`, `assembleParsedText(segments,ctx)` → `ParsedText`. The **review
+  screen** (`/study/:id/paste`, `PasteReview.tsx`) shows the parse, lets the user fix line
+  type / verse number / drop junk, confirm translation + reference, with a **live `PassageView`
+  preview**, and only **Accept** commits it (`setPassage`, `source:'pasted'`). **Pasted text is
+  SOURCE OF TRUTH** (`ParsedText.source:'pasted'`, additive-optional; a bundled translation-switch
+  is guarded so it can't overwrite it), unlike the re-derivable bundled cache. A pasted study flows
+  through **Phases 2–7 unchanged** (verified: Phase 2 renders, Phase 3 anchors `PS.80.1-3`).
+  **Also fixed the carried poetry/verse-number rendering defect** in `PassageView` (`ProseVerse`
+  put the verse number *before* its line loop, stranding it at the tail of the previous line for a
+  poetry-opening verse — Magnificat/Benedictus; now the number leads its own line). **8 golden
+  fixtures across genres** (Gospel narrative+poetry, Hebrew poetry ±superscription, Epistle prose,
+  acrostic) + **23 paste tests**; verified end-to-end in a real browser on **owner-supplied NIV
+  pastes** (Luke 1:39-80, Psalm 80, Psalm 119 — each hardened a distinct heuristic), **0 console
+  errors**. **Stages 1–7 (M1) remain true below.**
+- **Stage-7 recap (M1 COMPLETE):** **Phase 7 (Check & export)** — the
   **audit** (11 checks, each computing its status from the study + showing evidence; dismiss-with-ack;
   **NOTHING blocks export**) + the three artefacts. The **coverage map** is a per-section view of which
   verses no question's anchor touches; every *fully-untouched* section is tagged connective / deferred /
@@ -141,13 +165,30 @@
   snapshot, additive-optional — no schemaVersion bump); `recycle.ts` `makeCandidateFromSource`
   now carries it. Wiring: route `/study/:id/6` in `App.tsx`; phase 6 in `Layout.tsx` `BUILT_PHASES`;
   Phase 5's "Next: Build the questions" now links to `/6`. **No new deps.**
-- **Next up:** **Stage 8 — Paste ingest + normalisation + review screen *(M2)*** (`PLAN.md` §6, SPEC
-  Phase 1 paste path). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 8). Adds a paste path in Phase 1
-  (alongside the reference→load path), the normalisation pipeline (§4.6), and a **mandatory review
-  screen** before the pasted text becomes the passage; needs a golden-file corpus + **real
-  user-captured paste samples** (poetry + prose, both sources) — can't be built blind (see Known
-  issues). M1 (Stages 0–7) is complete: a full bundled-Bible workbook with recycling, audit, and
-  the two printable artefacts + a re-importable project file.
+- **Stage-8 spine (do not recreate):** the **pure paste normaliser** `src/lib/paste/`
+  (`types.ts` — `PasteSegment`/`PasteAnalysis`/`AssembleContext`; `clean.ts` — `preclean`
+  NFC+NBSP+zero-width+CRLF, `isChromeLine`/`isFootnotesHeader`, `stripInlineMarkers`,
+  `looksLikeTranslationName`, indent helpers; `paste.ts` — `analysePaste(raw)` (chrome strip →
+  ref/translation recovery → paragraph classify → verse/poetry/heading segments, `acceptMarker`
+  monotonic gate, inline+leading verse numbers in poetry, leading-orphan/superscription →
+  heading, short-stanza-marker → heading) + `assembleParsedText(segments,ctx)` → `ParsedText`;
+  `index.ts`) + `paste.test.ts` (23) + `__fixtures__/*.txt` (8 PD/CC0 golden files) +
+  `__snapshots__/`; the **review page** `src/pages/PasteReview.tsx` (two steps: paste+ref →
+  review editor + live `PassageView` preview → Accept). **Model:** `ParsedText.source:
+  'bundled'|'pasted'` (optional, absent=bundled; `passage.ts`) — pasted is source-of-truth.
+  Wiring: route `/study/:id/paste` in `App.tsx`; Phase 1 "Paste your own text" link +
+  read-only translation display for a pasted passage (`Phase1Setup.tsx`); `extract.ts` sets
+  `source:'bundled'`. **Render fix:** `PassageView.tsx` `ProseVerse` — verse number now leads
+  its first line (was stranded on the previous line for poetry-opening verses). **No new deps.**
+- **Next up:** **Stage 9 — Secondary translations + comparison + versification mapping *(M3)***
+  (`PLAN.md` §6/§4.3). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 9). Move `passage.primary` →
+  `passage.translations: Record<id, ParsedText>`; add secondary translations (bundled or pasted);
+  on-demand per-verse compare (default) + optional side-by-side. **Within the bundle, align by
+  number-equality + the `present` flag (no mapping).** Only a genuinely **foreign-versified pasted
+  text** needs remapping into the KJV anchor — add **`reversify`** (MIT, plugs into `bcv_parser`)
+  then. Flag unmappable verses. **Note for Stage 9:** the paste path now sets `ParsedText.source`
+  and stores pasted text as source-of-truth; the M3 `Record` migration must preserve `source` per
+  translation (pasted secondaries persist; bundled secondaries are caches).
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -202,7 +243,9 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 - [x] **Stage 7** — Phase 7 audit + exports → **M1 COMPLETE** — 11 pure audit checks (nothing
       blocks); coverage map + tags; gospel-plain conditional; handout (answers excluded, copyright
       present — guard-tested both ways) + leader print-CSS routes + markdown; support text fetched
-- [ ] **Stage 8** — Paste ingest + normalisation + review screen *(M2)*
+- [x] **Stage 8** — Paste ingest + normalisation + review screen *(M2)* — pure normaliser
+      (`src/lib/paste/`), mandatory review screen (`/study/:id/paste`), pasted = source of truth;
+      **also fixed** the carried poetry/verse-number render defect in `PassageView`
 - [ ] **Stage 9** — Secondary translations + comparison + versification mapping *(M3)*
 - [ ] **Stage 10** — Depth + worked examples + PWA *(M4)*
 
@@ -457,6 +500,39 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     a `Record<sectionId,CoverageTag>` — autosaved **body**, tolerant of unknown ids (records, not
     enums), so a content-side id change never needs a schema bump. Support-passage text is **not**
     persisted (fetched at export, like the primary passage cache); `SupportPassage.text` stays null.
+
+- **Stage 8** — Paste ingest + normalisation + review screen *(M2)* + the poetry render fix:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build` (all pass;
+    lint 0 warnings; **207 unit tests** — +19→+23 `paste` incl. genre corpus + hard-psalm/acrostic
+    regressions, +1 `PassageView` Magnificat render), then `npm run test:e2e` (2/2 — smoke suite
+    unchanged).
+  - Unit tests of note: `src/lib/paste/paste.test.ts` (chrome stripped + reference/translation
+    recovered; "Read full chapter" + a "Footnotes" block captured to `notes`, inline `[a]` gone; a
+    section heading detected; **poetry lines survive as separate indented segments**; a flowing prose
+    paragraph splits one verse per number in sequence; assembled ids anchor to `kjv` from the ref; a
+    **prose-opened song verse stays whole — no duplicated verse number** across blocks; a
+    superscription-less Psalm is pure poetry; a **long musical superscription → heading not a phantom
+    v0**; a **mid-line poetry verse number** (Ps 80 "…shine out. 2 Before…") is detected; **acrostic
+    stanza markers** ("Aleph"/"Beth") are headings not swallowed lines; CRLF/NBSP/zero-width folded);
+    `src/components/passage/PassageView.test.tsx` (a poetry-opening verse leads with its number — the
+    `<br>` precedes the `<sup>`). **8 golden snapshots** over the PD/CC0 corpus.
+  - **Manual flow (drive the app — verified live via Playwright MCP, 0 console errors):** New study →
+    Phase 1 **"Paste your own text"** → `/study/:id/paste`. Owner pasted **real NIV** Luke 1:39-80,
+    Psalm 80, Psalm 119 into the browser (real clipboard). **Tidy it up** → the review shows the
+    detected reference + translation (NIV flagged as non-bundled → no auto copyright line), "removed N
+    lines of app clutter", the editable segment list (line-type / verse-number / drop, amber = flagged)
+    and a **live `PassageView` preview**. Correct a mis-detected line / drop junk → **Accept** →
+    `setPassage(source:'pasted')` → Phase 1 shows the **"pasted text"** badge + read-only translation.
+    **Phase 2** renders it (superscription as heading; poetry numbers lead each line — the render fix);
+    **Phase 3** anchors the pasted verses (`PS.80.1-3`). Each real paste hardened one heuristic
+    (Luke→stanza-opening line; Ps 80→long superscription + mid-line number; Ps 119→acrostic markers).
+  - **PD/CC0 self-check** (for a fix after HMR cleared the owner paste): inject the WEBBE/ASV fixture
+    text, `analysePaste` → assemble → DOM assert (verse ids, headings, no phantom v0). Copyrighted NIV
+    samples are **never committed** (kept in the session scratchpad); the 8 committed fixtures are
+    WEBBE/ASV only.
+  - Inspect the persisted data (DevTools): IDB DB `quicktohear`, store `studies` **and** `passages`,
+    the study's `passage.primary.source === 'pasted'` (the pasted block/line model is stored in full —
+    source-of-truth, not a cache). A bundled passage has `source` absent/`'bundled'`.
 
 ## Decision & deviation log
 
@@ -934,17 +1010,64 @@ _Append-only. Newest last._
     carries copyright (both ways), leader has everything, print forces light; **0 console errors** (only
     the pre-existing RR v7 future-flag warnings).
 
+- **Stage 8 built (this session) → M2 first stage.** No new deps (reuses `bcv_parser`, `js-yaml`,
+  the bundled loader). Delivered the paste path + normaliser + mandatory review screen, and fixed the
+  carried poetry render defect. All load-bearing logic is **pure + unit-tested**; the page is a thin
+  wrapper (controlled inputs + a local segment draft, committed on Accept via `setPassage` — the
+  owner-confirmed house standard, no react-hook-form). Local `main` had already advanced to the
+  teaching **COMA transcription** (`coma.yaml` `state:cited`) via the shared working tree; no conflict
+  (dev = `src/`, teaching = `content/`).
+  - **Decisions / deviations (none override a PLAN §2 lock; flagged for the owner):**
+    - **The render fix came first + is its own concern.** The Stage-2 `PassageView` bug (verse number
+      stranded on the previous line for a poetry-opening verse) **blocks trustworthy paste review** (the
+      review renders poetry), so it was fixed up front — `ProseVerse` now places the number at the head
+      of the verse's first rendered line, after any leading `<br>`; a `firstInBlock` guard suppresses a
+      blank top line. The parser deliberately keeps mixed prose/poetry in one block (`type` doc), so this
+      was always a **renderer** fix, not bad data / a re-download. Verified live on Luke 1:39-80.
+    - **Two pure stages, review is the safety net.** `analysePaste` never guesses silently — every
+      uncertain call is `flagged`; `assembleParsedText` is a separate pure fn. Heuristics are
+      **structural first** (indentation, standalone digit tokens with a monotonic gate, blank-line
+      paragraphs); **genre is never consulted** (§4.6). The review screen makes any miss correctable in
+      ~30s, so the parser only has to be "correctable", not perfect.
+    - **Pasted text is source-of-truth; bundled is a cache.** New `ParsedText.source` (additive-optional,
+      absent=bundled — no `schemaVersion` bump). `setPassage` already persists body+passage together, so
+      pasted text is stored in full. A pasted passage's Phase-1 translation is shown **read-only** (a
+      bundled translation-switch would `loadReading` over it and lose the paste).
+    - **Real-sample policy honoured.** The parser was tuned against **owner-supplied real NIV pastes**
+      (the up-front blocker); each of Luke/Ps 80/Ps 119 exposed + fixed a distinct heuristic
+      (stanza-opening line, long superscription + mid-line number, acrostic markers). Copyrighted samples
+      stay **local** (scratchpad); the **8 committed golden fixtures are PD/CC0** (WEBBE/ASV) shaped like
+      real BG output. **Owner testing workflow:** the owner pastes into the live browser (real clipboard);
+      programmatic injection is a dev self-check only (saved to auto-memory).
+    - **Deferred (owner, this session):** rendering the **footnotes/cross-refs** the bundled Bibles + a
+      paste already *capture* (they are stored, not shown) — logged to **`ROADMAP.md` §7**. Not a bug.
+    - **Non-goal held:** the tool never writes the user's content — the paste path ingests the *user's
+      own* Bible text (not generated), and the review only structures it.
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **207/207** unit — up
+    from 183); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test entry points above;
+    **0 console errors** (only the pre-existing RR v7 future-flag warnings).
+
 ## Known issues / risks being carried
 
-- **[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80):
-  verse numbers land in odd spots. A `PassageView` (Stage 2) defect, not a redesign — fix in a
-  polish pass. Related to `ROADMAP.md` §5 but independent of it.
+- ~~**[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80)~~
+  **RESOLVED (Stage 8)** — `PassageView` `ProseVerse` now leads a poetry-opening verse with its
+  number (the `<br>` precedes the `<sup>`); verified live on Luke 1:39-80 (Magnificat + Benedictus)
+  and covered by a `PassageView` unit test. Independent of the `ROADMAP.md` §5 redesign.
 - **[Owner feedback 2026-08-06] Phase-nav circles hidden in portrait on phones** — `PhaseNav`
   in `Layout.tsx` is `hidden … sm:flex`, so the phase tracker (visible in landscape) drops out
   in portrait, undercutting "progress visible throughout" (SPEC §4). Needs a responsive
   treatment (e.g. a second header row on narrow screens). Quick fix.
 
-- Paste parser (Stage 8) needs **real user-captured samples**; can't be built blind.
+- ~~Paste parser (Stage 8) needs **real user-captured samples**~~ **DONE (Stage 8)** — built +
+  tuned against owner-supplied real NIV pastes (Luke 1:39-80, Psalm 80, Psalm 119); 8 PD/CC0 golden
+  fixtures committed. **Carried caveat:** the corpus is Bible-Gateway-shaped (owner's samples) + ASV/WEBBE;
+  **YouVersion on Android** (Google Pixel) is to be paste-tested **on the deployed site** post-ship
+  (a chat/email round-trip mangles the poetry line breaks) — a flagged TODO for a real on-device pass.
+  Verse-number-in-prose-content disambiguation is a monotonic heuristic (small-window) + the review
+  screen backstop, not perfect; splitting a merged segment isn't yet a review action (rare; editable text).
+- **Footnotes / cross-refs / rich passage rendering deferred** (owner, Stage 8) — captured in the data
+  (`ParsedText.notes` / `PasteAnalysis.notes`) but **not rendered**; see `ROADMAP.md` §7. Pasted notes
+  are dropped at assemble until the renderer exists (additive when it lands).
 - **BSB deferred** (§8 #4) — not in the local eBible sources; **owner to confirm the
   berean.bible USFM edition to pin**, then add one row in `translations.ts` +
   `build-bibles.ts` and run `npm run build:bibles`. The app shows only WEBBE + ASV meanwhile.

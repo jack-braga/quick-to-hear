@@ -64,15 +64,24 @@ export const StructuredNoteSchema = z.object({
 export type StructuredNote = z.infer<typeof StructuredNoteSchema>;
 
 /**
- * A parsed reading in one translation. For a **bundled** primary this is a *cache*,
- * re-derivable from `setup.reference` + `translationId` (PLAN §4.4); pasted text (M2)
- * will be the source of truth.
+ * A parsed reading in one translation.
+ *
+ * `source` distinguishes the two provenances (PLAN §4.4 / §4.6):
+ * - `'bundled'` (default) — re-derivable from `setup.reference` + `translationId` via the
+ *   bundled loader, so the stored copy is only a **cache**;
+ * - `'pasted'` — normalised from text the user pasted (Stage 8 / M2). There is nothing to
+ *   re-derive it from, so it is the **source of truth** and must be persisted, never
+ *   silently re-fetched or overwritten by a translation switch.
  */
 export const ParsedTextSchema = z.object({
   translationId: z.string(),
   versification: z.literal('kjv').default('kjv'),
   /** The human reference this reading covers, e.g. "Luke 1:5-25". */
   reference: z.string().default(''),
+  /** Where the text came from — drives cache-vs-source-of-truth handling. Additive-
+   *  optional (**absent means bundled**), so no `schemaVersion` bump and old stored docs
+   *  keep loading. Only `'pasted'` changes behaviour (never re-derive/overwrite it). */
+  source: z.enum(['bundled', 'pasted']).optional(),
   blocks: z.array(BlockSchema).default([]),
   notes: z.array(StructuredNoteSchema).default([]),
 });

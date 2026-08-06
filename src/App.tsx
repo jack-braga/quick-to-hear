@@ -11,6 +11,7 @@ import Phase4Coma from '@/pages/Phase4Coma';
 import Phase5ThemeAim from '@/pages/Phase5ThemeAim';
 import Phase6Build from '@/pages/Phase6Build';
 import Phase7Audit from '@/pages/Phase7Audit';
+import PasteReview from '@/pages/PasteReview';
 import PrintHandout from '@/pages/print/PrintHandout';
 import PrintLeader from '@/pages/print/PrintLeader';
 
@@ -43,6 +44,7 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/study/:id" element={<StudyIndexRedirect />} />
         <Route path="/study/:id/1" element={<Phase1Setup />} />
+        <Route path="/study/:id/paste" element={<PasteReview />} />
         <Route path="/study/:id/2" element={<Phase2Read />} />
         <Route path="/study/:id/3" element={<Phase3Map />} />
         <Route path="/study/:id/4" element={<Phase4Coma />} />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Loader2 } from 'lucide-react';
+import { BookOpen, ClipboardPaste, Loader2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { Help } from '@/components/Help';
@@ -25,11 +25,17 @@ function LoadedSummary({ passage }: { passage: ParsedText }) {
   const verses = allVerses(passage);
   const gaps = verses.filter((v) => !v.present).length;
   const tr = findTranslation(passage.translationId);
+  const pasted = passage.source === 'pasted';
   return (
     <div className="rounded-lg border border-success/40 bg-success/5 p-3 text-sm">
       <div className="flex items-center gap-2 font-medium">
         <BookOpen aria-hidden className="size-4 text-success" />
         {passage.reference || 'Passage'} · {tr?.shortName ?? passage.translationId}
+        {pasted && (
+          <span className="rounded bg-muted px-1.5 py-0.5 text-[0.7rem] font-normal text-muted-foreground">
+            pasted text
+          </span>
+        )}
       </div>
       <div className="mt-1 text-muted-foreground">
         {verses.length} verse{verses.length === 1 ? '' : 's'}
@@ -157,24 +163,43 @@ export default function Phase1Setup() {
           </p>
         ))}
         {passage && <LoadedSummary passage={passage} />}
+
+        {/* The second way in: paste text copied from an app or site (Stage 8 / M2). */}
+        <div className="flex items-center gap-2 pt-1 text-sm text-muted-foreground">
+          <span>Not in the bundled Bibles, or want your own translation?</span>
+          <Button variant="link" size="sm" className="h-auto p-0" asChild>
+            <Link to={`/study/${study.id}/paste`}>
+              <ClipboardPaste aria-hidden className="size-4" />
+              Paste your own text
+            </Link>
+          </Button>
+        </div>
       </section>
 
-      {/* Primary translation */}
+      {/* Primary translation — for a pasted passage it is fixed (the text you pasted),
+          so switching a bundled translation would overwrite it; show it read-only. */}
       <section className="space-y-2">
         <label htmlFor="translation" className="text-sm font-medium">
           Primary translation
         </label>
-        <Select
-          id="translation"
-          value={translationId}
-          onChange={(e) => void changeTranslation(e.target.value)}
-        >
-          {BUNDLED_TRANSLATIONS.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name} ({t.shortName})
-            </option>
-          ))}
-        </Select>
+        {passage?.source === 'pasted' ? (
+          <div className="flex h-10 items-center gap-2 rounded-md border border-input bg-muted/40 px-3 text-sm">
+            {findTranslation(passage.translationId)?.name ?? passage.translationId}
+            <span className="text-xs text-muted-foreground">· from your pasted text</span>
+          </div>
+        ) : (
+          <Select
+            id="translation"
+            value={translationId}
+            onChange={(e) => void changeTranslation(e.target.value)}
+          >
+            {BUNDLED_TRANSLATIONS.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} ({t.shortName})
+              </option>
+            ))}
+          </Select>
+        )}
         {textless.length > 0 && (
           <p role="alert" className="text-sm text-warning">
             {textless.length} verse{textless.length === 1 ? '' : 's'} in your passage

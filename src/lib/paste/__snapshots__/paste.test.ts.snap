@@ -1,0 +1,716 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden corpus — full assembled snapshots > bg-ephesians1-webbe 1`] = `
+{
+  "blocks": [
+    {
+      "kind": "p",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "Blessed be the God and Father of our Lord Jesus Christ, who has blessed us with every spiritual blessing in the heavenly places in Christ,",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.3",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "even as he chose us in him before the foundation of the world, that we would be holy and without defect before him in love,",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.4",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "having predestined us for adoption as children through Jesus Christ to himself, according to the good pleasure of his desire,",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.5",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "to the praise of the glory of his grace, by which he freely gave us favour in the Beloved.",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.6",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "In him we have our redemption through his blood, the forgiveness of our trespasses, according to the riches of his grace",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.7",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "which he made to abound towards us in all wisdom and prudence,",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.8",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "making known to us the mystery of his will, according to his good pleasure which he purposed in him",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.9",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "to an administration of the fullness of the times, to sum up all things in Christ, the things in the heavens and the things on the earth, in him.",
+            },
+          ],
+          "present": true,
+          "verseId": "EPH.1.10",
+        },
+      ],
+    },
+  ],
+  "notes": [],
+  "reference": "Ephesians 1:3-10",
+  "source": "pasted",
+  "translationId": "webbe",
+  "versification": "kjv",
+}
+`;
+
+exports[`golden corpus — full assembled snapshots > bg-luke1-birth-webbe 1`] = `
+{
+  "blocks": [
+    {
+      "editorial": true,
+      "kind": "s1",
+      "text": [
+        {
+          "qlevel": 0,
+          "text": "The birth of John the Baptist",
+        },
+      ],
+      "verses": [],
+    },
+    {
+      "kind": "p",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "Now the time that Elizabeth should give birth was fulfilled, and she gave birth to a son.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.57",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "Her neighbours and her relatives heard that the Lord had magnified his mercy towards her, and they rejoiced with her.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.58",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "On the eighth day, they came to circumcise the child; and they would have called him Zacharias, after the name of his father.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.59",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "His mother answered, “Not so; but he will be called John.”",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.60",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "They said to her, “There is no one amongst your relatives who is called by this name.”",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.61",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "They made signs to his father, what he would have him called.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.62",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "He asked for a writing tablet, and wrote, “His name is John.”",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.63",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "His mouth was opened immediately and his tongue freed, and he spoke, blessing God.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.64",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "Fear came on all who lived around them, and all these sayings were talked about throughout all the hill country of Judea.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.65",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "All who heard them laid them up in their heart, saying, “What then will this child be?” The hand of the Lord was with him.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.66",
+        },
+      ],
+    },
+  ],
+  "notes": [],
+  "reference": "Luke 1:57-66",
+  "source": "pasted",
+  "translationId": "webbe",
+  "versification": "kjv",
+}
+`;
+
+exports[`golden corpus — full assembled snapshots > bg-luke1-magnificat-webbe 1`] = `
+{
+  "blocks": [
+    {
+      "editorial": true,
+      "kind": "s1",
+      "text": [
+        {
+          "qlevel": 0,
+          "text": "Mary’s song",
+        },
+      ],
+      "verses": [],
+    },
+    {
+      "kind": "q",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Mary said,",
+            },
+            {
+              "qlevel": 1,
+              "text": "“My soul magnifies the Lord.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.46",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 2,
+              "text": "My spirit has rejoiced in God my Saviour,",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.47",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "for he has looked at the humble state of his servant.",
+            },
+            {
+              "qlevel": 2,
+              "text": "For behold, from now on, all generations will call me blessed.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.48",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "For he who is mighty has done great things for me.",
+            },
+            {
+              "qlevel": 2,
+              "text": "Holy is his name.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.49",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "His mercy is for generations and generations",
+            },
+            {
+              "qlevel": 2,
+              "text": "on those who fear him.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.50",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "He has shown strength with his arm.",
+            },
+            {
+              "qlevel": 2,
+              "text": "He has scattered the proud in the imagination of their hearts.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.51",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "He has put down princes from their thrones,",
+            },
+            {
+              "qlevel": 2,
+              "text": "and has exalted the lowly.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.52",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "He has filled the hungry with good things.",
+            },
+            {
+              "qlevel": 2,
+              "text": "He has sent the rich away empty.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.53",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "He has given help to Israel his servant,",
+            },
+            {
+              "qlevel": 2,
+              "text": "that he might remember mercy,",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.54",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "as he spoke to our fathers,",
+            },
+            {
+              "qlevel": 2,
+              "text": "to Abraham and his offspring forever.”",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.55",
+        },
+      ],
+    },
+    {
+      "kind": "p",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "Mary stayed with her about three months, and then returned to her house.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.56",
+        },
+      ],
+    },
+  ],
+  "notes": [],
+  "reference": "Luke 1:46-56",
+  "source": "pasted",
+  "translationId": "webbe",
+  "versification": "kjv",
+}
+`;
+
+exports[`golden corpus — full assembled snapshots > bg-psalm1-webbe 1`] = `
+{
+  "blocks": [
+    {
+      "kind": "q",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Blessed is the man who doesn’t walk in the counsel of the wicked,",
+            },
+            {
+              "qlevel": 2,
+              "text": "nor stand on the path of sinners,",
+            },
+            {
+              "qlevel": 2,
+              "text": "nor sit in the seat of scoffers;",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.1.1",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "but his delight is in the LORD’s law.",
+            },
+            {
+              "qlevel": 2,
+              "text": "On his law he meditates day and night.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.1.2",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "He will be like a tree planted by the streams of water,",
+            },
+            {
+              "qlevel": 2,
+              "text": "that produces its fruit in its season,",
+            },
+            {
+              "qlevel": 2,
+              "text": "whose leaf also does not wither.",
+            },
+            {
+              "qlevel": 2,
+              "text": "Whatever he does shall prosper.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.1.3",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "The wicked are not so,",
+            },
+            {
+              "qlevel": 2,
+              "text": "but are like the chaff which the wind drives away.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.1.4",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Therefore the wicked shall not stand in the judgement,",
+            },
+            {
+              "qlevel": 2,
+              "text": "nor sinners in the congregation of the righteous.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.1.5",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "For the LORD knows the way of the righteous,",
+            },
+            {
+              "qlevel": 2,
+              "text": "but the way of the wicked shall perish.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.1.6",
+        },
+      ],
+    },
+  ],
+  "notes": [],
+  "reference": "Psalm 1",
+  "source": "pasted",
+  "translationId": "webbe",
+  "versification": "kjv",
+}
+`;
+
+exports[`golden corpus — full assembled snapshots > bg-psalm23-asv 1`] = `
+{
+  "blocks": [
+    {
+      "editorial": true,
+      "kind": "s1",
+      "text": [
+        {
+          "qlevel": 0,
+          "text": "A Psalm of David.",
+        },
+      ],
+      "verses": [],
+    },
+    {
+      "kind": "q",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Jehovah is my shepherd;",
+            },
+            {
+              "qlevel": 2,
+              "text": "I shall not want.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.23.1",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "He maketh me to lie down in green pastures;",
+            },
+            {
+              "qlevel": 2,
+              "text": "He leadeth me beside still waters.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.23.2",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "He restoreth my soul:",
+            },
+            {
+              "qlevel": 2,
+              "text": "He guideth me in the paths of righteousness for his name’s sake.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.23.3",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Yea, though I walk through the valley of the shadow of death,",
+            },
+            {
+              "qlevel": 2,
+              "text": "I will fear no evil, for thou art with me;",
+            },
+            {
+              "qlevel": 2,
+              "text": "Thy rod and thy staff, they comfort me.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.23.4",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Thou preparest a table before me in the presence of mine enemies:",
+            },
+            {
+              "qlevel": 2,
+              "text": "Thou hast anointed my head with oil;",
+            },
+            {
+              "qlevel": 2,
+              "text": "My cup runneth over.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.23.5",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Surely goodness and lovingkindness shall follow me all the days of my life,",
+            },
+            {
+              "qlevel": 2,
+              "text": "And I shall dwell in the house of Jehovah for ever.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.23.6",
+        },
+      ],
+    },
+  ],
+  "notes": [],
+  "reference": "Psalm 23",
+  "source": "pasted",
+  "translationId": "asv",
+  "versification": "kjv",
+}
+`;
+
+exports[`golden corpus — full assembled snapshots > bg-psalm80-webbe 1`] = `
+{
+  "blocks": [
+    {
+      "editorial": true,
+      "kind": "s1",
+      "text": [
+        {
+          "qlevel": 0,
+          "text": "For the Chief Musician. To the tune of “The Lilies of the Covenant.” A Psalm by Asaph.",
+        },
+      ],
+      "verses": [],
+    },
+    {
+      "kind": "q",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Hear us, Shepherd of Israel,",
+            },
+            {
+              "qlevel": 2,
+              "text": "you who lead Joseph like a flock,",
+            },
+            {
+              "qlevel": 2,
+              "text": "you who sit above the cherubim, shine out.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.80.1",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Before Ephraim, Benjamin, and Manasseh, stir up your might!",
+            },
+            {
+              "qlevel": 2,
+              "text": "Come to save us!",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.80.2",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "Turn us again, God.",
+            },
+            {
+              "qlevel": 2,
+              "text": "Cause your face to shine,",
+            },
+            {
+              "qlevel": 2,
+              "text": "and we will be saved.",
+            },
+          ],
+          "present": true,
+          "verseId": "PS.80.3",
+        },
+      ],
+    },
+  ],
+  "notes": [],
+  "reference": "Psalm 80",
+  "source": "pasted",
+  "translationId": "webbe",
+  "versification": "kjv",
+}
+`;

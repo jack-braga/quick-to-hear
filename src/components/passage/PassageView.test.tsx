@@ -50,6 +50,52 @@ describe('PassageView', () => {
     expect(container.querySelector('[data-verse="PS.23.1"]')?.children.length).toBe(2);
   });
 
+  it('leads a poetry-opening verse with its number, not the previous line (Magnificat)', () => {
+    // The Magnificat (Luke 1:46-55) is stored in a *prose* block whose fragments carry
+    // poetry qlevels. v46 opens on a prose intro ("Mary said,"); v47 opens directly on
+    // a poetry line. The verse number must lead the verse's own first line — for v47
+    // that means the line break comes *before* the number, not after it (the old bug
+    // stranded "47" at the tail of v46's last line).
+    const pt = ParsedTextSchema.parse({
+      translationId: 'webbe',
+      reference: 'Luke 1:46-47',
+      blocks: [
+        {
+          kind: 'p',
+          verses: [
+            {
+              verseId: 'LUKE.1.46',
+              present: true,
+              fragments: [
+                { text: 'Mary said,', qlevel: 0 },
+                { text: '“My soul magnifies the Lord.', qlevel: 1 },
+              ],
+            },
+            {
+              verseId: 'LUKE.1.47',
+              present: true,
+              fragments: [{ text: 'My spirit has rejoiced in God my Saviour,', qlevel: 2 }],
+            },
+          ],
+        },
+      ],
+    });
+    const { container } = render(<PassageView passage={pt} />);
+
+    // v46 opens on prose → its number is the first element child (no leading break).
+    const v46 = container.querySelector('[data-verse="LUKE.1.46"]')!;
+    expect(v46.firstElementChild?.tagName).toBe('SUP');
+    expect(v46.firstElementChild?.textContent).toBe('46');
+
+    // v47 opens on poetry → a <br> precedes the verse number (number leads the new line).
+    const v47 = container.querySelector('[data-verse="LUKE.1.47"]')!;
+    const kids = Array.from(v47.children);
+    const brIdx = kids.findIndex((el) => el.tagName === 'BR');
+    const supIdx = kids.findIndex((el) => el.tagName === 'SUP' && el.textContent === '47');
+    expect(brIdx).toBeGreaterThanOrEqual(0);
+    expect(supIdx).toBeGreaterThan(brIdx);
+  });
+
   it('shows an omitted verse honestly (present:false → a gap marker, no text)', () => {
     const pt = ParsedTextSchema.parse({
       translationId: 'asv',
