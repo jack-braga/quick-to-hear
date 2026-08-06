@@ -60,6 +60,15 @@ recorded decision.
 
 ## 5. Unified passage-interaction UI for Phases 3/4/6 (design spike)
 
+> **Sequencing decision (owner, 2026-08-06):** **deferred until after M1.** Keep building
+> Stages 6–7 on the current chip-based `<VerseAnchorPicker>` — the data model is anchor-ID
+> based, so this is a re-skin, not a re-architecture. **No mockups yet.** The **layout
+> metaphor is still open** (a resizable text|work split, a selection→action-bar overlay, or
+> marginalia were all discussed); the owner wants to **research reading / note-taking tools**
+> before choosing, so don't lock one unprompted. The selection→action-bar interaction
+> (select verse/word-span → Section / Mark / Note-question, inline authoring) is the shared
+> core across whichever layout wins.
+
 **Want (owner feedback, 2026-08-06):** replace the current phase-by-phase verse UIs
 with **one text-first interaction** modelled on the YouVersion Bible app — you select
 a verse (or a span of words within it, manuscript-discovery style) and then act on the

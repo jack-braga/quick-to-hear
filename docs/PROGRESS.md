@@ -688,6 +688,20 @@ _Append-only. Newest last._
     unit — up from 106); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test
     entry points above; 0 console errors (only the pre-existing RR v7 future-flag warnings).
 
+- **Owner decisions (2026-08-06, post-Stage-5) — three long-open questions resolved:**
+  - **Form state = controlled inputs + the Zustand store is the HOUSE STANDARD** (not
+    react-hook-form). Resolved the question carried since Stage 2. Rationale: the store is
+    already the single source of truth with autosave; RHF adds a second state layer for small,
+    low-frequency fields; it's orthogonal to any layout redesign. **Future stages: build with
+    controlled inputs + `applyToCurrent`; do not propose RHF.** (Also saved to auto-memory.)
+  - **The YouVersion-style text-centric redesign (`ROADMAP.md` §5) is deferred until AFTER
+    M1.** Keep building Stages 6–7 on the current chip-based `<VerseAnchorPicker>` (the model is
+    anchor-ID based, so the redesign is a re-skin, not a re-architecture). **No mockups now.**
+    The **layout metaphor is still open** (resizable split vs selection action-bar vs marginalia)
+    — owner wants to research reading / note-taking tools before choosing; don't pick one
+    unprompted. (Also saved to auto-memory + noted in ROADMAP §5.)
+  - **BSB USFM edition (§8 #4) stays deferred** — app ships WEBBE + ASV; data-only add later.
+
 ## Known issues / risks being carried
 
 - **[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80):
