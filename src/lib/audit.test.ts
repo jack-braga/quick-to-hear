@@ -68,7 +68,7 @@ function makeTestStudy(over: Partial<Study> = {}): Study {
   const base = makeStudy('s1', '2026-08-06T00:00:00.000Z');
   return {
     ...base,
-    passage: { primary: PASSAGE },
+    passage: { translations: { webbe: PASSAGE }, primaryId: 'webbe' },
     // Two sections: §1 = v5–6, §2 = v7.
     map: {
       sections: [
@@ -92,7 +92,9 @@ function statusOf(results: ReturnType<typeof auditResults>, id: AuditCheckId): A
 
 describe('coverageMap', () => {
   it('reports no sections when the partition does not fit / no passage', () => {
-    expect(coverageMap(makeTestStudy({ passage: { primary: null } })).hasSections).toBe(false);
+    expect(
+      coverageMap(makeTestStudy({ passage: { translations: {}, primaryId: null } })).hasSections,
+    ).toBe(false);
     const noSections = makeTestStudy({ map: { sections: [], marks: [] } });
     expect(coverageMap(noSections).hasSections).toBe(false);
   });

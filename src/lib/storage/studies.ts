@@ -7,7 +7,7 @@ import {
   type QuarantineRecord,
 } from '@/lib/storage/db';
 import { hydrate } from '@/lib/storage/hydrate';
-import { toSummary, type ParsedText, type Study, type StudySummary } from '@/types/study';
+import { toSummary, type Passage, type Study, type StudySummary } from '@/types/study';
 
 /**
  * The study CRUD + project-file API (PLAN §4.4). The study body and its passage
@@ -37,9 +37,9 @@ function toBody(study: Study): Omit<Study, 'passage'> {
 export async function listStudies(): Promise<StudySummary[]> {
   const db = await getDB();
   const bodies = await db.getAll(STORE_STUDIES);
-  // Bodies have no passage; rejoin a null passage so `toSummary` sees a full Study.
+  // Bodies have no passage; rejoin an empty one so `toSummary` sees a full Study.
   return bodies
-    .map((body) => toSummary({ ...body, passage: { primary: null } }))
+    .map((body) => toSummary({ ...body, passage: { translations: {}, primaryId: null } }))
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
@@ -47,12 +47,13 @@ export async function getStudy(id: string): Promise<Study | null> {
   const db = await getDB();
   const body = await db.get(STORE_STUDIES, id);
   if (!body) return null;
-  const primary = (await db.get(STORE_PASSAGES, id)) ?? null;
-  // Belt-and-braces: hydrate a possibly-older stored body (never throws).
-  const result = hydrate({ ...body, passage: { primary } }, { id, now: nowIso() });
+  // The passage store holds the whole passage payload (M3). A legacy record is a bare
+  // ParsedText (the pre-M3 primary); `hydrate` → `normaliseStoredPassage` upgrades it.
+  const storedPassage = (await db.get(STORE_PASSAGES, id)) ?? null;
+  const result = hydrate({ ...body, passage: storedPassage }, { id, now: nowIso() });
   if (result.ok) return result.study;
   // A body that will not hydrate is quarantined rather than lost, and read as absent.
-  await quarantineRaw({ ...body, passage: { primary } }, 'load', result.reason);
+  await quarantineRaw({ ...body, passage: storedPassage }, 'load', result.reason);
   return null;
 }
 
@@ -66,16 +67,17 @@ export async function putStudy(study: Study): Promise<void> {
   await db.put(STORE_STUDIES, toBody(study), study.id);
 }
 
-/** Persist the detached passage payload (create / import / Stage-2 confirm). */
-export async function putPassage(id: string, primary: ParsedText | null): Promise<void> {
+/** Persist the detached passage payload (create / import / passage-confirm). Stores the
+ *  whole M3 passage object (all translations + primaryId), not just the primary. */
+export async function putPassage(id: string, passage: Passage): Promise<void> {
   const db = await getDB();
-  await db.put(STORE_PASSAGES, primary, id);
+  await db.put(STORE_PASSAGES, passage, id);
 }
 
 /** Persist body + passage together (create / import). */
 export async function putStudyFull(study: Study): Promise<void> {
   await putStudy(study);
-  await putPassage(study.id, study.passage.primary);
+  await putPassage(study.id, study.passage);
 }
 
 export async function deleteStudy(id: string): Promise<void> {

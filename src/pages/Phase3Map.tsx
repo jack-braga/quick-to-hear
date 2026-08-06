@@ -26,6 +26,7 @@ import {
 import { compareVerseIds } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds, verseText, type ParsedText, type VerseSpan } from '@/types/passage';
+import { primaryText } from '@/lib/passage';
 import { useStudyStore } from '@/store/study';
 import type { Mark, Section, VerseAnchor } from '@/types/study';
 import { StudyNotFound } from '@/pages/StudyNotFound';
@@ -395,7 +396,7 @@ export default function Phase3Map() {
 
   if (!study) return <StudyNotFound loading={loading} />;
 
-  const passage = study.passage.primary;
+  const passage = primaryText(study.passage);
   const map = study.map;
 
   const setSections = (recipe: (prev: Section[]) => Section[]) =>

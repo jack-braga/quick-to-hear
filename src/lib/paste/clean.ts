@@ -27,6 +27,14 @@ export function collapseWs(s: string): string {
   return s.replace(/\s+/g, ' ').trim();
 }
 
+/** Unwrap **bracketed verse numbers** into plain standalone digit tokens: YouVersion copies
+ *  markers as `[39]`, whereas the marker detector expects space-delimited digits. Digits only
+ *  — footnote *letters* like `[a]` are a separate concern ({@link stripInlineMarkers}). Run
+ *  before line-splitting so `[39] Now…[40] and…` becomes ` 39 Now… 40 and…`. */
+export function unwrapBracketedVerseNumbers(s: string): string {
+  return s.replace(/\[(\d{1,3})\]/g, ' $1 ');
+}
+
 /** Map a leading-space width to a poetry indent level 0..3. */
 export function indentLevel(spaces: number): number {
   if (spaces >= 6) return 2;
@@ -63,6 +71,9 @@ const CHROME_LINE_RES: RegExp[] = [
   /used by permission/i,
   /^share$/i,
   /^compare$/i,
+  // A bare URL line, e.g. YouVersion's "https://bible.com/bible/3345/luk.1.39-80.LSB".
+  /^https?:\/\/\S+$/i,
+  /^www\.\S+$/i,
 ];
 
 /** True when a trimmed line is app chrome to strip (not the footnotes *body* — that is

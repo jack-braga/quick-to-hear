@@ -27,6 +27,33 @@ describe('hydrate', () => {
     expect(res.study.audit.acks).toEqual({}); // defaulted section
   });
 
+  it('upgrades a v1 single-primary passage into the M3 translations map', () => {
+    // A schemaVersion-1 doc still using the old `passage: { primary: ParsedText }` shape.
+    const raw = {
+      id: 's1',
+      schemaVersion: 1,
+      setup: { reference: 'Luke 1:5-25', primaryTranslationId: 'webbe' },
+      passage: {
+        primary: {
+          translationId: 'webbe',
+          versification: 'kjv',
+          reference: 'Luke 1:5-25',
+          blocks: [],
+          notes: [],
+        },
+      },
+    };
+    const res = hydrate(raw, ctx);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.upgraded).toBe(true);
+    expect(res.study.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
+    // The old primary is now keyed under translations + named by primaryId — nothing lost.
+    expect(res.study.passage.primaryId).toBe('webbe');
+    expect(res.study.passage.translations.webbe?.translationId).toBe('webbe');
+    expect(res.study.passage.translations.webbe?.reference).toBe('Luke 1:5-25');
+  });
+
   it('fills id / timestamps from context when the raw doc lacks them', () => {
     const res = hydrate({ setup: {} }, ctx);
     expect(res.ok).toBe(true);

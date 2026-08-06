@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useOpenStudy } from '@/hooks/useOpenStudy';
 import { litmusThemeTests, stuckHelpers, trapsContent } from '@/lib/content';
+import { primaryText } from '@/lib/passage';
 import { cn } from '@/lib/utils';
 import { useStudyStore } from '@/store/study';
 import type { Study, ThemeAim } from '@/types/study';
@@ -314,7 +315,7 @@ export default function Phase5ThemeAim() {
         <Help helpKey="p5.faithfulness" />
       </div>
 
-      {!study.passage.primary && (
+      {!primaryText(study.passage) && (
         <p className="text-xs text-warning">
           No passage loaded —{' '}
           <Link to={`/study/${study.id}/1`} className="underline underline-offset-2">

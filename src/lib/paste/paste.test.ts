@@ -11,6 +11,7 @@ import birth from './__fixtures__/bg-luke1-birth-webbe.txt?raw';
 import psalm1 from './__fixtures__/bg-psalm1-webbe.txt?raw';
 import ephesians from './__fixtures__/bg-ephesians1-webbe.txt?raw';
 import psalm80 from './__fixtures__/bg-psalm80-webbe.txt?raw';
+import yvJonah from './__fixtures__/yv-jonah1-webbe.txt?raw';
 
 /** Analyse a paste then assemble it into a ParsedText, deriving the anchoring context
  *  from the recovered reference (as the review screen does once the user accepts). */
@@ -241,5 +242,30 @@ describe('golden corpus — full assembled snapshots', () => {
   });
   it('bg-psalm80-webbe', () => {
     expect(run(psalm80).passage).toMatchSnapshot();
+  });
+});
+
+describe('YouVersion format (real-world, on-device tested)', () => {
+  it('recovers the reference + translation from a "Book C:V-V ABBR" header line', () => {
+    const { analysis } = run(yvJonah);
+    expect(analysis.detectedReference).toBe('Jonah 1:1-4');
+    expect(analysis.detectedTranslationId).toBe('webbe'); // "WEB" → bundled WEBBE
+    expect(analysis.droppedChrome.join('\n')).toMatch(/Jonah 1:1-4 WEB/);
+  });
+
+  it('strips the trailing bible.com URL line as chrome', () => {
+    const { analysis } = run(yvJonah);
+    expect(analysis.droppedChrome.join('\n')).toMatch(/https:\/\/bible\.com/);
+    expect(analysis.segments.some((s) => /bible\.com/.test(s.text))).toBe(false);
+  });
+
+  it('detects [NN] bracket verse markers and splits the one-blob paragraph into verses', () => {
+    const { analysis, passage } = run(yvJonah);
+    const verseSegs = analysis.segments.filter((s) => s.startsVerse);
+    expect(verseSegs.map((s) => s.verseNumber)).toEqual([1, 2, 3, 4]);
+    expect(verseIds(passage)).toEqual(['JONAH.1.1', 'JONAH.1.2', 'JONAH.1.3', 'JONAH.1.4']);
+    // The reference/translation header did not leak into verse 1's text.
+    expect(verseText(allVerses(passage)[0]!)).toMatch(/^Now the LORD/);
+    expect(verseText(allVerses(passage)[0]!)).not.toMatch(/1:1-4|WEB/);
   });
 });

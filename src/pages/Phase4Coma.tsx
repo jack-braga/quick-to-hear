@@ -23,6 +23,7 @@ import {
   type RecycleSource,
 } from '@/lib/recycle';
 import type { ParsedText } from '@/types/passage';
+import { primaryText } from '@/lib/passage';
 import { useStudyStore } from '@/store/study';
 import type { Candidate, Note, QuestionType, Study, VerseAnchor } from '@/types/study';
 import { StudyNotFound } from '@/pages/StudyNotFound';
@@ -357,7 +358,7 @@ export default function Phase4Coma() {
 
   if (!study) return <StudyNotFound loading={loading} />;
 
-  const passage = study.passage.primary;
+  const passage = primaryText(study.passage);
   const genre = study.setup.genre;
   const comaSet: ComaGenreSet | null = comaSetForGenre(genre);
   const readingTip = readingTipForGenre(genre);

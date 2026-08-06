@@ -49,6 +49,7 @@ import {
 import { deriveRecycleSources } from '@/lib/recycle';
 import { cn } from '@/lib/utils';
 import { verseIds, type ParsedText } from '@/types/passage';
+import { primaryText } from '@/lib/passage';
 import { useStudyStore } from '@/store/study';
 import type {
   AimComponent,
@@ -1187,7 +1188,7 @@ export default function Phase6Build() {
 
   if (!study) return <StudyNotFound loading={loading} />;
 
-  const passage = study.passage.primary;
+  const passage = primaryText(study.passage);
 
   // Talk mode branches here (PLAN §4.9); M1 builds only the study path.
   if (study.build.format !== 'study') {

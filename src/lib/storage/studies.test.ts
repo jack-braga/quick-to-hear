@@ -28,6 +28,12 @@ const samplePassage: ParsedText = {
   notes: [],
 };
 
+/** The M3 passage container wrapping a single primary reading. */
+const samplePassageContainer = {
+  translations: { webbe: samplePassage },
+  primaryId: 'webbe',
+};
+
 beforeEach(() => {
   // Isolate each test with a fresh fake-indexeddb + a fresh cached connection.
   (globalThis as unknown as { indexedDB: unknown }).indexedDB = new IDBFactory();
@@ -54,17 +60,19 @@ describe('storage CRUD', () => {
 
 describe('passage separation (PLAN §4.4)', () => {
   it('rejoins the passage on read but keeps it out of the list', async () => {
-    await putStudyFull({ ...freshStudy('p', 'John 1'), passage: { primary: samplePassage } });
+    await putStudyFull({ ...freshStudy('p', 'John 1'), passage: samplePassageContainer });
 
     const [row] = await listStudies();
     expect(row.reference).toBe('John 1');
     expect('passage' in row).toBe(false);
 
-    expect((await getStudy('p'))?.passage.primary?.translationId).toBe('webbe');
+    const got = await getStudy('p');
+    expect(got?.passage.primaryId).toBe('webbe');
+    expect(got?.passage.translations.webbe?.translationId).toBe('webbe');
   });
 
   it('a body-only save (the autosave path) leaves the stored passage intact', async () => {
-    const s: Study = { ...freshStudy('x', 'Mark 1'), passage: { primary: samplePassage } };
+    const s: Study = { ...freshStudy('x', 'Mark 1'), passage: samplePassageContainer };
     await putStudyFull(s);
 
     // Autosave writes the body only; the passage store must be untouched.
@@ -72,7 +80,7 @@ describe('passage separation (PLAN §4.4)', () => {
 
     const got = await getStudy('x');
     expect(got?.setup.reference).toBe('Mark 2');
-    expect(got?.passage.primary?.translationId).toBe('webbe');
+    expect(got?.passage.translations.webbe?.translationId).toBe('webbe');
   });
 });
 

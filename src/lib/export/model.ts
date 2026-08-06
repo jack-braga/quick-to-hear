@@ -1,4 +1,5 @@
 import type { ParsedText } from '@/types/passage';
+import { primaryText } from '@/lib/passage';
 import { orderedQuestions } from '@/lib/questions';
 import { verseRefLabel } from '@/lib/map';
 import type {
@@ -123,7 +124,7 @@ export function handoutModel(study: Study, opts: ExportOptions): HandoutModel {
   return {
     reference: study.setup.reference,
     intro: study.setup.introText.trim(),
-    passage: study.passage.primary,
+    passage: primaryText(study.passage),
     translationName: opts.translationName,
     copyrightLine: opts.copyrightLine,
     questions,

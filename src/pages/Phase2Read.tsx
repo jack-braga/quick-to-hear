@@ -3,10 +3,12 @@ import { Link, useParams } from 'react-router-dom';
 
 import { Help } from '@/components/Help';
 import { PassageView } from '@/components/passage/PassageView';
+import { TranslationCompare } from '@/components/passage/TranslationCompare';
 import { StudyHeader } from '@/components/StudyHeader';
 import { Button } from '@/components/ui/button';
 import { useOpenStudy } from '@/hooks/useOpenStudy';
 import { findTranslation } from '@/lib/bible';
+import { primaryText } from '@/lib/passage';
 import { useStudyStore } from '@/store/study';
 import { StudyNotFound } from '@/pages/StudyNotFound';
 
@@ -18,7 +20,7 @@ export default function Phase2Read() {
 
   if (!study) return <StudyNotFound loading={loading} />;
 
-  const passage = study.passage.primary;
+  const passage = primaryText(study.passage);
   const count = study.read.count;
   const tr = passage ? findTranslation(passage.translationId) : undefined;
 
@@ -58,6 +60,9 @@ export default function Phase2Read() {
               </p>
             )}
           </section>
+
+          {/* Comparison translations, if any were added in Phase 1. */}
+          <TranslationCompare passage={study.passage} />
 
           {/* Read instruction + counter */}
           <section className="space-y-3 rounded-lg border border-border bg-card p-4">

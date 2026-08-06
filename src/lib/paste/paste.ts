@@ -12,6 +12,7 @@ import {
   looksLikeTranslationName,
   preclean,
   stripInlineMarkers,
+  unwrapBracketedVerseNumbers,
 } from './clean';
 import type {
   AssembleContext,
@@ -68,6 +69,21 @@ function matchBundledTranslation(name: string): string | null {
   // A couple of common aliases for the bundled set.
   if (/world english bible/.test(n) || /\bweb\b/.test(n)) return 'webbe';
   if (/american standard/.test(n)) return 'asv';
+  return null;
+}
+
+/** A header line carrying a reference **and** a trailing translation on one line, e.g.
+ *  YouVersion's "Luke 1:39-80 LSB" or "Psalm 80 New International Version". Peels 1–3
+ *  trailing tokens off the end and returns the split the moment the remainder parses as a
+ *  reference (bcv is the strong guard — verse prose won't parse). */
+function splitReferenceAndTranslation(line: string): { ref: string; translation: string } | null {
+  const parts = line.split(/\s+/).filter(Boolean);
+  for (let k = 1; k <= 3 && k < parts.length; k++) {
+    const ref = parts.slice(0, parts.length - k).join(' ');
+    const translation = parts.slice(parts.length - k).join(' ').replace(/[()[\]]/g, '');
+    if (!/^[A-Za-z]/.test(translation)) continue; // a translation token starts with a letter
+    if (REFERENCE_ONLY_RE.test(ref) && parseReference(ref)) return { ref, translation };
+  }
   return null;
 }
 
@@ -206,10 +222,12 @@ export function analysePaste(raw: string, opts: AnalyseOptions = {}): PasteAnaly
   const notes: PasteNote[] = [];
   const flags: string[] = [];
 
-  // Pass 1: strip chrome + capture the trailing footnotes block.
+  // Pass 1: strip chrome + capture the trailing footnotes block. Bracketed verse markers
+  // ([39], YouVersion) are unwrapped to plain digit tokens up front so the marker detector
+  // sees them.
   const kept: string[] = [];
   let inFootnotes = false;
-  for (const line of preclean(raw).split('\n')) {
+  for (const line of unwrapBracketedVerseNumbers(preclean(raw)).split('\n')) {
     const t = line.trim();
     if (inFootnotes) {
       if (t) {
@@ -240,17 +258,31 @@ export function analysePaste(raw: string, opts: AnalyseOptions = {}): PasteAnaly
   if (firstIdx >= 0) {
     const t = body[firstIdx]!.trim();
     if (REFERENCE_ONLY_RE.test(t) && parseReference(t)) {
+      // The reference is on its own line (BibleGateway shape).
       detectedReference = t;
       droppedChrome.push(body[firstIdx]!);
       body.splice(0, firstIdx + 1);
+    } else {
+      // A reference + translation on one line (YouVersion shape: "Luke 1:39-80 LSB").
+      const split = splitReferenceAndTranslation(t);
+      if (split) {
+        detectedReference = split.ref;
+        detectedTranslationName = split.translation;
+        detectedTranslationId = matchBundledTranslation(split.translation);
+        droppedChrome.push(body[firstIdx]!);
+        body.splice(0, firstIdx + 1);
+      }
     }
   }
-  const nameIdx = body.findIndex((l) => l.trim());
-  if (nameIdx >= 0 && looksLikeTranslationName(body[nameIdx]!.trim())) {
-    detectedTranslationName = body[nameIdx]!.trim();
-    detectedTranslationId = matchBundledTranslation(detectedTranslationName);
-    droppedChrome.push(body[nameIdx]!);
-    body.splice(0, nameIdx + 1);
+  // A translation-name on its own following line (only if not already recovered above).
+  if (!detectedTranslationName) {
+    const nameIdx = body.findIndex((l) => l.trim());
+    if (nameIdx >= 0 && looksLikeTranslationName(body[nameIdx]!.trim())) {
+      detectedTranslationName = body[nameIdx]!.trim();
+      detectedTranslationId = matchBundledTranslation(detectedTranslationName);
+      droppedChrome.push(body[nameIdx]!);
+      body.splice(0, nameIdx + 1);
+    }
   }
 
   // Pass 3: paragraphs (blank-delimited) → classified segments.

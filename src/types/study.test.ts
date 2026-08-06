@@ -13,7 +13,8 @@ describe('Study schema', () => {
     expect(s.setup.reference).toBe('');
     expect(s.setup.format).toBe('study');
     expect(s.setup.secondaryTranslationIds).toEqual([]);
-    expect(s.passage.primary).toBeNull();
+    expect(s.passage.translations).toEqual({});
+    expect(s.passage.primaryId).toBeNull();
     expect(s.build.format).toBe('study');
     if (s.build.format === 'study') expect(s.build.questions).toEqual([]);
     expect(s.audit.acks).toEqual({});

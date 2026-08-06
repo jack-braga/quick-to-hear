@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { postStudyEvent } from '@/lib/broadcast';
 import { newId, nowIso } from '@/lib/id';
 import { reconcileMarks } from '@/lib/map';
+import { primaryText } from '@/lib/passage';
 import { addCandidate, candidateForSource, makeCandidateFromSource, type RecycleSource } from '@/lib/recycle';
 import {
   deleteStudy as dbDeleteStudy,
@@ -13,8 +14,7 @@ import {
   putStudyFull,
   type ImportResult,
 } from '@/lib/storage';
-import type { ParsedText } from '@/types/passage';
-import { makeStudy, toSummary, type Setup, type Study, type StudySummary } from '@/types/study';
+import { makeStudy, toSummary, type Passage, type Setup, type Study, type StudySummary } from '@/types/study';
 
 /**
  * The study store (PLAN §2 — Zustand + selector subscriptions). It owns the Home
@@ -43,9 +43,11 @@ interface StudyState {
   closeStudy: () => void;
   updateSetup: (patch: Partial<Setup>) => void;
   applyToCurrent: (recipe: (study: Study) => Study) => void;
-  /** Confirm a parsed passage: persist body + passage together and refresh the row.
+  /** Confirm the passage (M3: the whole translations map + primaryId): persist body +
+   *  passage together and refresh the row. The page composes the next passage via the pure
+   *  `@/lib/passage` builders; this is the single choke point that reconciles marks + saves.
    *  (The passage store isn't touched by keystroke autosave, so this is explicit.) */
-  setPassage: (primary: ParsedText | null) => Promise<void>;
+  setPassage: (passage: Passage) => Promise<void>;
   /** Phase-2 read counter tap (autosaved with the body). */
   incrementRead: () => void;
   /** Materialise a recycled source (a Phase-3 mark or a Phase-4 anchored note) into the
@@ -123,14 +125,16 @@ export const useStudyStore = create<StudyState>((set, get) => ({
   applyToCurrent: (recipe) =>
     set((s) => (s.current ? { current: touched(recipe(s.current)), dirty: true } : s)),
 
-  setPassage: async (primary) => {
+  setPassage: async (passage) => {
     const cur = get().current;
     if (!cur) return;
-    // The passage text changed — degrade any sub-verse marks whose text no longer
-    // matches (PLAN §4.3). This is the single choke point for a text change (initial
-    // load, translation switch, re-parse), so it's the right place to reconcile.
+    // The primary text may have changed — degrade any sub-verse marks whose text no longer
+    // matches (PLAN §4.3). This is the single choke point for a primary-text change (initial
+    // load, translation switch, re-parse); marks anchor to the primary only, and reconcile
+    // is idempotent when the primary is unchanged (e.g. merely adding a secondary).
+    const primary = primaryText(passage);
     const map = primary ? reconcileMarks(cur.map, primary) : cur.map;
-    const next = touched({ ...cur, passage: { primary }, map });
+    const next = touched({ ...cur, passage, map });
     // Persist body + passage now (bundled passage is a re-derivable cache — §4.4).
     set((s) => ({
       current: next,

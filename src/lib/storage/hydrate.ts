@@ -1,3 +1,4 @@
+import { normaliseStoredPassage } from '@/lib/passage';
 import { CURRENT_SCHEMA_VERSION, StudySchema, type Study } from '@/types/study';
 
 /**
@@ -40,12 +41,16 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Version migrations run before the current schema is applied. There is only v1
- * today, so this is the identity — but the seam is here so a real v1→v2 restructure
- * runs *before* the version is forced to current (never strip newer data blindly).
+ * Version migrations run before the current schema is applied, so a restructure happens
+ * *before* the version is forced to current (never strip newer data blindly).
+ *
+ * **v1 → v2 (M3):** `passage` moved from a single `{ primary }` to `{ translations,
+ * primaryId }`. {@link normaliseStoredPassage} coerces any historical shape (the old
+ * embedded `{ primary }`, a bare `ParsedText`, or the already-M3 shape) into the M3 shape
+ * idempotently, so it is safe to run for every incoming version.
  */
 function migrate(input: Record<string, unknown>, _fromVersion: number): Record<string, unknown> {
-  return input;
+  return { ...input, passage: normaliseStoredPassage(input.passage) };
 }
 
 export function hydrate(raw: unknown, ctx: HydrateContext): HydrateResult {

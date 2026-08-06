@@ -7,15 +7,19 @@ import { ParsedTextSchema, type ParsedText } from '@/types/passage';
  * whole workbook hangs off: every phase writes into one section of it, and a fresh
  * session can plug a phase in without reshaping the doc.
  *
- * `passage.primary` is a single, nullable {@link ParsedText} (M1: one primary
- * translation; M3 widens it to a `Record`). The block/line model it now uses lives in
- * `@/types/passage` (Stage 2). Verse IDs stay **plain strings** (tolerate a future
- * `"1a"`; build no verse-0 / letter-suffix / merged-range logic yet).
+ * `passage` (M3 / Stage 9) holds **many translations** —
+ * `{ translations: Record<translationId, ParsedText>, primaryId: string | null }`. One is
+ * primary (everything anchors to it); the rest are comparison-only. This restructured the
+ * M1/M2 single `passage.primary`, so {@link CURRENT_SCHEMA_VERSION} bumped to 2 and
+ * {@link hydrate} upgrades an old single-primary doc (see `@/lib/passage`
+ * `normaliseStoredPassage`). The block/line model each reading uses lives in
+ * `@/types/passage` (Stage 2). Verse IDs stay **plain strings** (tolerate a future `"1a"`;
+ * build no verse-0 / letter-suffix / merged-range logic yet).
  *
  * Every field carries a default so {@link hydrate} can fill gaps when loading an old
  * or partial document. Bump {@link CURRENT_SCHEMA_VERSION} only for true restructures.
  */
-export const CURRENT_SCHEMA_VERSION = 1;
+export const CURRENT_SCHEMA_VERSION = 2;
 
 export { ParsedTextSchema, type ParsedText };
 
@@ -250,15 +254,27 @@ export type Audit = z.infer<typeof AuditSchema>;
 // The whole document
 // ---------------------------------------------------------------------------
 
+/**
+ * The passage container (M3 / Stage 9). `translations` is keyed by `translationId`; the
+ * `primaryId` names the anchor translation (everything — verses, questions, the handout —
+ * points at it). Secondaries are comparison-only. An empty study has no translations and a
+ * null `primaryId`. Read the primary via `@/lib/passage` `primaryText`.
+ */
+export const PassageSchema = z
+  .object({
+    translations: z.record(ParsedTextSchema).default({}),
+    primaryId: z.string().nullable().default(null),
+  })
+  .default({ translations: {}, primaryId: null });
+export type Passage = z.infer<typeof PassageSchema>;
+
 export const StudySchema = z.object({
   schemaVersion: z.number().default(CURRENT_SCHEMA_VERSION),
   id: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
   setup: SetupSchema.default({}),
-  passage: z
-    .object({ primary: ParsedTextSchema.nullable().default(null) })
-    .default({ primary: null }),
+  passage: PassageSchema,
   read: z.object({ count: z.number().default(0) }).default({ count: 0 }),
   map: MapSchema.default({ sections: [], marks: [] }),
   coma: ComaSchema.default({ context: [], observation: [], meaning: [], application: [] }),

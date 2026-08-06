@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, ClipboardPaste, Loader2 } from 'lucide-react';
+import { BookOpen, ClipboardPaste, Loader2, Plus, X } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { Help } from '@/components/Help';
+import { TranslationCompare } from '@/components/passage/TranslationCompare';
 import { StudyHeader } from '@/components/StudyHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,14 @@ import {
   findTranslation,
   loadReading,
 } from '@/lib/bible';
+import {
+  addSecondary,
+  loadFreshPrimary,
+  primaryText,
+  removeTranslation,
+  secondaryTexts,
+  setPrimary,
+} from '@/lib/passage';
 import { DURATION_OPTIONS, GENRE_LABELS, GENRE_OPTIONS, GROUP_OPTIONS } from '@/lib/setup-options';
 import { inferGenreForBook, parseReference } from '@/lib/verse';
 import { allVerses, textlessVerseIds, type ParsedText } from '@/types/passage';
@@ -55,6 +64,7 @@ export default function Phase1Setup() {
   const [error, setError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [textless, setTextless] = useState<string[]>([]);
+  const [pendingSecondary, setPendingSecondary] = useState('');
 
   // Default the primary translation to WEBBE the first time a study is opened.
   useEffect(() => {
@@ -66,7 +76,9 @@ export default function Phase1Setup() {
   if (!study) return <StudyNotFound loading={opening} />;
 
   const setup = study.setup;
-  const passage = study.passage.primary;
+  const passage = primaryText(study.passage);
+  const secondaries = secondaryTexts(study.passage);
+  const usedIds = new Set(Object.keys(study.passage.translations));
   const translationId = setup.primaryTranslationId ?? DEFAULT_TRANSLATION_ID;
 
   const loadPassage = async () => {
@@ -90,7 +102,9 @@ export default function Phase1Setup() {
         genre: inferGenreForBook(ref.start.book.id),
         primaryTranslationId: translationId,
       });
-      await setPassage(parsed);
+      // A fresh reference load establishes THE passage — drop any comparison texts that
+      // were for a different passage.
+      await setPassage(loadFreshPrimary(parsed));
       setWarnings(notes);
     } catch {
       setError('Could not load that passage from the bundled text. Please try again.');
@@ -110,7 +124,8 @@ export default function Phase1Setup() {
     setLoading(true);
     try {
       const parsed = await loadReading(nextId, ref);
-      await setPassage(parsed);
+      // Switch the primary but keep any comparison translations (same reference).
+      await setPassage(setPrimary(study.passage, parsed));
       setTextless(textlessVerseIds(parsed, priorPresent));
     } catch {
       setError('Could not load that passage in the chosen translation.');
@@ -118,6 +133,29 @@ export default function Phase1Setup() {
       setLoading(false);
     }
   };
+
+  // Add a bundled translation as a comparison text (secondary). Loads the same reference.
+  const addBundledSecondary = async (secondaryId: string) => {
+    setError(null);
+    const ref = parseReference(setup.reference);
+    if (!ref || !passage) return;
+    setLoading(true);
+    try {
+      const parsed = await loadReading(secondaryId, ref);
+      await setPassage(addSecondary(study.passage, parsed));
+    } catch {
+      setError('Could not load that comparison translation.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const dropSecondary = async (secondaryId: string) => {
+    await setPassage(removeTranslation(study.passage, secondaryId));
+  };
+
+  // Bundled translations not already loaded (as primary or a secondary).
+  const availableBundled = BUNDLED_TRANSLATIONS.filter((t) => !usedIds.has(t.id));
 
   return (
     <div className="space-y-8">
@@ -209,6 +247,91 @@ export default function Phase1Setup() {
         )}
         <Help helpKey="p1.primary" />
       </section>
+
+      {/* Comparison translations (M3) — secondaries are for comparison only; the primary
+          stays the anchor everything else points at. */}
+      {passage && (
+        <section className="space-y-3">
+          <div>
+            <span className="text-sm font-medium">Comparison translations</span>
+            <span className="ml-1 text-sm font-normal text-muted-foreground">(optional)</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Add other translations to compare with — for spotting where translators made an
+            interpretive decision. They never change your primary or its verse anchors.
+          </p>
+
+          {secondaries.length > 0 && (
+            <ul className="space-y-1.5">
+              {secondaries.map((t) => (
+                <li
+                  key={t.translationId}
+                  className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-1.5 text-sm"
+                >
+                  <span>
+                    {findTranslation(t.translationId)?.name ??
+                      t.translationId.replace(/^pasted-/, '').replace(/-/g, ' ')}
+                    {t.source === 'pasted' && (
+                      <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[0.7rem] text-muted-foreground">
+                        pasted
+                      </span>
+                    )}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 text-muted-foreground hover:text-destructive"
+                    aria-label={`Remove ${t.translationId}`}
+                    onClick={() => void dropSecondary(t.translationId)}
+                  >
+                    <X aria-hidden className="size-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            {availableBundled.length > 0 && (
+              <>
+                <Select
+                  aria-label="Add a bundled comparison translation"
+                  className="h-9 w-auto"
+                  value={pendingSecondary}
+                  onChange={(e) => setPendingSecondary(e.target.value)}
+                >
+                  <option value="">Add a bundled translation…</option>
+                  {availableBundled.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.shortName})
+                    </option>
+                  ))}
+                </Select>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!pendingSecondary || loading}
+                  onClick={() => {
+                    const idToAdd = pendingSecondary;
+                    setPendingSecondary('');
+                    void addBundledSecondary(idToAdd);
+                  }}
+                >
+                  <Plus aria-hidden className="size-4" /> Add
+                </Button>
+              </>
+            )}
+            <Button variant="link" size="sm" className="h-auto p-0" asChild>
+              <Link to={`/study/${study.id}/paste?as=secondary`}>
+                <ClipboardPaste aria-hidden className="size-4" />
+                Paste a comparison translation
+              </Link>
+            </Button>
+          </div>
+
+          <TranslationCompare passage={study.passage} />
+        </section>
+      )}
 
       {/* Genre (inferred, overridable) */}
       <section className="space-y-2">

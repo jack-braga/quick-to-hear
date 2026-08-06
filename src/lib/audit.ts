@@ -1,4 +1,5 @@
 import { verseIds as passageVerseIds } from '@/types/passage';
+import { primaryText } from '@/lib/passage';
 import {
   estimatedMinutes,
   meaningBeforeObservation,
@@ -147,7 +148,7 @@ const EMPTY_COVERAGE: CoverageMap = {
  */
 export function coverageMap(study: Study): CoverageMap {
   const build = studyBuild(study);
-  const passage = study.passage.primary;
+  const passage = primaryText(study.passage);
   if (!build || !passage) return EMPTY_COVERAGE;
 
   const pvids = passageVerseIds(passage);

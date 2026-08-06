@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, ClipboardPaste, Trash2, Wand2 } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { Help } from '@/components/Help';
 import { PassageView } from '@/components/passage/PassageView';
@@ -11,6 +11,8 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useOpenStudy } from '@/hooks/useOpenStudy';
 import { BUNDLED_TRANSLATIONS, findTranslation } from '@/lib/bible';
+import { FOREIGN_SYSTEMS, findVersificationSystem, reversifyToKjv } from '@/lib/compare';
+import { addSecondary, setPrimary } from '@/lib/passage';
 import {
   analysePaste,
   assembleParsedText,
@@ -113,6 +115,8 @@ function SegmentRow({
 export default function PasteReview() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const asSecondary = searchParams.get('as') === 'secondary';
   const { study, loading: opening } = useOpenStudy(id);
   const updateSetup = useStudyStore((s) => s.updateSetup);
   const setPassage = useStudyStore((s) => s.setPassage);
@@ -123,14 +127,20 @@ export default function PasteReview() {
   const [reference, setReference] = useState('');
   const [translationChoice, setTranslationChoice] = useState('webbe');
   const [customName, setCustomName] = useState('');
+  const [versificationId, setVersificationId] = useState(''); // '' = standard KJV numbering
   const [showChrome, setShowChrome] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // A comparison paste anchors to the same passage — seed its reference from the study.
+  useEffect(() => {
+    if (asSecondary && study && !reference) setReference(study.setup.reference);
+  }, [asSecondary, study, reference]);
 
   const translationId =
     translationChoice === 'other' ? slugTranslation(customName) : translationChoice;
 
   // Assemble a live preview from primitive deps (so the memo doesn't rerun every render).
-  const preview = useMemo(() => {
+  const assembled = useMemo(() => {
     const pr = parseReference(reference);
     if (!pr) return null;
     return assembleParsedText(segments, {
@@ -140,6 +150,16 @@ export default function PasteReview() {
       reference: pr.input,
     });
   }, [reference, translationId, segments]);
+
+  // Remap a foreign-versified paste onto the KJV anchor (the small safe converter). Standard
+  // (KJV) leaves it untouched; a foreign system shifts verse numbers + flags any it can't map.
+  const remapped = useMemo(() => {
+    if (!assembled) return null;
+    const system = findVersificationSystem(versificationId);
+    return system ? reversifyToKjv(assembled, system) : { text: assembled, unmappable: [] };
+  }, [assembled, versificationId]);
+  const preview = remapped?.text ?? null;
+  const unmappable = remapped?.unmappable ?? [];
 
   if (!study) return <StudyNotFound loading={opening} />;
 
@@ -187,12 +207,18 @@ export default function PasteReview() {
     if (!ctx || !preview) return;
     setSaving(true);
     try {
-      updateSetup({
-        reference: ctx.reference,
-        genre: study.setup.genre ?? inferGenreForBook(parsedRef!.start.book.id),
-        primaryTranslationId: ctx.translationId,
-      });
-      await setPassage({ ...preview, source: 'pasted' });
+      const text = { ...preview, source: 'pasted' as const };
+      if (asSecondary) {
+        // A comparison translation — never touches the primary, its anchor, or the setup.
+        await setPassage(addSecondary(study.passage, text));
+      } else {
+        updateSetup({
+          reference: ctx.reference,
+          genre: study.setup.genre ?? inferGenreForBook(parsedRef!.start.book.id),
+          primaryTranslationId: ctx.translationId,
+        });
+        await setPassage(setPrimary(study.passage, text));
+      }
       navigate(`/study/${study.id}/1`);
     } finally {
       setSaving(false);
@@ -204,10 +230,15 @@ export default function PasteReview() {
       <StudyHeader study={study} />
 
       <div>
-        <h2 className="text-lg font-semibold">Paste your own passage</h2>
+        <h2 className="text-lg font-semibold">
+          {asSecondary ? 'Paste a comparison translation' : 'Paste your own passage'}
+        </h2>
         <p className="text-sm text-muted-foreground">
           Copy the text from an app or website (BibleGateway, YouVersion, a PDF…). The tool
-          tidies it up, then you review the result before it becomes your passage.
+          tidies it up, then you review the result before it{' '}
+          {asSecondary
+            ? 'is added as a comparison translation (your primary is untouched).'
+            : 'becomes your passage.'}
         </p>
       </div>
 
@@ -293,6 +324,31 @@ export default function PasteReview() {
                   to the handout yourself.
                 </p>
               )}
+
+              {/* Versification — only rare foreign-numbered texts need remapping (the small
+                  safe converter); standard = KJV numbering leaves the paste untouched. */}
+              <label htmlFor="paste-vers" className="mt-2 block text-xs font-medium text-muted-foreground">
+                Verse numbering
+              </label>
+              <Select
+                id="paste-vers"
+                value={versificationId}
+                onChange={(e) => setVersificationId(e.target.value)}
+              >
+                <option value="">Standard (KJV numbering) — usually correct</option>
+                {FOREIGN_SYSTEMS.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </Select>
+              {unmappable.length > 0 && (
+                <p role="alert" className="text-xs text-warning">
+                  {unmappable.length} verse{unmappable.length === 1 ? '' : 's'} (the psalm title)
+                  {unmappable.length === 1 ? ' has' : ' have'} no KJV verse to line up with — they
+                  won’t be compared.
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <span className="text-sm font-medium">Detected</span>
@@ -363,7 +419,7 @@ export default function PasteReview() {
             </Button>
             <Button onClick={() => void accept()} disabled={!canAccept}>
               <ClipboardPaste aria-hidden className="size-4" />
-              Accept as the passage
+              {asSecondary ? 'Add as comparison translation' : 'Accept as the passage'}
             </Button>
           </div>
           {!ctx && (

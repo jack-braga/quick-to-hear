@@ -12,7 +12,36 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 8 complete → M2 first stage (paste ingest).** A **second way to get
+- **Phase of work:** **Stage 9 complete → M3 (secondary translations + comparison).** The single
+  primary passage became a **multi-translation model**: `passage` is now
+  `{ translations: Record<translationId, ParsedText>, primaryId: string|null }` (was
+  `{ primary }`). **schemaVersion bumped 1→2**; `hydrate()` upgrades an old single-primary doc via
+  the shared **`normaliseStoredPassage`** (`src/lib/passage.ts`) — handles the old embedded
+  `{primary}`, a bare pre-M3 `ParsedText` passage-store payload, and the M3 shape, idempotently, so
+  nothing is lost (verified: hydrate test + live IDB inspection). Every reader of the old
+  `passage.primary` (audit, exports, Phases 1–6) now reads **`primaryText(study.passage)`**; the
+  store's `setPassage` takes the whole passage and reconciles marks against the resolved primary.
+  **Phase 1** gained a **Comparison translations** section — add a **bundled** secondary (a
+  select→loadReading→`addSecondary`) or a **pasted** one (the Stage-8 paste path reused via
+  `/study/:id/paste?as=secondary`, seeding the study's reference, Accept→`addSecondary` instead of
+  replacing the primary). Secondaries are comparison-only; the primary stays the anchor. A reusable
+  **`<TranslationCompare>`** (Phase 1 **and** Phase 2) offers the two SPEC ways in: **on-demand
+  per-verse** (tap a verse → all translations, default) + an **optional side-by-side column
+  toggle**. **Alignment is pure** (`src/lib/compare.ts` `alignTranslations`): number-equality +
+  the `present` flag **within the bundle (no mapping)** — a verse present in one and gapped/absent
+  in another is **FLAGGED, never silently aligned** (verified live: WEBBE-primary vs ASV on
+  Matt 17:20-22 flags v21, and v22 stays paired with v22). For the rare **foreign-versified pasted**
+  secondary, a **small pure converter** `reversifyToKjv` (data-driven, `HEBREW_PSALMS` table; **NOT**
+  the abandoned `reversify` npm — see decision log) shifts verse numbers onto the KJV anchor and
+  **flags unmappable** title verses; offered as a "Verse numbering" selector on the pasted-secondary
+  path. **Also folded in a real-world paste fix** (owner on-device Pixel/YouVersion test, mid-session):
+  `analysePaste` now understands **YouVersion format** — `[NN]` bracket verse markers
+  (`unwrapBracketedVerseNumbers`), a `Book C:V-V ABBR` header line on one line
+  (`splitReferenceAndTranslation`), and the trailing `bible.com` URL as chrome. **+25 unit tests**
+  (+9 `compare`, +12 `passage`, +1 `hydrate` upgrade, +3 `paste` YouVersion; **232 total**), verified
+  end-to-end in a real browser (bundled secondary + compare + reload persistence), **0 console
+  errors**. **Stages 1–8 remain true below.**
+- **Stage-8 recap (M2):** A **second way to get
   a passage into Phase 1** — pasting text copied from an app/site — normalised into the same
   block/line `ParsedText` model the bundled loader produces, behind a **mandatory review screen**.
   The **pure normaliser** (`src/lib/paste/`) strips app chrome (leading reference/translation
@@ -180,15 +209,15 @@
   read-only translation display for a pasted passage (`Phase1Setup.tsx`); `extract.ts` sets
   `source:'bundled'`. **Render fix:** `PassageView.tsx` `ProseVerse` — verse number now leads
   its first line (was stranded on the previous line for poetry-opening verses). **No new deps.**
-- **Next up:** **Stage 9 — Secondary translations + comparison + versification mapping *(M3)***
-  (`PLAN.md` §6/§4.3). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 9). Move `passage.primary` →
-  `passage.translations: Record<id, ParsedText>`; add secondary translations (bundled or pasted);
-  on-demand per-verse compare (default) + optional side-by-side. **Within the bundle, align by
-  number-equality + the `present` flag (no mapping).** Only a genuinely **foreign-versified pasted
-  text** needs remapping into the KJV anchor — add **`reversify`** (MIT, plugs into `bcv_parser`)
-  then. Flag unmappable verses. **Note for Stage 9:** the paste path now sets `ParsedText.source`
-  and stores pasted text as source-of-truth; the M3 `Record` migration must preserve `source` per
-  translation (pasted secondaries persist; bundled secondaries are caches).
+- **Next up:** **Stage 10 — Depth + worked examples + PWA *(M4)*** (`PLAN.md` §6). Use
+  `docs/DEV-SESSION-PROMPT.md` (STAGE = 10). Coverage-map polish; the **worked-examples ([X]) tier**
+  across phases (one canonical passage — needs authored content, coordinate with the teaching
+  session); support-passage handout placement refinements; pastoral flags in the leader's notes;
+  **PWA harden** (raster icons, offline behaviour, precache tuning). See `PLAN.md` §6 Stage 10 for
+  the full list. **Two on-device confirmations still owed (not code-blocking):** the owner to
+  re-test the **fixed YouVersion paste** on their Pixel against the live/LAN build, and to try the
+  **pasted-comparison-translation** flow with a real clipboard (both wired + unit-tested this
+  session; real-clipboard end-to-end deferred to the owner per the no-inject testing rule).
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -246,7 +275,11 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 - [x] **Stage 8** — Paste ingest + normalisation + review screen *(M2)* — pure normaliser
       (`src/lib/paste/`), mandatory review screen (`/study/:id/paste`), pasted = source of truth;
       **also fixed** the carried poetry/verse-number render defect in `PassageView`
-- [ ] **Stage 9** — Secondary translations + comparison + versification mapping *(M3)*
+- [x] **Stage 9** — Secondary translations + comparison + versification mapping *(M3)* — model
+      migrated to `passage.translations` Record (schemaVersion 1→2, hydrate upgrades); bundled +
+      pasted secondaries; on-demand + side-by-side compare; number-equality + `present`-flag
+      alignment flags mismatches, never misaligns; pure `reversifyToKjv` converter (vendored, not
+      the reversify npm — v2/v4 incompatible); **YouVersion paste format fixed**
 - [ ] **Stage 10** — Depth + worked examples + PWA *(M4)*
 
 ## Test entry points (fill in as stages land)
@@ -533,6 +566,44 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
   - Inspect the persisted data (DevTools): IDB DB `quicktohear`, store `studies` **and** `passages`,
     the study's `passage.primary.source === 'pasted'` (the pasted block/line model is stored in full —
     source-of-truth, not a cache). A bundled passage has `source` absent/`'bundled'`.
+
+- **Stage 9** — Secondary translations + comparison + versification (M3):
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build` (all pass; lint
+    0 warnings; **232 unit tests** — +9 `compare`, +12 `passage`, +1 `hydrate` upgrade, +3 `paste`
+    YouVersion), then `npm run test:e2e` (2/2 — smoke suite unchanged).
+  - Unit tests of note: `src/lib/compare.test.ts` (alignment flags Acts-8:37 / Matt-17:21 mismatch
+    while **v38/v22 stay paired — never misaligned**; both-gap is not a mismatch; a secondary-only
+    verse is surfaced; `alignVerse` on-demand; **`reversifyToKjv`** shifts a Hebrew-numbered Ps 51 →
+    KJV and **flags the two title verses** as unmappable, unruled chapters map identically, input not
+    mutated); `src/lib/passage.test.ts` (`primaryText`/`secondaryTexts`/`translationOrder`;
+    `loadFreshPrimary`/`setPrimary` keep-secondaries-drop-old-primary/promote-a-secondary/
+    `addSecondary`/`removeTranslation` protects the primary; **`normaliseStoredPassage`** upgrades
+    `{primary}` + bare ParsedText + the M3 shape + junk→empty); `src/lib/storage/hydrate.test.ts` (a
+    **v1 single-primary doc upgrades** into the translations map, nothing lost); `src/lib/paste/
+    paste.test.ts` (**YouVersion**: `Book C:V-V ABBR` header → reference + translation; trailing
+    `bible.com` URL stripped; `[NN]` bracket markers split the one-blob paragraph into verses 1–4;
+    header doesn't leak into v1).
+  - **Manual flow (drive the app — verified live via Playwright MCP, 0 console errors):** New study →
+    Phase 1: `Matthew 17:20-22` → **Load** (WEBBE primary, 3 verses) → **Comparison translations** →
+    add **ASV** (bundled) → the **Compare translations** viewer appears: **"1 verse doesn't line up"**.
+    **At a verse** → tap **21** → WEBBE shows the text, ASV shows **"— omitted here —"**, flagged
+    "present in some, omitted in others". **Side by side** → a 3-column table (Verse | WEBBE (primary)
+    | ASV); **v21 row highlighted** with a "Translations differ here" icon, and **v22 pairs with v22**
+    (never slid into v21's slot). **Hard reload** (`location.reload()`) → the ASV secondary + the
+    comparison **rehydrate**; an IDB check confirms the passage store holds the **M3 shape**
+    (`primaryId:'webbe'`, `translations:['webbe','asv']`, `asv.source:'bundled'`). Then
+    `…/paste?as=secondary` renders **"Paste a comparison translation"** with the reference **seeded**
+    from the study (`Matthew 17:20-22`) and (after analyse) a **"Verse numbering"** selector.
+  - **Owner on-device tests still owed** (real clipboard, per the no-inject rule): (1) re-test the
+    **fixed YouVersion primary paste** on the Pixel — the fix is HMR-live on the owner's `:8080` dev
+    server (this session ran on `:8081`); (2) paste a **real comparison translation** (e.g. LSB) via
+    the secondary flow and confirm it persists a reload. Both wired + unit-tested; only the
+    real-clipboard fidelity pass is deferred.
+  - Inspect the persisted data (DevTools): IDB DB `quicktohear`, store `passages`, the study's payload
+    is now the **whole `{ translations, primaryId }`** container (was a bare `ParsedText`). A pasted
+    secondary carries `source:'pasted'` (source-of-truth); bundled ones are `source:'bundled'` caches.
+    `setup.secondaryTranslationIds` (a Stage-1 seam) is **left unused** — `passage.translations` is the
+    single source of truth (see decision log).
 
 ## Decision & deviation log
 
@@ -1047,6 +1118,67 @@ _Append-only. Newest last._
     from 183); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test entry points above;
     **0 console errors** (only the pre-existing RR v7 future-flag warnings).
 
+- **Stage 9 built (this session) → M3.** New dep: **none** (the `reversify` npm plugin was rejected —
+  see below; the converter is vendored-pure). Delivered the multi-translation model migration,
+  secondary translations (bundled + pasted), comparison (on-demand + side-by-side), the foreign→KJV
+  converter, and — folded in from live owner feedback — a **YouVersion paste-format fix**. All
+  load-bearing logic is **pure + unit-tested** (`src/lib/passage.ts`, `src/lib/compare.ts`); pages are
+  thin (controlled inputs + the pure passage builders + `setPassage`, the owner-confirmed house
+  standard). The parallel teaching session had already merged the COMA transcription; no conflict
+  (dev = `src/`, teaching = `content/`).
+  - **Decisions / deviations (flagged; the reversify one was raised + owner-approved mid-session):**
+    - **RAISED + RESOLVED — `reversify` npm is incompatible with our `bcv_parser` v4.** PLAN §2/§4.3
+      named `curiousdannii/reversify` (MIT) to "plug straight into `bcv_parser`". On inspection it is a
+      **2016 plugin for bcv_parser v2**: it monkey-patches `bcv_parser.bcv_parser.prototype` (a shape v4
+      — a TS class rewrite, `new bcv_parser(en)` — does **not** have, so it throws on load), peer-deps
+      `bible-passage-reference-parser@^2`, pulls in **lodash**, and mutates the shared parser singleton
+      (rewriting `regexps.translations` + `versification_system`). I **stopped and asked the owner** (with
+      the plain-English impact); owner chose the **"small safe converter"**. So the foreign→KJV remap is a
+      **pure, data-driven `reversifyToKjv`** (`src/lib/compare.ts`) — a small explicit `HEBREW_PSALMS`
+      offset table (title-verse shift, verified against BHS), no deps, no singleton mutation, flags every
+      unmappable (title) verse. Extends by adding table rows; unruled chapters map identically. **TVTMS /
+      `versification_json` stay out** (§4.3, as directed).
+    - **Model migration = a true restructure → schemaVersion 1→2.** `passage: { primary }` →
+      `{ translations: Record<translationId, ParsedText>, primaryId }`. Keyed by `translationId`
+      (self-describing; add-same-twice is idempotent). One upgrade point — **`normaliseStoredPassage`** —
+      is shared by `hydrate` (import + IDB-load, via the `migrate()` seam) and is idempotent across all
+      historical shapes (old `{primary}`, bare pre-M3 `ParsedText`, new shape, junk). Bumping (vs relying
+      on shape-detection alone) is the honest anti-data-loss choice: a v2 doc opened by a v1 app is
+      **refused + quarantined**, never silently stripped. The **passage store now holds the whole
+      container** (was a bare `ParsedText`); IDB `DB_VERSION` unchanged (schemaless value, same 3 stores).
+    - **`setPassage` now takes the whole passage; pages compose it with pure builders.** `loadFreshPrimary`
+      (new reference → drop stale secondaries), `setPrimary` (translation switch → keep secondaries, drop
+      old primary, promote a secondary if chosen), `addSecondary`, `removeTranslation` (never drops the
+      primary). `setPassage` reconciles marks against the **resolved primary** (idempotent when only a
+      secondary changed). Reader swap `study.passage.primary` → `primaryText(study.passage)` across audit,
+      exports, and Phases 1–6 (mechanical; all still work).
+    - **Comparison placement:** management (add/remove) lives in **Phase 1** (per the brief + SPEC §1);
+      the reusable **`<TranslationCompare>`** viewer renders in **Phase 1 and Phase 2** (the read screen,
+      where comparing-while-reading is natural). Both modes (on-demand + side-by-side) in one component.
+      **Alignment iterates the primary's verse slots** (the anchor) then appends secondary-only slots, so
+      nothing is dropped and same-numbered verses always pair — a gap on one side is a flagged mismatch at
+      that exact slot, never a silent shift. Guidance ("comparison is for noticing an interpretive
+      decision, not picking a preferred wording") is **inline functional copy**, not authored teaching
+      prose (kept out of `content/` per the licensing boundary + the no-dev-prose rule).
+    - **`setup.secondaryTranslationIds` (a Stage-1 seam) left unused.** `passage.translations` is the
+      single source of truth (it holds the full text per translation, incl. bundled caches, mirroring how
+      the bundled *primary* is already persisted). Wiring the id-list too would create a second source of
+      truth for no gain. Additive field kept (no schema churn); a future re-derive-bundled-on-load
+      optimisation could adopt it.
+    - **YouVersion paste fix (folded in from a live owner Pixel test).** The owner pasted YouVersion LSB
+      output on-device and it failed hard (reference line split, `[NN]` markers undetected → one blob,
+      URL kept). `analysePaste` now handles it: `unwrapBracketedVerseNumbers` (`[39]`→` 39 `),
+      `splitReferenceAndTranslation` (a `Book C:V-V ABBR` header on one line — peels 1–3 trailing tokens,
+      bcv is the guard), and the trailing `bible.com`/bare-URL line as chrome. A **PD WEBBE fixture**
+      shaped like YouVersion output (`yv-jonah1-webbe.txt`) locks it; the copyrighted LSB sample stays
+      local. Strengthens Stage 9's pasted-secondary path too (same parser).
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **232/232** unit — up
+    from 207); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in the Stage-9 Test entry
+    points above — bundled secondary + on-demand/side-by-side compare + Matt-17:21 mismatch flagged +
+    reload persistence + IDB shows the M3 container; **0 console errors** (only the pre-existing RR v7
+    future-flag warnings). Real-clipboard paste fidelity (pasted secondary; YouVersion primary re-test)
+    deferred to the owner per the no-inject rule.
+
 ## Known issues / risks being carried
 
 - ~~**[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80)~~
@@ -1060,11 +1192,15 @@ _Append-only. Newest last._
 
 - ~~Paste parser (Stage 8) needs **real user-captured samples**~~ **DONE (Stage 8)** — built +
   tuned against owner-supplied real NIV pastes (Luke 1:39-80, Psalm 80, Psalm 119); 8 PD/CC0 golden
-  fixtures committed. **Carried caveat:** the corpus is Bible-Gateway-shaped (owner's samples) + ASV/WEBBE;
-  **YouVersion on Android** (Google Pixel) is to be paste-tested **on the deployed site** post-ship
-  (a chat/email round-trip mangles the poetry line breaks) — a flagged TODO for a real on-device pass.
-  Verse-number-in-prose-content disambiguation is a monotonic heuristic (small-window) + the review
-  screen backstop, not perfect; splitting a merged segment isn't yet a review action (rare; editable text).
+  fixtures committed. ~~**YouVersion on Android** to be paste-tested~~ **ADDRESSED (Stage 9)** — the
+  owner ran the on-device Pixel test mid-session; it exposed a real bug (YouVersion's `Book C:V-V ABBR`
+  header, `[NN]` bracket markers, trailing `bible.com` URL). `analysePaste` now handles all three
+  (`unwrapBracketedVerseNumbers` / `splitReferenceAndTranslation` / URL chrome), locked by a PD WEBBE
+  fixture (`yv-jonah1-webbe.txt`). **Still owed:** a final **real-clipboard on-device confirmation** on
+  the Pixel against the fixed code (HMR-live on the owner's dev server) — the fix is unit-verified but the
+  end-to-end clipboard pass is the owner's (no-inject rule). Verse-number-in-prose disambiguation is a
+  monotonic heuristic + the review-screen backstop, not perfect; splitting a merged segment isn't yet a
+  review action (rare; editable text).
 - **Footnotes / cross-refs / rich passage rendering deferred** (owner, Stage 8) — captured in the data
   (`ParsedText.notes` / `PasteAnalysis.notes`) but **not rendered**; see `ROADMAP.md` §7. Pasted notes
   are dropped at assemble until the renderer exists (additive when it lands).

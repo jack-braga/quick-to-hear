@@ -1,6 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 
-import type { ParsedText, Study } from '@/types/study';
+import type { Passage, Study } from '@/types/study';
 
 /**
  * The IndexedDB shape. One record per study, with the **large, infrequently-changed
@@ -22,7 +22,9 @@ export interface QuarantineRecord {
 
 interface QuickToHearDB extends DBSchema {
   studies: { key: string; value: StoredStudyBody };
-  passages: { key: string; value: ParsedText | null };
+  // The whole M3 passage container (translations + primaryId). A legacy record physically
+  // holds the pre-M3 bare `ParsedText`; `normaliseStoredPassage` upgrades it on read.
+  passages: { key: string; value: Passage | null };
   quarantine: { key: string; value: QuarantineRecord };
 }
 

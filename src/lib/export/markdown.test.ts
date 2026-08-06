@@ -63,7 +63,7 @@ function sampleStudy(): Study {
   return {
     ...base,
     setup: { ...base.setup, reference: 'Luke 1:5-25', introText: 'Welcome to the study.', durationMinutes: 45 },
-    passage: { primary: PASSAGE },
+    passage: { translations: { webbe: PASSAGE }, primaryId: 'webbe' },
     themeAim: { ...base.themeAim, theme: 'God keeps his promises', authorAim: 'Trust him', christRoute: 'Points to Christ.' },
     build: makeBuild({
       prayerPoint: 'Pray we would trust his promises.',
