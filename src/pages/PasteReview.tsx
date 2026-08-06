@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useOpenStudy } from '@/hooks/useOpenStudy';
-import { BUNDLED_TRANSLATIONS, findTranslation } from '@/lib/bible';
+import { BUNDLED_TRANSLATIONS, findTranslation, loadReading } from '@/lib/bible';
 import { FOREIGN_SYSTEMS, findVersificationSystem, reversifyToKjv } from '@/lib/compare';
 import { addSecondary, setPrimary } from '@/lib/passage';
 import {
@@ -21,6 +21,7 @@ import {
   type PasteSegment,
 } from '@/lib/paste';
 import { inferGenreForBook, parseReference } from '@/lib/verse';
+import { allVerses } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
 import { StudyNotFound } from '@/pages/StudyNotFound';
 
@@ -130,11 +131,40 @@ export default function PasteReview() {
   const [versificationId, setVersificationId] = useState(''); // '' = standard KJV numbering
   const [showChrome, setShowChrome] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [poetryHint, setPoetryHint] = useState(false);
 
   // A comparison paste anchors to the same passage — seed its reference from the study.
   useEffect(() => {
     if (asSecondary && study && !reference) setReference(study.setup.reference);
   }, [asSecondary, study, reference]);
+
+  // Honest heads-up: some apps (notably YouVersion) flatten poetry to prose when copying, so
+  // the line breaks never reach us. If this passage is poetry in the bundled text yet the
+  // paste arrived with no poetry lines, tell the user — and point them at sources that keep
+  // the breaks — rather than fabricating a layout we can't place accurately.
+  const pastedHasPoetry = segments.some((s) => s.kind === 'poetry');
+  useEffect(() => {
+    let cancelled = false;
+    setPoetryHint(false);
+    if (!analysis || pastedHasPoetry) return;
+    const pr = parseReference(reference);
+    if (!pr || !pr.singleBook) return;
+    loadReading('webbe', pr)
+      .then((pt) => {
+        // Poetry is carried on `Fragment.qlevel` (the Stage-2 model), not the block kind —
+        // WEBBE stores the Magnificat as a `p` block whose lines are qlevel 1/2. Check that.
+        const bundledHasPoetry = allVerses(pt).some((v) =>
+          v.fragments.some((f) => (f.qlevel ?? 0) > 0),
+        );
+        if (!cancelled) setPoetryHint(bundledHasPoetry);
+      })
+      .catch(() => {
+        /* offline / unfetchable — just skip the hint */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [analysis, reference, pastedHasPoetry]);
 
   const translationId =
     translationChoice === 'other' ? slugTranslation(customName) : translationChoice;
@@ -288,6 +318,24 @@ export default function PasteReview() {
                   <li key={f}>{f}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Poetry-lost heads-up (honest, non-blocking) — the copy dropped the line breaks. */}
+          {poetryHint && (
+            <div className="rounded-md border border-border bg-muted/40 p-3 text-sm">
+              <p className="font-medium">This passage is poetry, but the copy has no line breaks.</p>
+              <p className="mt-1 text-muted-foreground">
+                Some apps (notably the YouVersion app) flatten poetry into prose when you copy, so
+                the line breaks never make it across. You can accept it as-is, or for a proper
+                poetry layout:{' '}
+                {asSecondary ? (
+                  <>load the bundled translation as your primary (it keeps the poetry),</>
+                ) : (
+                  <>pick a bundled translation as your primary,</>
+                )}{' '}
+                or paste from a site that preserves line breaks (e.g. BibleGateway).
+              </p>
             </div>
           )}
 
