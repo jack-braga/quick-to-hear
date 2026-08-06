@@ -5,47 +5,132 @@
 # 2011. It is NOT CC BY-SA. The `attribution` string MUST render on screen wherever
 # COMA content appears (not only on the attribution page).
 #
-# Fill each genre's four lists with the exact permitted prompts. Leave lists empty
-# until the verbatim text is entered; set state: cited when done.
+# Transcribed from the "Sheets for copying" (pp. 2-13 of the source PDF), whose
+# title page permits unaltered copies for personal, non-commercial use. Each genre's
+# four lists hold the exact printed prompts, one bullet = one string, curly quotes and
+# British spellings preserved. Item counts per genre are logged in
+# content/COMA-TRANSCRIPTION.md and were checked against the sheets on entry.
 
 attribution: "COMA questions from David Helm, One-to-One Bible Reading (Matthias Media & Holy Trinity Church, 2011), used by permission."
-state: todo            # -> cited once verbatim text is entered against the source
-source: OTOBR-Sheets-for-copying-A4.pdf
+state: cited           # verbatim text entered against the source; placeholder no longer renders
+source: one-to-one-COMA.pdf
 
 # placeholder: a user-visible notice. Render it wherever COMA prompts would appear while
-# `state` is not `cited`, so no one mistakes the empty grid for Helm's real questions. It
-# stops showing once the verbatim sets are entered and state -> cited. The manual
-# transcription task is documented in content/COMA-TRANSCRIPTION.md.
+# `state` is not `cited`, so no one mistakes the empty grid for Helm's real questions. Now
+# that state is `cited` it stops showing. Kept in the schema so the guard still holds if the
+# sets are ever cleared. The manual transcription task is documented in
+# content/COMA-TRANSCRIPTION.md.
 placeholder: "Not entered yet. What appears here is a placeholder, not David Helm's real COMA questions. The permitted verbatim text must be copied in before this tool is used."
 
 genres:
   gospels-acts:
-    context: []
-    observation: []
-    meaning: []
-    application: []
+    context:
+      - "What has happened so far in the narrative? Have there been any major events, characters or themes?"
+      - "What has happened just prior to the section you are reading?"
+    observation:
+      - "What do you learn about the main characters in this section? How does the author describe them? How do they describe themselves?"
+      - "Is time or place significant in the events that happen in the passage?"
+      - "Is there a conflict or high point in the passage?"
+      - "Do you think there is a main point or theme in this section of the story?"
+      - "What surprises are there?"
+    meaning:
+      - "Are there any ‘editorial’ comments from the author about the events in the narrative? How do these comments illuminate what is happening?"
+      - "Does someone in the narrative learn something or grow in some way? How? What does this person learn?"
+      - "What does the passage reveal about who Jesus is, and what he came into the world to do?"
+      - "How could you sum up the meaning of this passage in your own words?"
+    application:
+      - "How does this passage challenge (or confirm) your understanding?"
+      - "Is there some attitude you need to change?"
+      - "What does this passage teach you about being a disciple of Jesus?"
   ot-narrative:
-    context: []
-    observation: []
-    meaning: []
-    application: []
+    context:
+      - "What has happened so far in the narrative? Have there been any major events, characters or themes?"
+      - "What has happened just prior to the section you are reading?"
+    observation:
+      - "What do you learn about the main characters in this section? How does the author describe them? How do they describe themselves?"
+      - "Is time or place significant in the events that happen in the passage?"
+      - "Is there a conflict or high point in the passage?"
+      - "Do you think there is a main point or theme in this section of the story?"
+      - "What surprises are there?"
+    meaning:
+      - "Are there any ‘editorial’ comments from the author about the events in the narrative? How do these comments illuminate what is happening?"
+      - "Does someone in the narrative learn something or grow in some way? How? What does this person learn?"
+      - "How does the passage point forward to what God is going to do in the future? Does it prophesy or anticipate Jesus Christ in some way?"
+      - "How could you sum up the meaning of this passage in your own words?"
+    application:
+      - "How does this passage challenge your understanding about who God is and what he is like?"
+      - "Is there some attitude or behaviour you need to change?"
   epistles:
-    context: []
-    observation: []
-    meaning: []
-    application: []
+    context:
+      - "What can you learn about the person or situation to which the letter is written?"
+      - "What clues are there about the author and his circumstances?"
+      - "What was the main point of the passage immediately before this one? Are there logical or thematic connections to the passage you are reading?"
+    observation:
+      - "Are there any major sub-sections or breaks in the text? Are there key connecting words (for, therefore, but, because) that indicate the logical flow of the passage?"
+      - "What is the main point or points? What supporting points does the author make?"
+      - "What surprises are there in the flow of the argument?"
+    meaning:
+      - "How does this text relate to other parts of the book?"
+      - "How does the passage relate to Jesus?"
+      - "What does this teach you about God?"
+      - "How could you sum up the meaning of this passage in your own words?"
+    application:
+      - "How does this passage challenge (or confirm) your understanding?"
+      - "Is there some attitude you need to change?"
+      - "How does this passage call on you to change the way you live?"
   wisdom-poetry:
-    context: []
-    observation: []
-    meaning: []
-    application: []
+    context:
+      - "Are there any clues about the circumstances in which the passage was written?"
+      - "What has happened so far?"
+    observation:
+      - "Are there repetitions or multiple instances of similar ideas? Do these repetitions make a particular point, or point to the structure of the passage?"
+      - "What images or metaphors does the author use? What do they indicate about God or the other people in the text? What might they indicate about modern readers?"
+      - "What is the tone of the passage? What emotions is the author arousing?"
+      - "What is the main point or points?"
+      - "What surprises are there?"
+    meaning:
+      - "Are there specific instructions/commands given to the reader? Does this passage mention any consequences for not following God’s commands?"
+      - "How does the author motivate the reader/audience, or make his appeal?"
+      - "What does the passage teach us about God, and his people, and life in his world?"
+      - "Does the passage point forward to Jesus? Is the gospel anticipated or foreshadowed in some way?"
+    application:
+      - "How does this passage challenge (or confirm) your understanding?"
+      - "Is there some attitude you need to change?"
+      - "How does this passage call on you to change the way you live?"
   prophetic:
-    context: []
-    observation: []
-    meaning: []
-    application: []
+    context:
+      - "Are there any clues about the circumstances in which the prophecy was given or written?"
+      - "Are any people or places mentioned that you aren’t familiar with? (Chase them up in earlier parts of the book, or refer to a Bible dictionary or commentary.)"
+      - "Are other bits of the Old Testament mentioned or alluded to in the passage? What part do these ‘memories’ play in the text?"
+    observation:
+      - "Are there repetitions or multiple instances of similar ideas? Do these repetitions make a particular point, or point to the structure of the passage?"
+      - "Paying attention to when the prophet is speaking and when God is speaking, what does the passage tell us about God’s plans? What does it tell us about God’s character?"
+      - "What kind of human behaviour, if any, is condemned or rewarded? What response is called for (if any)?"
+      - "What is the main point or points?"
+    meaning:
+      - "Are there specific instructions/commands given to the reader? Does this passage mention any consequences for not following God’s commands?"
+      - "Does the text have a sense of expectation about something happening in the future? What is to be expected and when? How should this motivate action in the present?"
+      - "Does the passage point forward to Jesus? Is the gospel anticipated or foreshadowed in some way?"
+    application:
+      - "How is your own situation similar to or different from those being addressed?"
+      - "How does this passage challenge (or confirm) your understanding?"
+      - "How does this passage lead you to trust God and his promises in Jesus?"
+      - "How does this passage call on you to change the way you live?"
   apocalyptic:
-    context: []
-    observation: []
-    meaning: []
-    application: []
+    context:
+      - "Are there any clues about the historical circumstances the literature is addressing?"
+      - "Are other bits of the Bible mentioned or hinted at in the passage? What part do these ‘memories’ play in the text?"
+    observation:
+      - "What images are used in the passage? What effect do they have?"
+      - "What emotions does the passage arouse (e.g. fear, expectation, awe)?"
+      - "How does the passage seek to reveal what God is like? Where in this passage might we find hope for men and women?"
+      - "Is there a crisis in the passage? What is the tension/conflict about, and how does it relate to readers?"
+    meaning:
+      - "Are there specific instructions/commands given to the reader? Does this passage mention any consequences for not following God’s commands?"
+      - "Does the text have a sense of expectation about something happening in the future? What is to be expected and when? How should this motivate action in the present?"
+      - "Does the passage point to Jesus? Is the gospel foreshadowed or looked back upon in some way?"
+    application:
+      - "How is your situation similar to or different from those being addressed?"
+      - "How does this passage challenge (or confirm) your understanding?"
+      - "How does this passage lead you to trust God and his promises in Jesus?"
+      - "How does this passage call on you to change the way you live?"

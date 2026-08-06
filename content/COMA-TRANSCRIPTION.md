@@ -1,5 +1,12 @@
 # COMA transcription — manual task (owner)
 
+> **STATUS: DONE (2026-08-06).** All six genre sets transcribed verbatim from
+> `~/Downloads/quick-to-hear-docs/one-to-one-COMA.pdf` (pp. 2–13) into
+> `content/method/coma.yaml`; `state: cited`; `source: one-to-one-COMA.pdf`; per-genre
+> counts below verified against the file (2/5/4/3 · 2/5/4/2 · 3/3/4/3 · 2/5/4/3 · 3/4/3/4 ·
+> 2/4/3/4). The Mark reading plan (pp. 14–21) was **not** transcribed, as instructed. The
+> notes below are retained as the record of how it was done.
+
 > Working note. **Not shipped to users.** This is a fill-in guide for transcribing
 > `content/method/coma.yaml` by hand. The teaching-text session deliberately did **not**
 > reproduce Helm's question wording (it is verbatim-by-permission content, and echoing it
