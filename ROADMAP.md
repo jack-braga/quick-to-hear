@@ -76,6 +76,13 @@ controls Phases 3 and 4 use today.
   verse anchor, but via a chip picker, not by selecting the text itself.
 - Wants **inline question authoring at the point of selection**, and possibly to fold
   "section", "mark", and "note/question" into one select-then-choose gesture.
+- **Phase 4 (COMA), owner feedback 2026-08-06:** (1) **each prompt should have its own
+  answer field**, not one free-form note area per heading (Context/Observation/…) — so
+  the verbatim Helm prompts render as prompt→answer pairs, and an answer to a specific
+  prompt recycles as a candidate question. (2) Same as above: **interact with the
+  rendered text (YouVersion-style selection)** to anchor a note, not a row of verse-number
+  chips. Today Phase 4 has one composer + note list per category and a chip-based
+  `<VerseAnchorPicker>`; the target is per-prompt answers anchored by text selection.
 
 **Why deferred (not silently absorbed into a build stage):** this is a cross-cutting
 UX redesign touching Phases 3, 4, and 6 and the shared `<VerseAnchorPicker>`. It wants
@@ -94,6 +101,10 @@ the existing model, not a rewrite**.
   *Add a note* (typed inline), routed to `map.sections`, `map.marks`, or `coma.*`.
 - Phase-specific chrome (COMA categories, section names) layers on top of the shared
   selection surface instead of each phase reinventing verse selection.
+- For per-prompt COMA answers: a `Note` would gain an optional prompt reference (e.g.
+  `promptRef: { comaSet, category, index }`) so an answer binds to the specific Helm
+  prompt it responds to; recycle-forward then carries prompt→answer→candidate-question.
+  (Model change only — the current category-level `coma.{context,…}: Note[]` still holds.)
 
 **Related near-term defects (fix independently of this spike):** poetry/verse-number
 rendering in `PassageView` (see PROGRESS "Known issues"); phase-nav hidden in portrait
