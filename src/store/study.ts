@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { postStudyEvent } from '@/lib/broadcast';
 import { newId, nowIso } from '@/lib/id';
 import { reconcileMarks } from '@/lib/map';
+import { addCandidate, candidateForSource, makeCandidateFromSource, type RecycleSource } from '@/lib/recycle';
 import {
   deleteStudy as dbDeleteStudy,
   getStudy,
@@ -47,6 +48,10 @@ interface StudyState {
   setPassage: (primary: ParsedText | null) => Promise<void>;
   /** Phase-2 read counter tap (autosaved with the body). */
   incrementRead: () => void;
+  /** Materialise a recycled source (a Phase-3 mark or a Phase-4 anchored note) into the
+   *  Phase-6 candidate pool as a snapshot with provenance — copy-on-promote (§4.2).
+   *  Idempotent: a source already in the pool is left untouched. */
+  recycleToPool: (source: RecycleSource) => void;
   deleteStudy: (id: string) => Promise<void>;
   importProjectFile: (text: string) => Promise<ImportResult>;
   clearError: () => void;
@@ -138,6 +143,18 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
   incrementRead: () =>
     get().applyToCurrent((study) => ({ ...study, read: { count: study.read.count + 1 } })),
+
+  recycleToPool: (source) =>
+    get().applyToCurrent((study) => {
+      // Talk-mode builds (§4.9) have no candidate pool; nothing to recycle into.
+      if (study.build.format !== 'study') return study;
+      if (candidateForSource(study.build.candidates, source.source)) return study;
+      const candidate = makeCandidateFromSource(source, newId());
+      return {
+        ...study,
+        build: { ...study.build, candidates: addCandidate(study.build.candidates, candidate) },
+      };
+    }),
 
   deleteStudy: async (id) => {
     await dbDeleteStudy(id);

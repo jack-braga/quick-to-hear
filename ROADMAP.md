@@ -57,3 +57,44 @@ training; a tool that writes questions produces a user who cannot write question
 The tool provides prompts, formulas, tests, and examples — never the user's answers.
 This is a permanent non-goal, listed here so the pressure to add it is met with a
 recorded decision.
+
+## 5. Unified passage-interaction UI for Phases 3/4/6 (design spike)
+
+**Want (owner feedback, 2026-08-06):** replace the current phase-by-phase verse UIs
+with **one text-first interaction** modelled on the YouVersion Bible app — you select
+a verse (or a span of words within it, manuscript-discovery style) and then act on the
+selection: **section it off, mark it as confusing, or write a note/question against
+it** — all in the same surface, rather than the separate "pick a verse in a chip grid"
+controls Phases 3 and 4 use today.
+
+**Owner's specific observations that motivate it:**
+- Phase 3 section boxes **clip long verses**, and the "Split here" affordance reads
+  oddly. Open question the owner raised: **box-per-verse vs a continuous stream of
+  text** you select within.
+- The interactions are **fragmented**: Phase 3 marks a verse for a question but you
+  can't type the question there; Phase 4 (Stage 4) now lets you type a note against a
+  verse anchor, but via a chip picker, not by selecting the text itself.
+- Wants **inline question authoring at the point of selection**, and possibly to fold
+  "section", "mark", and "note/question" into one select-then-choose gesture.
+
+**Why deferred (not silently absorbed into a build stage):** this is a cross-cutting
+UX redesign touching Phases 3, 4, and 6 and the shared `<VerseAnchorPicker>`. It wants
+**throwaway HTML/artifact mockups to test the interaction** before committing code, and
+a decision on the text-selection model (whole-verse chips vs sub-verse manuscript
+selection vs a rendered-passage selection layer). The current pieces are already the
+right primitives — anchors are verse-ID based (`VerseAnchor`), sub-verse marks store
+char offsets, and recycle-forward is provenance-based — so this is an **evolution of
+the existing model, not a rewrite**.
+
+**Sketch of the eventual design:**
+- A single rendered-passage component with a selection layer (tap a verse; drag/tap to
+  extend across words) that emits a `VerseAnchor` (+ optional sub-verse `span`) — the
+  same output `<VerseAnchorPicker>` produces today, so the store model is unchanged.
+- A contextual action bar on selection: *Start a section here* / *Mark as confusing* /
+  *Add a note* (typed inline), routed to `map.sections`, `map.marks`, or `coma.*`.
+- Phase-specific chrome (COMA categories, section names) layers on top of the shared
+  selection surface instead of each phase reinventing verse selection.
+
+**Related near-term defects (fix independently of this spike):** poetry/verse-number
+rendering in `PassageView` (see PROGRESS "Known issues"); phase-nav hidden in portrait
+on phones. These are bugs, not part of this redesign.

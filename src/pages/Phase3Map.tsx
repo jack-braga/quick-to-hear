@@ -460,8 +460,8 @@ export default function Phase3Map() {
         <Button variant="outline" asChild>
           <Link to={`/study/${study.id}/2`}>← Back to read</Link>
         </Button>
-        <Button variant="ghost" disabled title="Phase 4 (COMA) arrives in the next build stage">
-          Next: COMA →
+        <Button asChild>
+          <Link to={`/study/${study.id}/4`}>Next: COMA →</Link>
         </Button>
       </div>
     </div>

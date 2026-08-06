@@ -12,14 +12,25 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 3 complete** — **Phase 3 (map the passage)**: author's-break
-  **sections** (named, a live contiguous partition you split/merge), **question marks**
-  (verse/phrase/word with sub-verse char-offset spans that **degrade to whole-verse** when
-  the text changes), and the reusable **`<VerseAnchorPicker>`** (one/many verses → sorted
-  `VerseAnchor`). Verified end-to-end in a real browser (Playwright MCP): Luke 1:5-25 split
-  into 3 named sections, a phrase + a word marked, all persisted across a full reload, and
-  both sub-verse marks degraded to whole-verse when the primary was switched WEBBE→ASV.
-  **Stages 1–2 remain true below.**
+- **Phase of work:** **Stage 4 complete** — **Phase 4 (COMA)** + **recycle-forward wiring**.
+  Genre-driven COMA note grid (Context/Observation/Meaning/Application), each with a
+  free-form note composer + reused **`<VerseAnchorPicker>`** (multi-select) for anchoring;
+  **Matthias Media / HTC attribution renders on screen** (stored in `coma.yaml`, can't drift
+  — Inviolable rule 8). **Recycling** (PLAN §4.2): Phase-3 marks → **background-box**
+  candidates; Phase-4 **anchored** notes → **question** candidates of the matching COMA type,
+  with provenance (`Candidate.source`) + **copy-on-promote** (snapshot on "Keep for Phase 6";
+  editing the source flags **"source changed"** but never mutates the pooled candidate;
+  deleting the source never deletes the candidate). New **method-content loader**
+  (`src/lib/content/`, js-yaml + zod, root-absolute glob). Verified end-to-end in a real
+  browser (Playwright MCP) — see Test entry points. **NOTE: `coma.yaml` prompt lists are
+  still the empty `state: todo` skeleton** (the verbatim Helm prompts are a manual owner
+  transcription, blocked in the teaching session by a content filter — see below); the app
+  loads them from the file, so filled prompts appear with **zero code change**.
+  **Stages 1–3 remain true below.**
+- **Stage-3 (map) is still true** — **Phase 3**: author's-break **sections** (named, a live
+  contiguous partition you split/merge), **question marks** (verse/phrase/word with sub-verse
+  char-offset spans that **degrade to whole-verse** when the text changes), and the reusable
+  **`<VerseAnchorPicker>`**.
 - **Scaffolded already (do not recreate):** `content/LICENSE` (CC BY-SA),
   `content/README.md`, `content/help/**` (67 stubs; Phases 3/5/6e now have authored
   prose from the `teaching` branch), `content/method/*.yaml` (9 skeletons; `traps.yaml`
@@ -45,13 +56,25 @@
   + MarkList). Wiring: `reconcileMarks` called inside `store/study.ts` `setPassage` (the one
   text-change choke point); route `/study/:id/3` in `App.tsx`; phase 3 enabled in
   `Layout.tsx` `BUILT_PHASES`; Phase 2's "Next" now links to `/3`.
-- **Next up:** Stage 4 — Phase 4 COMA + recycle-forward wiring (`PLAN.md` §6, SPEC Phase 4).
-  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 4). Genre → which COMA prompts (verbatim Helm
-  sets from `coma.yaml` + Matthias Media/HTC attribution on screen); anchored notes reuse
-  **`<VerseAnchorPicker>`** (multi-select); **recycling** — Phase 3 `map.marks` →
-  candidate background boxes, Phase 4 notes → candidate questions of matching type, with
-  provenance + copy-on-promote (§4.2). The Stage-4.7 help loader (`useHelp` + method-YAML)
-  is still unbuilt — dev stages keep wiring keys to `GuidancePlaceholder`.
+- **Stage-4 spine (do not recreate):** `src/lib/content/{method,index}.ts` (method-YAML
+  loader — `parseComa`/`parseGenres` pure + `comaContent`/`genreItems`/`comaSetForGenre`/
+  `readingTipForGenre` accessors; tolerates the empty `todo` skeleton) + `method.test.ts`
+  (11); `src/lib/recycle.ts` (pure recycle-forward — `deriveRecycleSources`,
+  `makeCandidateFromSource`, `candidateForSource`, `isSourceChanged`, `addCandidate`) +
+  `recycle.test.ts` (7); `src/pages/Phase4Coma.tsx` (COMA grid + attribution + composers +
+  recycle panel). Wiring: store `recycleToPool` action (copy-on-promote, format-guarded) +
+  COMA note CRUD inline via `applyToCurrent`; route `/study/:id/4` in `App.tsx`; phase 4 in
+  `Layout.tsx` `BUILT_PHASES`; Phase 3's "Next: COMA" now links to `/4`. New deps:
+  **`js-yaml`** (dep) + **`@types/js-yaml`** (devDep).
+- **Next up:** Stage 5 — Phase 5 theme & aim (the hinge) (`PLAN.md` §6, SPEC Phase 5).
+  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 5). Theme/author-aim frames; group aim;
+  know/feel/do; 5 on-demand stuck helpers; litmus tests acknowledged on exit; Christ/gospel
+  route + traps table; "faithfulness ≠ certainty". **Phase 5 help + `litmus.yaml theme[]` +
+  `traps.yaml` + `stuck-helpers.yaml` are already authored** (teaching Batches 1–3), so Stage 5
+  is the first stage that can render **real** help prose — it likely wants the **`useHelp` +
+  `<Help>` three-tier loader + global guidance toggle** (PLAN §4.7) built now (still unbuilt;
+  Stage 4 kept wiring help keys to `GuidancePlaceholder`, but the method-YAML half of the
+  loader now exists in `src/lib/content/` and is the pattern to extend for help markdown).
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -98,7 +121,8 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 - [x] **Stage 1** — Model, storage (Zustand+idb+hydrate), autosave, project file, Home *(M1)*
 - [x] **Stage 2** — Bundled Bibles (WEBBE+ASV) + verse lib (bcv_parser) + Phase 1 + Phase 2 *(M1)* — BSB deferred (§8 #4)
 - [x] **Stage 3** — Phase 3 map + verse-anchor picker *(M1)*
-- [ ] **Stage 4** — Phase 4 COMA + recycle-forward wiring *(M1)*
+- [x] **Stage 4** — Phase 4 COMA + recycle-forward wiring *(M1)* — COMA prompt text is the
+      empty `todo` skeleton (owner-transcribed later); machinery + attribution complete
 - [ ] **Stage 5** — Phase 5 theme & aim (the hinge) *(M1)*
 - [ ] **Stage 6** — Phase 6 build the questions *(M1)*
 - [ ] **Stage 7** — Phase 7 audit + exports → **M1 complete**
@@ -204,6 +228,43 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
   - Inspect the persisted map (DevTools): IDB DB `quicktohear`, store `studies`, the study's
     `map.sections` (start/end verse IDs + names) and `map.marks` (`kind`, `verseId`,
     `span?{start,end}`, `text`) — part of the autosaved **body**, not the `passages` payload.
+
+- **Stage 4** — Phase 4 COMA + recycle-forward wiring:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; **106 unit tests** — +11 `content/method` +7 `recycle`
+    +1 store `recycleToPool`), then `npm run test:e2e` (2/2 — smoke suite unchanged).
+  - Unit tests of note: `src/lib/content/method.test.ts` (real `coma.yaml` parses with the
+    **attribution present** + six genre sets of four lists, tolerates the empty `todo`
+    skeleton, **requires a non-empty attribution**, preserves authored prompts verbatim,
+    coerces a bare/null category to `[]`; `genres.yaml` maps all six genres → comaSet);
+    `src/lib/recycle.test.ts` (marks → background-box sources; **only anchored, non-empty**
+    COMA notes → question sources of matching type; `makeCandidateFromSource` snapshot +
+    provenance; `addCandidate` idempotent; **editing the source never mutates a materialised
+    candidate but `isSourceChanged` detects it; deleting the source never deletes the
+    candidate**); `src/store/study.test.ts` `recycleToPool` (snapshot into the pool,
+    idempotent, snapshot survives a source edit).
+  - **Manual flow (drive the app — verified live via Playwright MCP, 0 console errors):**
+    `npm run dev` → `http://localhost:8080/quick-to-hear/` → **New study** → Phase 1:
+    `Luke 1:5-25` → **Load passage** (genre auto-infers **Gospels and Acts**) → **phase-nav
+    step 4** (now enabled) → Phase 4: the **Matthias Media / HTC attribution renders** at the
+    top (`[data-testid="coma-attribution"]`); the four COMA categories show composers +
+    anchor pickers; a **"prompts pending"** notice shows because `coma.yaml` lists are the
+    empty skeleton. Add a **Meaning** note ("Why does Zechariah doubt…") anchored to
+    **Luke 1:18** → it **surfaces in the recycle panel as a MEANING question candidate**.
+    Click **Keep for Phase 6** → it shows **"In Phase 6 pool ✓"**. **Edit** the source note
+    text → the pooled candidate keeps its **snapshot** ("Why does Zechariah doubt…") and gains
+    a **"source changed"** badge (never mutated). Go to Phase 3, add a **verse mark** on
+    **Luke 1:20**, back to Phase 4 → it **surfaces as a BACKGROUND-BOX candidate**. **Hard
+    reload** → the edited note, the pooled candidate (with snapshot + source-changed), the
+    mark→box, and the attribution all rehydrate from IndexedDB.
+  - Inspect the persisted data (DevTools): IDB DB `quicktohear`, store `studies`, the study's
+    `coma.{context,observation,meaning,application}` (each `Note{id,text,anchor?}`) and
+    `build.candidates` (`Candidate{id,kind,text,status,source?{kind,id},questionType?}`) —
+    autosaved **body**. **Known gap by design:** COMA prompt lists in `content/method/coma.yaml`
+    are still `state: todo` (empty) — the verbatim Helm prompts are a **manual owner
+    transcription** (see `content/COMA-TRANSCRIPTION.md` if the teaching session wrote it, or
+    the teaching HANDOVER Batch 5); the loader + UI render them the moment the file is filled,
+    **no code change**.
 
 ## Decision & deviation log
 
@@ -457,7 +518,63 @@ _Append-only. Newest last._
     - Marks are shown filtered to the loaded passage in **canonical verse order**; the mark
       `text` doubles as the snapshot Phase 6 will recycle into a candidate background box.
 
+- **Stage 4 built (this session).** New deps: **`js-yaml`** (dep) + **`@types/js-yaml`**
+  (devDep) — PLAN §2 names `js-yaml` as the method-data loader; it was only present
+  transitively (via eslint), so it's now a direct dep. Delivered Phase 4 (COMA) + the
+  recycle-forward wiring + the method-content loader. All the load-bearing logic is **pure**
+  (`src/lib/content/method.ts`, `src/lib/recycle.ts`) and unit-tested; the page and store wrap it.
+  - **Decisions / deviations (none override a PLAN §2 lock; flagged for the owner):**
+    - **COMA prompts are NOT authored — `coma.yaml` is still the empty `todo` skeleton.** The
+      verbatim Helm question sets are reproduced *by permission* from a copyrighted source; per
+      **Inviolable rule 1** + the licence, the dev session must never write them. The teaching
+      session hit a **content-filter 400** trying to echo the exact wording, so the owner will
+      **transcribe them by hand**. Stage 4 is deliberately **decoupled**: the loader reads the
+      six genre lists from the file, the schema **tolerates empty lists**, and the UI shows the
+      composers + a "prompts pending" notice. Filling the file later needs **zero code change**.
+      The **`attribution` string is present in the file and renders on screen** regardless
+      (Inviolable rule 8) — verified live.
+    - **Recycle-forward = copy-on-promote at the source→candidate hop (this stage), with the
+      candidate→question hop reserved for Stage 6.** A Phase-3 mark / anchored Phase-4 note is a
+      **live source** (`deriveRecycleSources`); the user opts it into the pool with **"Keep for
+      Phase 6"**, which **snapshots** its text into a `Candidate` with a `source` back-link
+      (`recycleToPool`, format-guarded to `study` builds). Thereafter editing the source is
+      **detected** (`isSourceChanged`, snapshot vs live) but **never propagated**, and deleting
+      the source **never removes** the candidate. Chose **explicit opt-in** over auto-materialise
+      to avoid "source changed" noise during active note-taking and to make the snapshot a
+      deliberate, demonstrable moment. Stage 6 (6d/6e) then promotes a `Candidate` → `Question`
+      (the second snapshot, `Question.sourceCandidateId` already in the model).
+    - **Only anchored, non-empty COMA notes recycle** (SPEC: "anchored notes are recycled");
+      **all marks recycle** (a mark is inherently a verse-anchored confusion). A note's COMA
+      category becomes the candidate's `questionType`.
+    - **Method-content loader built (Stage-4.7, half of it).** `import.meta.glob('/content/
+      method/*.yaml', {query:'?raw', import:'default', eager:true})` + `js-yaml` + zod, with
+      **pure parsers** (`parseComa`/`parseGenres`) tested against the real shipped files via
+      `?raw`. The **help-markdown** half (`useHelp` + `<Help>` three tiers + global guidance
+      toggle) is **still unbuilt** — Stage 4 kept wiring help keys to `GuidancePlaceholder`
+      (all Phase-4 `p4.*` help prose is still `todo` anyway). Stage 5 is the first stage with
+      **authored** help prose to render, so it should build the help half then.
+    - **Phase 4 uses controlled inputs + `applyToCurrent`**, not `react-hook-form` — the **same
+      still-open owner call** carried from Stages 2/3. COMA notes autosave with the body.
+    - **`recycleToPool` is idempotent** (a source already in the pool is left untouched), so the
+      "Keep for Phase 6" button is safe to re-render/re-click.
+  - **Owner UI/UX feedback captured (mid-session, 2026-08-06)** — see **`ROADMAP.md` §5** for the
+    Phase-3/4/6 unified select-to-act redesign (design spike, wants mockups), and the two
+    near-term defects below (poetry rendering; portrait phase-nav). Not folded into Stage 4;
+    surfaced for a sequencing decision (suggested: a small polish pass for the two bugs + a
+    dedicated mockup spike for the redesign).
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **106/106**
+    unit — up from 87); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test
+    entry points above; 0 console errors (only the pre-existing RR v7 future-flag warnings).
+
 ## Known issues / risks being carried
+
+- **[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80):
+  verse numbers land in odd spots. A `PassageView` (Stage 2) defect, not a redesign — fix in a
+  polish pass. Related to `ROADMAP.md` §5 but independent of it.
+- **[Owner feedback 2026-08-06] Phase-nav circles hidden in portrait on phones** — `PhaseNav`
+  in `Layout.tsx` is `hidden … sm:flex`, so the phase tracker (visible in landscape) drops out
+  in portrait, undercutting "progress visible throughout" (SPEC §4). Needs a responsive
+  treatment (e.g. a second header row on narrow screens). Quick fix.
 
 - Paste parser (Stage 8) needs **real user-captured samples**; can't be built blind.
 - **BSB deferred** (§8 #4) — not in the local eBible sources; **owner to confirm the
@@ -483,8 +600,8 @@ _Append-only. Newest last._
   same-version doc is dropped (newer *versions* are refused, not stripped).
 - **`StudyOverview` (Stage 1) has been removed** — the real Phase-1/2 routes replace it.
   Home's `/study/:id` links now redirect to `/study/:id/1`.
-- **Phase-4–7 routes fall through to NotFound** until built; the phase-nav renders 4–7 as
-  disabled steps and Phase 3's "Next: COMA" is disabled. Stage 4 wires `/study/:id/4`.
+- **Phase-5–7 routes fall through to NotFound** until built; the phase-nav renders 5–7 as
+  disabled steps and Phase 4's "Next: Theme & aim" is disabled. Stage 5 wires `/study/:id/5`.
 - **Reference-change orphaning (M1 edge, by design):** loading a *different* reference over
   an existing map leaves old sections invalid (UI offers re-divide) and old marks orphaned
   (kept in the doc, hidden from the passage view — never discarded). Switching *translation*
