@@ -3,14 +3,70 @@
 # checks that only apply in some cases. Fill `help`; set state per content/README.md.
 
 items:
-  - { id: serves-theme-aim,  label: "Every question serves the theme and aim",                 help: "", state: todo, source: , flag: }
-  - { id: expected-answer,   label: "Every question has an expected answer",                    help: "", state: todo, source: , flag: }
-  - { id: coverage,          label: "Coverage — every untouched section is tagged",             help: "", state: todo, source: , flag: }
-  - { id: type-balance,      label: "Balance across the four question types",                   help: "", state: todo, source: , flag: }
-  - { id: meaning-order,     label: "No meaning question precedes its supporting observations", help: "", state: todo, source: , flag: }
-  - { id: application-last,  label: "Application is last, and moves general before particular", help: "", state: todo, source: , flag: }
-  - { id: know-feel-do,      label: "Application covers know / feel / do",                      help: "", state: todo, source: , flag: }
-  - { id: time-vs-length,    label: "Total estimated time fits the session length",            help: "", state: todo, source: , flag: }
-  - { id: two-load-bearing,  label: "At least two load-bearing questions are marked",           help: "", state: todo, source: , flag: }
-  - { id: gospel-plain,      label: "A question that makes the gospel plain",                   help: "", conditional: "group is mixed or one-to-one with a not-yet-Christian", state: todo, source: , flag: }
-  - { id: prayer-point,      label: "A prayer point drawn from the passage",                    help: "", state: todo, source: , flag: }
+  - id: serves-theme-aim
+    label: "Every question serves the theme and aim"
+    help: "Every question should serve your theme and your aim, not just one of them. If it serves neither, it is a detour, however interesting; cut it, or find the reason it belongs."
+    state: uncited
+    source:
+    flag:
+  - id: expected-answer
+    label: "Every question has an expected answer"
+    help: "The one hard rule. If you cannot write the answer you expect, the question is not ready to ask."
+    state: uncited
+    source:
+    flag:
+  - id: coverage
+    label: "Coverage: every untouched section is tagged"
+    help: "Tag every stretch no question touches, so you can tell a gap you chose from one you simply missed."
+    state: uncited
+    source:
+    flag:
+  - id: type-balance
+    label: "Balance across the four question types"
+    help: "All observation never lands; all application floats free. Check the mix across context, observation, meaning, and application."
+    state: uncited
+    source:
+    flag:
+  - id: meaning-order
+    label: "No meaning question precedes its supporting observations"
+    help: "A meaning question only works once the group has made the observations it rests on. If one comes first, move it or add the looking it needs."
+    state: uncited
+    source:
+    flag:
+  - id: application-last
+    label: "Application is last, and moves general before particular"
+    help: "Keep application at the end, moving from the general to the particular, so the study builds toward its one aim."
+    state: uncited
+    source:
+    flag:
+  - id: know-feel-do
+    label: "Application covers know / feel / do"
+    help: "Good application reaches more than the head. Check that, between them, your application questions touch what the aim wants people to know, to feel, and to do."
+    state: uncited
+    source:
+    flag:
+  - id: time-vs-length
+    label: "Total estimated time fits the session length"
+    help: "Add up the weights and compare them to your session. If it runs long, cut now rather than rushing the application in the room."
+    state: uncited
+    source:
+    flag:
+  - id: two-load-bearing
+    label: "At least two load-bearing questions are marked"
+    help: "Mark the questions the study cannot do without, at least two of them. If none stands out, the aim may not be sharp enough yet."
+    state: uncited
+    source:
+    flag:
+  - id: gospel-plain
+    label: "A question that makes the gospel plain"
+    conditional: "group is mixed or one-to-one with a not-yet-Christian"
+    help: "For a mixed group, or one-to-one with someone not yet a Christian, make sure at least one question puts the gospel plainly. You cannot assume everyone already has it."
+    state: uncited
+    source:
+    flag:
+  - id: prayer-point
+    label: "A prayer point drawn from the passage"
+    help: "Let the prayer grow out of the passage you studied, not a general theme, so the group prays back what God has said."
+    state: uncited
+    source:
+    flag:
