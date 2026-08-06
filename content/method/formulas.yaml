@@ -140,7 +140,35 @@ groups:
       source:
       flag: "The spec names 'the context formats' without listing them; these two are the project's own choice. If Fee & Stuart, How to Read the Bible for All Its Worth (historical/literary context) or Sweatman become available, check for a standard set and reconcile."
   application:
-    - { id: hunt-purpose-clauses, name: "Hunt for purpose clauses", explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: book-stated-purpose,  name: "Use the book's stated purpose", explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: locate-the-pressure,  name: "Locate the pressure",      explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: invert-the-indicative,name: "Invert the indicative",    explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - id: hunt-purpose-clauses
+      name: "Hunt for purpose clauses"
+      explanation: "Look for the author's own 'so that' or 'in order that'. Where he states the purpose of what he wrote, the application is already half made."
+      stem: "What 'so that' or purpose does verse ____ give? What does that ask of us today?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Purpose-clause application move; fuller treatment likely in Sweatman or an inductive-method source (not held). Project's own phrasing."
+    - id: book-stated-purpose
+      name: "Use the book's stated purpose"
+      explanation: "Many books state somewhere why they were written. Find that stated aim, then read today's passage in light of it."
+      stem: "What has ____ (the book) told us it is for? How does today's passage serve that aim in the way we live?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Reading in light of the book's stated purpose; standard evangelical hermeneutics (Fee & Stuart, not held). Project's own phrasing."
+    - id: locate-the-pressure
+      name: "Locate the pressure"
+      explanation: "Find where the passage presses on real life, often a fear it answers, a false confidence it unsettles, or a comfort it gives. Application lands where the pressure is."
+      stem: "What pressure does this passage put on ____? What fear or false confidence does it speak to?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Resembles Bryan Chapell's Fallen Condition Focus (Christ-Centered Preaching, not held); see also stuck-helpers 'what-is-it-against'. Ships uncited; if Chapell is obtained, check whether to cite or reword."
+    - id: invert-the-indicative
+      name: "Invert the indicative"
+      explanation: "Turn a statement of what God has done into a question about living as if it were true. The indicative implies an imperative."
+      stem: "The passage says ____ is true. If we really believed it, what would change this week?"
+      genres: []
+      state: uncited
+      source:
+      flag: "The indicative-imperative logic is a broad Reformed staple (Ridderbos, Bavinck; not held). The related 'gospel before law' point is Goldsworthy (Preaching the Whole Bible, intro p. xiv), verified in an earlier session, not this one. Project's own application generator; ships uncited."
