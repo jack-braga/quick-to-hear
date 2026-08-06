@@ -5,19 +5,19 @@
 items:
   - id: yes-no
     trigger: "question opens with Is / Are / Does / Did / Was"
-    message: ""
-    state: todo
+    message: "This may be a yes-or-no question, which tends to close discussion rather than open it. Opening with what, how, or why usually draws more out. Keep it if a yes or no is really what you want."
+    state: uncited
     source:
-    flag:
+    flag: "Standard question-craft (open vs closed, leading, double-barrelled); a fuller treatment is likely in Growth Groups topic 6 'Answers about questions' (p. 53, held-back) or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
   - id: leading
     trigger: "contains \"doesn't\" or \"don't you think\""
-    message: ""
-    state: todo
+    message: 'This may be a leading question. "Don''t you think" hands the group the answer you want, so they stop searching the text. Ask what the passage says and let them find it. Keep it if you have a reason.'
+    state: uncited
     source:
-    flag:
+    flag: "Standard question-craft (open vs closed, leading, double-barrelled); a fuller treatment is likely in Growth Groups topic 6 'Answers about questions' (p. 53, held-back) or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
   - id: double-barrelled
     trigger: "two question marks, or 'and' followed by a second interrogative"
-    message: ""
-    state: todo
+    message: "This looks like two questions in one. The group will usually answer the easier half and let the other go. Split it, or keep only the half that serves your aim. Keep it if both halves truly serve it."
+    state: uncited
     source:
-    flag:
+    flag: "Standard question-craft (open vs closed, leading, double-barrelled); a fuller treatment is likely in Growth Groups topic 6 'Answers about questions' (p. 53, held-back) or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
