@@ -3,10 +3,10 @@ key: p6e.wrongturns
 title: Anticipated wrong turns
 phase: 6
 tiers: [inline]
-state: todo        # todo -> cited | uncited | flagged (see content/README.md)
-source:            # inline attribution string, ONLY when state: cited
-flag:              # what would settle it + where to look, ONLY when state: flagged
+state: uncited
+source:
+flag:
 ---
 
 <!-- inline -->
-
+Optional. Note where you expect the group to take a wrong turn, and how you will bring them back. Thinking it through now is easier than improvising in the room.

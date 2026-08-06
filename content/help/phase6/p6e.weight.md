@@ -3,10 +3,10 @@ key: p6e.weight
 title: Question weight
 phase: 6
 tiers: [inline]
-state: todo        # todo -> cited | uncited | flagged (see content/README.md)
-source:            # inline attribution string, ONLY when state: cited
-flag:              # what would settle it + where to look, ONLY when state: flagged
+state: uncited
+source:
+flag:
 ---
 
 <!-- inline -->
-
+How much room this question gets in the session. Give more to the questions that carry your aim and less to the rest; this feeds the time estimate.

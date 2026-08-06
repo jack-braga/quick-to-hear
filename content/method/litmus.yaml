@@ -32,7 +32,23 @@ theme:
     flag: "Text-specificity / 'big idea' family (Robinson, Biblical Preaching, not held). Project's own phrasing."
 
 question:
-  - { id: context,     text: "", state: todo, source: , flag: }   # Can they answer from a verse you pointed them to?
-  - { id: observation, text: "", state: todo, source: , flag: }   # Can they answer by looking? Worth having?
-  - { id: meaning,     text: "", state: todo, source: , flag: }   # Answerable from observations already made?
-  - { id: application, text: "", state: todo, source: , flag: }   # Which aim component — know / feel / do?
+  - id: context
+    text: "Can they answer this from a verse you have pointed them to? If the answer sits outside the passage, give it as background rather than asking for it."
+    state: uncited
+    source:
+    flag:
+  - id: observation
+    text: "Can they answer it just by looking? And is the answer worth having? Easy is fine; trivial is not."
+    state: uncited
+    source:
+    flag: "The worth-having / easy-not-trivial test may be sharpened by Growth Groups topic 6 'Answers about questions' (p. 53, held-back). Project's own phrasing."
+  - id: meaning
+    text: "Can they reach this from observations you have already had them make? A meaning question rests on the looking that came before it; if that ground is not laid, lay it first."
+    state: uncited
+    source:
+    flag:
+  - id: application
+    text: "Which part of your aim does it serve: know, feel, or do? If it serves none of them, it is a detour, however interesting."
+    state: uncited
+    source:
+    flag:
