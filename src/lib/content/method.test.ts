@@ -58,10 +58,16 @@ describe('parseComa (real coma.yaml)', () => {
     }
   });
 
-  it('tolerates the empty `todo` skeleton (verbatim prompts authored by hand later)', () => {
-    // The skeleton ships with empty lists; that must parse, not throw.
-    expect(coma.state).toBe('todo');
-    expect(coma.genres['epistles']!.meaning).toEqual([]);
+  it('ships the transcribed, cited COMA sets (every genre, all four lists filled)', () => {
+    // Transcription is done: state flips to `cited` and no category is left empty.
+    expect(coma.state).toBe('cited');
+    for (const g of GENRES) {
+      const set = coma.genres[g]!;
+      expect(set.context.length, `${g} context empty`).toBeGreaterThan(0);
+      expect(set.observation.length, `${g} observation empty`).toBeGreaterThan(0);
+      expect(set.meaning.length, `${g} meaning empty`).toBeGreaterThan(0);
+      expect(set.application.length, `${g} application empty`).toBeGreaterThan(0);
+    }
   });
 
   it('carries the authored placeholder notice (shown until state → cited)', () => {
