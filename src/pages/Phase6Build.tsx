@@ -1334,12 +1334,8 @@ export default function Phase6Build() {
         <Button variant="outline" asChild>
           <Link to={`/study/${study.id}/5`}>← Back to theme &amp; aim</Link>
         </Button>
-        <Button
-          variant="ghost"
-          disabled
-          title="Phase 7 (Check &amp; export) arrives in the next build stage"
-        >
-          Next: Check &amp; export →
+        <Button asChild>
+          <Link to={`/study/${study.id}/7`}>Next: Check &amp; export →</Link>
         </Button>
       </div>
     </div>

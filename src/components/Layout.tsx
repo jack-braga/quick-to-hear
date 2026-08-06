@@ -5,10 +5,9 @@ import { GuidanceToggle } from '@/components/GuidanceToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 
-// The seven phases (SPEC). Phases 1–6 are built (Stage 6); Phase 7 arrives in the next
-// stage and renders as a disabled step so the workbook's shape is always visible.
+// The seven phases (SPEC). All seven are built (Stage 7 completes M1).
 const PHASES = [1, 2, 3, 4, 5, 6, 7] as const;
-const BUILT_PHASES = new Set<number>([1, 2, 3, 4, 5, 6]);
+const BUILT_PHASES = new Set<number>([1, 2, 3, 4, 5, 6, 7]);
 
 /** The persistent phase stepper. Interactive once a study is open (path `/study/:id/N`);
  *  otherwise a quiet placeholder so the header still reads as a workbook. */

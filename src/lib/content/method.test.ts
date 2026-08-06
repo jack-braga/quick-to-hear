@@ -1,32 +1,40 @@
 import { describe, expect, it } from 'vitest';
 
 // The real method files, imported raw (build-time) so the tests validate what ships.
+import auditRaw from '../../../content/method/audit.yaml?raw';
 import comaRaw from '../../../content/method/coma.yaml?raw';
 import formulasRaw from '../../../content/method/formulas.yaml?raw';
 import genresRaw from '../../../content/method/genres.yaml?raw';
 import litmusRaw from '../../../content/method/litmus.yaml?raw';
 import stuckRaw from '../../../content/method/stuck-helpers.yaml?raw';
+import translationsRaw from '../../../content/method/translations.yaml?raw';
 import trapsRaw from '../../../content/method/traps.yaml?raw';
 import warningsRaw from '../../../content/method/warnings.yaml?raw';
 import { GENRES } from '@/types/study';
 
 import {
+  auditCheckById,
+  auditChecks,
   comaContent,
   comaSetForGenre,
   formulasForType,
   litmusForQuestionType,
   litmusQuestionTests,
   litmusThemeTests,
+  parseAudit,
   parseComa,
   parseFormulas,
   parseGenres,
   parseLitmus,
   parseStuckHelpers,
+  parseTranslations,
   parseTraps,
   parseWarnings,
   questionWarnings,
   readingTipForGenre,
   stuckHelpers,
+  translationCopyright,
+  translationItems,
   trapsContent,
   warningById,
 } from './method';
@@ -255,5 +263,68 @@ describe('accessors (real files via glob)', () => {
   it('comaSetForGenre / readingTipForGenre are null/empty for an unset genre', () => {
     expect(comaSetForGenre(null)).toBeNull();
     expect(readingTipForGenre(null)).toBe('');
+  });
+});
+
+describe('parseAudit (real audit.yaml)', () => {
+  const checks = parseAudit(auditRaw);
+
+  it('carries the eleven SPEC audit checks in order, each with a label', () => {
+    expect(checks.map((c) => c.id)).toEqual([
+      'serves-theme-aim',
+      'expected-answer',
+      'coverage',
+      'type-balance',
+      'meaning-order',
+      'application-last',
+      'know-feel-do',
+      'time-vs-length',
+      'two-load-bearing',
+      'gospel-plain',
+      'prayer-point',
+    ]);
+    for (const c of checks) expect(c.label.length).toBeGreaterThan(0);
+  });
+
+  it('marks gospel-plain as the one conditional check', () => {
+    const gp = checks.find((c) => c.id === 'gospel-plain');
+    expect(gp?.conditional).toMatch(/mixed|one-to-one/i);
+    // The others are unconditional.
+    expect(checks.filter((c) => c.conditional).map((c) => c.id)).toEqual(['gospel-plain']);
+  });
+
+  it('tolerates the empty `help` skeleton without throwing', () => {
+    // Every help is still "" (authored teaching lives in content/help/phase7); must parse.
+    expect(() => parseAudit(auditRaw)).not.toThrow();
+    expect(checks.every((c) => typeof c.help === 'string')).toBe(true);
+  });
+
+  it('auditChecks() / auditCheckById() load the shipped file via the glob', () => {
+    expect(auditChecks().length).toBe(11);
+    expect(auditCheckById('coverage')?.label).toMatch(/untouched/i);
+    expect(auditCheckById('nope')).toBeUndefined();
+  });
+});
+
+describe('parseTranslations (real translations.yaml)', () => {
+  const items = parseTranslations(translationsRaw);
+
+  it('carries an exact, non-empty copyright line for the bundled translations', () => {
+    const webbe = items.find((t) => t.id === 'webbe');
+    const asv = items.find((t) => t.id === 'asv');
+    expect(webbe?.copyrightLine).toMatch(/World English Bible/);
+    expect(asv?.copyrightLine).toMatch(/American Standard Version/);
+    for (const t of items) expect(t.copyrightLine.length).toBeGreaterThan(0);
+  });
+
+  it('translationCopyright() resolves the shipped line by id, else empty', () => {
+    expect(translationCopyright('webbe')).toMatch(/public domain/i);
+    expect(translationCopyright('asv')).toMatch(/1901/);
+    expect(translationCopyright('nope')).toBe('');
+    expect(translationCopyright(null)).toBe('');
+  });
+
+  it('translationItems() loads + validates the shipped file', () => {
+    expect(translationItems().map((t) => t.id)).toContain('webbe');
   });
 });

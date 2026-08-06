@@ -315,3 +315,81 @@ export function questionWarnings(): WarningItem[] {
 export function warningById(id: string): WarningItem | undefined {
   return questionWarnings().find((w) => w.id === id);
 }
+
+// ---------------------------------------------------------------------------
+// audit.yaml — the Phase-7 audit checklist (labels + the conditional marker)
+// ---------------------------------------------------------------------------
+
+/** One audit check's *content*: the settled label and (optional) one-line teaching
+ *  `help`. The check's live status is computed in `src/lib/audit.ts` from the study —
+ *  this only carries the wording. `conditional` documents when a check applies (e.g.
+ *  gospel-plain). All checks are advisory: nothing here blocks export (Inviolable rule 3). */
+export const AuditCheckSchema = z.object({
+  id: z.string(),
+  label: z.string().default(''),
+  help: z.preprocess((v) => v ?? '', z.string()),
+  conditional: z.string().nullish(),
+  state: z.string().nullish(),
+  source: z.string().nullish(),
+  flag: z.string().nullish(),
+});
+export type AuditCheck = z.infer<typeof AuditCheckSchema>;
+
+export const AuditContentSchema = z.object({
+  items: z.array(AuditCheckSchema).default([]),
+});
+
+/** Parse + validate an `audit.yaml` string into its checklist. */
+export function parseAudit(raw: string): AuditCheck[] {
+  return AuditContentSchema.parse(loadYaml(raw)).items;
+}
+
+let _audit: AuditCheck[] | undefined;
+export function auditChecks(): AuditCheck[] {
+  return (_audit ??= parseAudit(rawMethod('audit.yaml')));
+}
+
+/** The content (label/help/conditional) for an audit check id, or undefined. */
+export function auditCheckById(id: string): AuditCheck | undefined {
+  return auditChecks().find((c) => c.id === id);
+}
+
+// ---------------------------------------------------------------------------
+// translations.yaml — id → the exact copyright line auto-appended to exports
+// ---------------------------------------------------------------------------
+
+/** A bundled translation's licence facts (NOT teaching text). The `copyrightLine` is a
+ *  functional requirement (Inviolable rule 7): it is auto-appended to every export and
+ *  the handout, resolved by the primary translation id. */
+export const TranslationItemSchema = z.object({
+  id: z.string(),
+  name: z.string().default(''),
+  shortName: z.string().nullish(),
+  versification: z.string().nullish(),
+  copyrightLine: z.string().default(''),
+  state: z.string().nullish(),
+  source: z.string().nullish(),
+  flag: z.string().nullish(),
+});
+export type TranslationItem = z.infer<typeof TranslationItemSchema>;
+
+export const TranslationsContentSchema = z.object({
+  items: z.array(TranslationItemSchema).default([]),
+});
+
+/** Parse + validate a `translations.yaml` string into its item list. */
+export function parseTranslations(raw: string): TranslationItem[] {
+  return TranslationsContentSchema.parse(loadYaml(raw)).items;
+}
+
+let _translations: TranslationItem[] | undefined;
+export function translationItems(): TranslationItem[] {
+  return (_translations ??= parseTranslations(rawMethod('translations.yaml')));
+}
+
+/** The exact copyright line for a translation id (Inviolable rule 7), or `''` if unknown.
+ *  Appended to every export + the participant handout so the licence can't be lost. */
+export function translationCopyright(id: string | null | undefined): string {
+  if (!id) return '';
+  return translationItems().find((t) => t.id === id)?.copyrightLine ?? '';
+}

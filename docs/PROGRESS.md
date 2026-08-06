@@ -12,7 +12,26 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 6 complete** — **Phase 6 (Build the questions)**, the longest
+- **Phase of work:** **Stage 7 complete → M1 COMPLETE.** **Phase 7 (Check & export)** — the
+  **audit** (11 checks, each computing its status from the study + showing evidence; dismiss-with-ack;
+  **NOTHING blocks export**) + the three artefacts. The **coverage map** is a per-section view of which
+  verses no question's anchor touches; every *fully-untouched* section is tagged connective / deferred /
+  needs-question (`audit.coverageTags[sectionId]`) and the check flips met once tagged. **Gospel-plain is
+  REQUIRED** (shown unmet, still only an ack) when `setup.groupComposition` is `mixed` /
+  `one-to-one-not-yet-christian` and no promoted question has `gospelPlain:true` (verified live: na→unmet
+  as the group flips). All audit logic is **pure + unit-tested** (`src/lib/audit.ts`, 16 tests). **Exports:**
+  `#/print/:id/handout` + `#/print/:id/leader` print-CSS routes (forced LIGHT palette via a `.qth-print`
+  var-override **and** an on-mount `.dark`-strip, `print-color-adjust:exact` on boxes, `break-inside:avoid`
+  per question, `@page A4`) rendering from the study model, **plus a markdown export for each** and the
+  Stage-1 **project-file** export surfaced here. **Handout = defined by exclusion** (guard-tested BOTH ways:
+  the real expected-answer strings exist in the study yet are **absent** from the handout; the translation
+  **copyright line is present**); **leader's notes = everything**. **Support-passage text** (deferred from
+  Stage 6, `SupportPassage.text` was null) is now **fetched at export** (`resolveSupportTexts`, reuses the
+  bundled loader + `extractReading`) and printed inline (verified: Malachi 4:5-6 renders under Q1). The
+  **translation copyright line** (previously UNWIRED) is now resolved from `content/method/translations.yaml`
+  (`translationCopyright(id)`) and appended. Verified end-to-end in a real browser (Playwright MCP, **0
+  console errors**) — see the Stage-7 Test entry points. **Stages 1–6 remain true below.**
+- **Stage-6 recap:** **Phase 6 (Build the questions)**, the longest
   phase, presented as the sequential sub-steps SPEC requires: **6a** weight the Phase-3 sections
   (heavy/medium/light) → **6b** the question budget + a **running time total** (weight-minutes +
   4 min/support) vs the Phase-1 duration → **6c** generate wide (the recycled pool + a **formula
@@ -122,17 +141,13 @@
   snapshot, additive-optional — no schemaVersion bump); `recycle.ts` `makeCandidateFromSource`
   now carries it. Wiring: route `/study/:id/6` in `App.tsx`; phase 6 in `Layout.tsx` `BUILT_PHASES`;
   Phase 5's "Next: Build the questions" now links to `/6`. **No new deps.**
-- **Next up:** Stage 7 — Phase 7 audit + exports → **M1 complete** (`PLAN.md` §6, SPEC Phase 7).
-  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 7). The audit checklist (each item shows its evidence,
-  dismiss-with-ack): serves theme+aim; expected-answer present (already guaranteed by 6e); the
-  **coverage map** (per-section tag: connective / deferred / needs-question — `audit.coverageTags`);
-  type balance; meaning-order; application last + general→particular; know/feel/do; time vs length;
-  ≥2 load-bearing; **gospel-plain required** when group mixed/one-to-one-not-yet-Christian
-  (`Question.gospelPlain` already set in 6e); prayer point (soft). Then the **exports**: handout
-  (guard-tested — answers excluded, copyright line present) + leader's notes, each as a print-CSS
-  `#/print/:id/…` route + markdown; project-file export already exists (Stage 1). The audit block
-  (`audit.acks`/`coverageTags`) is already in the model; `warnings.yaml`/`audit.yaml` +
-  `translations.yaml` (copyright lines, still unwired) are the method files to load.
+- **Next up:** **Stage 8 — Paste ingest + normalisation + review screen *(M2)*** (`PLAN.md` §6, SPEC
+  Phase 1 paste path). Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 8). Adds a paste path in Phase 1
+  (alongside the reference→load path), the normalisation pipeline (§4.6), and a **mandatory review
+  screen** before the pasted text becomes the passage; needs a golden-file corpus + **real
+  user-captured paste samples** (poetry + prose, both sources) — can't be built blind (see Known
+  issues). M1 (Stages 0–7) is complete: a full bundled-Bible workbook with recycling, audit, and
+  the two printable artefacts + a re-importable project file.
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -184,7 +199,9 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 - [x] **Stage 5** — Phase 5 theme & aim (the hinge) + help-markdown loader (`<Help>`) *(M1)*
 - [x] **Stage 6** — Phase 6 build the questions *(M1)* — the ONE hard block (6e) enforced; all
       other checks soft; recycle-forward carries anchors through to promotion
-- [ ] **Stage 7** — Phase 7 audit + exports → **M1 complete**
+- [x] **Stage 7** — Phase 7 audit + exports → **M1 COMPLETE** — 11 pure audit checks (nothing
+      blocks); coverage map + tags; gospel-plain conditional; handout (answers excluded, copyright
+      present — guard-tested both ways) + leader print-CSS routes + markdown; support text fetched
 - [ ] **Stage 8** — Paste ingest + normalisation + review screen *(M2)*
 - [ ] **Stage 9** — Secondary translations + comparison + versification mapping *(M3)*
 - [ ] **Stage 10** — Depth + worked examples + PWA *(M4)*
@@ -402,6 +419,44 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     `map.sections[].weight` (6a writes the section weight into the Phase-3 map, not `build`) —
     autosaved **body**. Every `Question` in `build.questions` has a non-empty `expectedAnswer` by
     construction (the hard block); `order` is filtered-on-read against live questions.
+
+- **Stage 7** — Phase 7 audit + exports → **M1 COMPLETE**:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; **183 unit tests** — +11 `content/method` audit/translations,
+    +16 `audit`, +6 `export/markdown`), then `npm run test:e2e` (2/2 — smoke suite unchanged).
+  - Unit tests of note: `src/lib/audit.test.ts` (`coverageMap` marks a section untouched only when
+    **no** question anchors into it, and `untaggedUntouched` clears once tagged; `requiresGospelPlain`
+    true only for mixed / one-to-one-not-yet-christian; `applicationOrderOffenders`; `auditResults`
+    gives the right met/unmet/na for a well-formed vs empty study, gospel-plain na→unmet→met, time
+    over length, meaning-before-observation); `src/lib/export/markdown.test.ts` (**the handout guard
+    both ways**: a `SECRET_ANSWER` present in the study is **absent** from the handout markdown +
+    model, theme/aim/type/timings excluded, copyright line present; leader includes the answer,
+    anchors, support, reserve, drop order, method attribution); `content/method.test.ts` (real
+    `audit.yaml` = the 11 SPEC checks with gospel-plain the sole conditional; real `translations.yaml`
+    copyright lines by id).
+  - **Manual flow (drive the app — verified live via Playwright MCP, 0 console errors):** open a
+    Stage-6 study (Luke 1:5-25, 2 questions, a Malachi 4:5-6 support attached to Q1, a Luke 1:20
+    background box, a prayer point) → **phase-nav step 7** (now enabled) → Phase 7 audit renders **4
+    met / 6 need a look**, each check showing computed evidence (the authored `audit.yaml` help lines,
+    Batch 15). **Coverage map:** §1 (Luke 1:5–1:13) shows **"no question touches this"** with 3 tag
+    buttons; click **Connective tissue** → the coverage check flips **unmet→met** ("Every untouched
+    section is tagged") and the summary bar → **5 met**; the tag persists via the store. Set **group →
+    mixed** in Phase 1 → back to Phase 7 → **gospel-plain flips na→unmet** with the **"required for this
+    group"** badge + the `p7.gospel-plain` help + an ack; **tick the ack** → it moves to **1
+    acknowledged** and every export control stays enabled (**nothing blocks**). **Open `#/print/:id/handout`**
+    → full WEBBE passage (v5–25), **Q1 with the fetched Malachi 4:5-6 text inline**, Q2, the Luke 1:20
+    background box, the prayer point, and the **copyright line**; a DOM+IDB check confirms the two real
+    expected-answer strings are **absent** (guard) and the copyright is **present**. The print root is
+    forced light (`<html class="light">`, bg `#fff`, ink `#0f1729`). **Open `#/print/:id/leader`** →
+    both answers **present**, "Expected answer:" labels, the section map with weights (§2 heavy), the
+    Malachi support, and the **Matthias Media/Goldsworthy method attribution** + copyright. **Download
+    the two markdown files** → `…-handout.md` has **0 answer hits + copyright present**; `…-leader.md`
+    has **both answers + Expected-answer/Matthias-Media/copyright markers**.
+  - Inspect the persisted data (DevTools): IDB DB `quicktohear`, store `studies`, the study's
+    `audit.{acks,coverageTags}` — `acks` a `Record<checkId,bool>` (dismiss-with-ack), `coverageTags`
+    a `Record<sectionId,CoverageTag>` — autosaved **body**, tolerant of unknown ids (records, not
+    enums), so a content-side id change never needs a schema bump. Support-passage text is **not**
+    persisted (fetched at export, like the primary passage cache); `SupportPassage.text` stays null.
 
 ## Decision & deviation log
 
@@ -825,6 +880,60 @@ _Append-only. Newest last._
     point + weights + support + boxes all survive a hard reload; **0 console errors** (only the
     pre-existing RR v7 future-flag warnings).
 
+- **Stage 7 built (this session) → M1 COMPLETE.** No new deps. Delivered Phase 7 (audit + the three
+  artefacts). All load-bearing logic is **pure + unit-tested**; the pages are thin renderers. The
+  parallel teaching session advanced `main` to **Batch 18** in this shared working tree during the
+  build (content only — `content/**`); no conflict (dev touches `src/` + the loaders). Batch 15 filled
+  `audit.yaml` help, so per-check teaching prose renders with zero code change.
+  - **Decisions / deviations (none override a PLAN §2 lock; flagged for the owner):**
+    - **All audit logic is a pure lib** (`src/lib/audit.ts`), the Stage-6 pattern: `auditResults(study)`
+      computes an 11-item `{id,status,applies,summary}` list; `coverageMap(study)` is the structured
+      per-section evidence; the page (`Phase7Audit.tsx`) renders evidence + acks and never re-derives a
+      status. **Nothing blocks** — a check is only ever `met` / `unmet` / `na`; even the required
+      gospel-plain is a dismissable ack (Inviolable rule 3; the 6e expected-answer stays the sole hard
+      block).
+    - **Judgement checks compute a mechanical proxy.** "Every question *serves* the theme/aim" → proxy
+      "theme + aim are written and there are questions" (the ack carries the human judgement);
+      "application general→particular" → proxy "application questions are all last" (the ordering the
+      tool *can* see), with general→particular left to the help + the eye. This keeps every row
+      evidence-driven without the tool pretending to judge content it must never generate.
+    - **"Untouched section" = a section no question anchors into at all** (0 touched verses) — the
+      taggable unit. A partially-covered section shows "n of m verses touched" but needs no tag (SPEC:
+      "every *untouched section* must be tagged"). Coverage is `na` when there's no valid Phase-3
+      partition (prompt to divide first), never a false "met".
+    - **Print routes sit OUTSIDE the Layout** via a React-Router **layout route** (`<Route element=
+      {<Chrome/>}>` wraps the app; `/print/:id/*` are siblings) so nothing but the artefact prints.
+      **Forced light two ways:** `.qth-print` re-declares the light colour tokens (so reused Tailwind
+      components resolve light even under `.dark`) **and** `PrintShell` strips `.dark` from `<html>` on
+      mount (restoring on unmount) — belt and braces, since a `dark:` utility variant (red-letter) would
+      otherwise still fire. `@page{size:A4}` is a hint (CSS can't force A4-vs-Letter or hide the browser
+      header/footer — PLAN §4.8 notes this); a JS PDF lib stays deferred.
+    - **Handout = defined by exclusion, enforced at the model.** `handoutModel()` simply never carries
+      an answer/theme/aim/type/timing field, so both the print React and the markdown are pure over a
+      model that *cannot* leak them — the guard test asserts a known answer string is absent from the
+      output **and** the model JSON. Background boxes = live `background-box` candidates (Phase-3 marks)
+      **plus** `type:'background'` support passages; context/quoted support prints inline at its attach
+      point.
+    - **Support-passage text is fetched at export, not persisted** (`resolveSupportTexts`, async, reuses
+      `loadReading` + `extractReading` in the study's primary translation) — the same "bundled passage
+      is a re-derivable cache" stance as the primary (`SupportPassage.text` stays `null`; a failed/
+      unparseable/cross-book ref resolves to the reference alone, never blocking the export).
+    - **Copyright line wired** (was the known gap): `content/method/translations.yaml` → `parseTranslations`/
+      `translationCopyright(id)` in the method loader; appended to the handout, leader, and both markdowns.
+      Method/COMA + Goldsworthy attributions (from `coma.yaml`/`traps.yaml`) ride the leader's notes.
+    - **Markdown = pure renderers over the same models** (`handoutToMarkdown`/`leaderToMarkdown` +
+      `passageToMarkdown`), so the print page and the `.md` file can't drift; downloads reuse a small
+      `downloadTextFile` added to `src/lib/download.ts`.
+    - **Phase 7 uses controlled inputs + `applyToCurrent`** (acks + coverage tags), per the owner-confirmed
+      house standard (no react-hook-form).
+  - **Carried defects unchanged (not Stage-7's job):** poetry/verse-number rendering; portrait phase-nav
+    (Phase 7's step 7 shares the same `hidden … sm:flex` nav). Neither blocks an export.
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **183/183** unit —
+    up from 154); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test entry points
+    above — coverage tag flips the check, gospel-plain na→unmet→acked, handout excludes answers +
+    carries copyright (both ways), leader has everything, print forces light; **0 console errors** (only
+    the pre-existing RR v7 future-flag warnings).
+
 ## Known issues / risks being carried
 
 - **[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80):
@@ -847,9 +956,10 @@ _Append-only. Newest last._
   (runtime-cached instead), so first paint stays small; but the repo is now heavier.
 - `bcv_parser`'s `en` lang bundles into the main JS chunk (~455 KB / 122 KB gzip). Fine for
   now; could be lazy-loaded in the Stage-10 PWA-harden pass if it matters.
-- **`translations.yaml` copyright lines are not yet wired to exports** — the Stage-2
-  translation registry (`src/lib/bible/translations.ts`) carries id/name only; the exact
-  copyright line (a functional requirement) is applied at Stage 7 via the method-YAML loader.
+- ~~**`translations.yaml` copyright lines are not yet wired to exports**~~ **RESOLVED (Stage 7)** —
+  `translationCopyright(id)` in the method loader resolves the exact line; appended to the handout,
+  leader, and both markdown exports. (The `state: flagged` **verification** of each line against the
+  exact shipped eBible edition is still owner-pending before public release — see the WEBBE/BSB notes.)
 - "Work is never lost" is only as strong as the user exporting project files; `hydrate`
   quarantine + durability mitigations (`PLAN.md` §4.4) are the honest backstop.
 - **Multi-tab guard is lightweight** (Stage 1): a `BroadcastChannel` `saved` event flags
@@ -859,9 +969,10 @@ _Append-only. Newest last._
   same-version doc is dropped (newer *versions* are refused, not stripped).
 - **`StudyOverview` (Stage 1) has been removed** — the real Phase-1/2 routes replace it.
   Home's `/study/:id` links now redirect to `/study/:id/1`.
-- **Phase-7 route falls through to NotFound** until built; the phase-nav renders 7 as a disabled
-  step and Phase 6's "Next: Check & export" is disabled. Stage 7 wires `/study/:id/7`. (Phases 1–6
-  routes + `BUILT_PHASES` now all live; Phase 6's `/study/:id/6` landed in Stage 6.)
+- ~~**Phase-7 route falls through to NotFound**~~ **RESOLVED (Stage 7)** — `/study/:id/7` +
+  `/print/:id/{handout,leader}` are wired, `BUILT_PHASES` includes 7, and Phase 6's "Next: Check &
+  export" now links through. **All seven phase routes + `BUILT_PHASES` are live — M1 route surface
+  complete.**
 - **Reference-change orphaning (M1 edge, by design):** loading a *different* reference over
   an existing map leaves old sections invalid (UI offers re-divide) and old marks orphaned
   (kept in the doc, hidden from the passage view — never discarded). Switching *translation*

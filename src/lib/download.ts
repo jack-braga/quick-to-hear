@@ -12,15 +12,24 @@ export function slugify(label: string): string {
   );
 }
 
-/** Trigger a browser download of the study's re-importable project file (SPEC §4). */
-export function downloadProjectFile(study: Study): void {
-  const blob = new Blob([serializeStudy(study)], { type: 'application/json' });
+/** Trigger a browser download of arbitrary text (markdown exports, etc.). */
+export function downloadTextFile(filename: string, text: string, mime = 'text/markdown'): void {
+  const blob = new Blob([text], { type: `${mime};charset=utf-8` });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${slugify(studyLabel({ reference: study.setup.reference }))}.qth.json`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+/** Trigger a browser download of the study's re-importable project file (SPEC §4). */
+export function downloadProjectFile(study: Study): void {
+  downloadTextFile(
+    `${slugify(studyLabel({ reference: study.setup.reference }))}.qth.json`,
+    serializeStudy(study),
+    'application/json',
+  );
 }

@@ -91,3 +91,66 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Print & export (Stage 7, PLAN §4.8). The `#/print/:id/{handout,leader}` routes
+   render inside `.qth-print`, which forces the LIGHT, ink-safe palette regardless
+   of the current theme: it re-declares every colour token to its light value, so
+   reused components (PassageView etc.) resolve to dark-on-white even under `.dark`.
+   The print page also strips `.dark` from <html> while mounted (belt and braces).
+--------------------------------------------------------------------------- */
+.qth-print {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 222 47% 20%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 20%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 38%;
+  --accent: 210 40% 94%;
+  --border: 214 24% 82%;
+  color: hsl(222 47% 11%);
+  background: #ffffff;
+}
+
+.qth-print .print-box,
+.qth-print .print-writing {
+  /* Boxes must keep their fill when printed — browsers drop backgrounds by default. */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.qth-print .print-question,
+.qth-print .print-box {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+@media screen {
+  .qth-print {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 4rem;
+  }
+}
+
+@media print {
+  @page {
+    size: A4; /* a hint — the browser dialog still offers Letter, etc. */
+    margin: 1.6cm;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .qth-print {
+    padding: 0;
+    max-width: none;
+  }
+}
