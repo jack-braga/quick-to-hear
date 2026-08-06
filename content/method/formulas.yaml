@@ -56,14 +56,70 @@ groups:
       source:
       flag: "Standard inductive-study observation move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
   meaning:
-    - { id: logic-and-connection, name: "Logic and connection",     explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: cause-and-purpose,    name: "Cause and purpose",        explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: proportion-emphasis,  name: "Proportion and emphasis",  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: counterfactual,       name: "Counterfactual",           explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: summary,              name: "Summary",                  explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: original-hearing,     name: "Original hearing",         explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: theology-and-christ,  name: "Theology and Christ",      explanation: "", stem: "", genres: [], state: todo, source: , flag: }
-    - { id: tension-resolution,   name: "Tension and resolution",   explanation: "", stem: "", genres: [], state: todo, source: , flag: }
+    - id: logic-and-connection
+      name: "Logic and connection"
+      explanation: "Ask what a connecting word is doing. A 'therefore', 'so that', 'but', or 'because' tells you how one part depends on another."
+      stem: "What is the '____' in verse ____ joining? What follows from what?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard meaning move (logical connectives); fuller treatment likely in Fee & Stuart or Sweatman (not held). Project's own phrasing."
+    - id: cause-and-purpose
+      name: "Cause and purpose"
+      explanation: "Separate why something happened (cause) from what it was for (purpose). The text often gives one and assumes the other."
+      stem: "According to the passage, why does ____ happen, and what is it meant to achieve?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive/meaning move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: proportion-emphasis
+      name: "Proportion and emphasis"
+      explanation: "Notice how much space the author gives each thing. Where he lingers, and where he hurries, shows what he is emphasising."
+      stem: "Why does the author spend so long on ____ and so little on ____? What does the proportion tell us?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive/meaning move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: counterfactual
+      name: "Counterfactual"
+      explanation: "Ask what would change if a detail were removed or reversed. Taking something away shows what it was doing."
+      stem: "What would be different if ____ were not here, or were the other way round?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive/meaning move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
+    - id: summary
+      name: "Summary"
+      explanation: "Have the group put the passage, or a section of it, in a sentence of their own. Summarising forces them to decide what matters most."
+      stem: "In one sentence of your own, what are verses ____ mainly saying?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Summarise-in-a-sentence move; loose cousin of ACS sec. ii (held; summarise in a sentence or two, ships uncited per owner) and the 'big idea' family (Robinson, Biblical Preaching, not held). Project's own phrasing."
+    - id: original-hearing
+      name: "Original hearing"
+      explanation: "Ask how the first hearers would have taken this, before you ask what it means for us. Meaning runs through them to us."
+      stem: "How would the first hearers have heard verse ____? What would have landed differently for them than for us?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Original-audience / historical-context meaning move; fuller treatment likely in Fee & Stuart, How to Read the Bible for All Its Worth (not held). Project's own phrasing."
+    - id: theology-and-christ
+      name: "Theology and Christ"
+      explanation: "Ask what the passage shows about God, and how it points forward to Christ. If the link is faint, name that rather than forcing it. This is the meaning question that keeps a study from stopping at good advice."
+      stem: "What does ____ in this passage show us about God, and how does it point forward to Christ?"
+      genres: []
+      state: uncited
+      source:
+      flag: "The moralism concern and the Christ-connection method belong to Phase 5 (see p5.christ-route, which cites Goldsworthy). Project's own meaning-question generator; ships uncited this session."
+    - id: tension-resolution
+      name: "Tension and resolution"
+      explanation: "Find the problem or tension the passage sets up, and where or whether it resolves it. The movement from one to the other is often the point."
+      stem: "What tension does this passage set up? Is it resolved by verse ____, and if so, how?"
+      genres: []
+      state: uncited
+      source:
+      flag: "Standard inductive/meaning move; fuller treatment likely in Fee & Stuart or Sweatman, Writing a Small Group Study (not held). Project's own phrasing."
   context:
     # The spec references "the context formats" without enumerating them; these two
     # are the project's own choice (see each item's flag).
