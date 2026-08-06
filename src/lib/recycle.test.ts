@@ -76,6 +76,11 @@ describe('makeCandidateFromSource', () => {
     expect(c.questionType).toBeUndefined();
     expect(c.source).toEqual({ kind: 'mark', id: 'm1' });
   });
+
+  it('carries the source verse anchor forward (kept for the promoted question)', () => {
+    const src = sources.find((s) => s.source.id === 'n1')!;
+    expect(makeCandidateFromSource(src, 'c1').anchor).toEqual({ verseIds: ['LUKE.1.18'] });
+  });
 });
 
 describe('addCandidate (idempotent recycle)', () => {

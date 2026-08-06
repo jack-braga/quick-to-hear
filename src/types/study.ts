@@ -164,6 +164,10 @@ export const CandidateSchema = z.object({
   status: z.enum(['open', 'promoted', 'discarded']).default('open'),
   source: z.object({ kind: z.enum(['mark', 'comaNote']), id: z.string() }).optional(),
   questionType: QuestionTypeSchema.optional(),
+  // Snapshot of the source's verse anchor, carried forward so a promoted question keeps
+  // the anchor the user already chose (SPEC 4/6c). Additive-optional; absent for
+  // free-typed brainstorm candidates.
+  anchor: VerseAnchorSchema.optional(),
 });
 export type Candidate = z.infer<typeof CandidateSchema>;
 

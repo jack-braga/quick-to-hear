@@ -9,6 +9,7 @@ import Phase2Read from '@/pages/Phase2Read';
 import Phase3Map from '@/pages/Phase3Map';
 import Phase4Coma from '@/pages/Phase4Coma';
 import Phase5ThemeAim from '@/pages/Phase5ThemeAim';
+import Phase6Build from '@/pages/Phase6Build';
 
 /** `/study/:id` → the first phase (deep links + old bookmarks still work). */
 function StudyIndexRedirect() {
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="/study/:id/3" element={<Phase3Map />} />
         <Route path="/study/:id/4" element={<Phase4Coma />} />
         <Route path="/study/:id/5" element={<Phase5ThemeAim />} />
+        <Route path="/study/:id/6" element={<Phase6Build />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

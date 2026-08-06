@@ -75,7 +75,8 @@ export function deriveRecycleSources(study: Study, passage?: ParsedText | null):
   return [...fromMarks, ...fromNotes];
 }
 
-/** Snapshot a source into a pool candidate (copy-on-promote). `id` is caller-supplied. */
+/** Snapshot a source into a pool candidate (copy-on-promote). `id` is caller-supplied.
+ *  The source's verse anchor rides along so a promoted question keeps it (SPEC 4/6c). */
 export function makeCandidateFromSource(src: RecycleSource, id: string): Candidate {
   return {
     id,
@@ -84,6 +85,7 @@ export function makeCandidateFromSource(src: RecycleSource, id: string): Candida
     status: 'open',
     source: src.source,
     ...(src.questionType ? { questionType: src.questionType } : {}),
+    ...(src.anchor.verseIds.length > 0 ? { anchor: src.anchor } : {}),
   };
 }
 

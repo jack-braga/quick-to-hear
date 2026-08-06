@@ -397,12 +397,8 @@ export default function Phase5ThemeAim() {
         <Button variant="outline" asChild>
           <Link to={`/study/${study.id}/4`}>← Back to COMA</Link>
         </Button>
-        <Button
-          variant="ghost"
-          disabled
-          title="Phase 6 (Build the questions) arrives in the next build stage"
-        >
-          Next: Build the questions →
+        <Button asChild>
+          <Link to={`/study/${study.id}/6`}>Next: Build the questions →</Link>
         </Button>
       </div>
     </div>

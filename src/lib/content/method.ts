@@ -153,6 +153,18 @@ export function litmusThemeTests(): LitmusTest[] {
   return litmus().theme.filter((t) => t.text.trim().length > 0);
 }
 
+/** The per-type inline litmus tests shown in Phase 6e as a question is written. Their
+ *  ids are the four {@link QuestionType} values, so a question's type resolves its test
+ *  via {@link litmusForQuestionType}. Empty-text seeds are dropped, like the theme set. */
+export function litmusQuestionTests(): LitmusTest[] {
+  return litmus().question.filter((t) => t.text.trim().length > 0);
+}
+
+/** The inline litmus test for a question type (Phase 6e), or undefined if unauthored. */
+export function litmusForQuestionType(type: string): LitmusTest | undefined {
+  return litmusQuestionTests().find((t) => t.id === type);
+}
+
 // ---------------------------------------------------------------------------
 // traps.yaml — the four Christ-connection traps (Phase 5, Christ & gospel test)
 // ---------------------------------------------------------------------------
@@ -213,4 +225,93 @@ export function parseStuckHelpers(raw: string): StuckHelper[] {
 let _stuck: StuckHelper[] | undefined;
 export function stuckHelpers(): StuckHelper[] {
   return (_stuck ??= parseStuckHelpers(rawMethod('stuck-helpers.yaml')));
+}
+
+// ---------------------------------------------------------------------------
+// formulas.yaml — the Phase-6c formula library, grouped by question type
+// ---------------------------------------------------------------------------
+
+/** One question formula: a named move with a scaffolded, blank-carrying `stem` the user
+ *  drops into the brainstorm. `stem` is empty for not-yet-authored formulas (the UI shows
+ *  the name but disables "insert"); `genres` optionally narrows which genres it suits. */
+export const FormulaSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  explanation: z.preprocess((v) => v ?? '', z.string()),
+  stem: z.preprocess((v) => v ?? '', z.string()),
+  genres: z.preprocess((v) => v ?? [], z.array(z.string())),
+  state: z.string().nullish(),
+  source: z.string().nullish(),
+  flag: z.string().nullish(),
+});
+export type Formula = z.infer<typeof FormulaSchema>;
+
+/** The four groups keyed by question type (SPEC 6c: observation / meaning / context /
+ *  application moves). Each defaults to `[]` so a partially-authored file still parses. */
+export const FormulaGroupsSchema = z.object({
+  observation: z.array(FormulaSchema).default([]),
+  meaning: z.array(FormulaSchema).default([]),
+  context: z.array(FormulaSchema).default([]),
+  application: z.array(FormulaSchema).default([]),
+});
+export type FormulaGroups = z.infer<typeof FormulaGroupsSchema>;
+
+export const FormulasContentSchema = z.object({
+  groups: FormulaGroupsSchema.default({
+    observation: [],
+    meaning: [],
+    context: [],
+    application: [],
+  }),
+});
+
+/** Parse + validate a `formulas.yaml` string into its four grouped lists. */
+export function parseFormulas(raw: string): FormulaGroups {
+  return FormulasContentSchema.parse(loadYaml(raw)).groups;
+}
+
+let _formulas: FormulaGroups | undefined;
+export function formulaGroups(): FormulaGroups {
+  return (_formulas ??= parseFormulas(rawMethod('formulas.yaml')));
+}
+
+/** The formulas for a question type (SPEC 6c), in authored order. */
+export function formulasForType(type: keyof FormulaGroups): Formula[] {
+  return formulaGroups()[type] ?? [];
+}
+
+// ---------------------------------------------------------------------------
+// warnings.yaml — the soft, overridable Phase-6e question warnings
+// ---------------------------------------------------------------------------
+
+/** A soft warning shown against a question's text. The `trigger` documents the detection
+ *  rule (the actual regex lives in `src/lib/questions.ts`); the `message` is what the user
+ *  reads. All are advisory — nothing here blocks (Inviolable rule 3). */
+export const WarningItemSchema = z.object({
+  id: z.string(),
+  trigger: z.preprocess((v) => v ?? '', z.string()),
+  message: z.string().default(''),
+  state: z.string().nullish(),
+  source: z.string().nullish(),
+  flag: z.string().nullish(),
+});
+export type WarningItem = z.infer<typeof WarningItemSchema>;
+
+export const WarningsContentSchema = z.object({
+  items: z.array(WarningItemSchema).default([]),
+});
+
+/** Parse + validate a `warnings.yaml` string into its item list. */
+export function parseWarnings(raw: string): WarningItem[] {
+  return WarningsContentSchema.parse(loadYaml(raw)).items;
+}
+
+let _warnings: WarningItem[] | undefined;
+export function questionWarnings(): WarningItem[] {
+  return (_warnings ??= parseWarnings(rawMethod('warnings.yaml')));
+}
+
+/** The warning for a detection id (yes-no / leading / double-barrelled), or undefined. */
+export function warningById(id: string): WarningItem | undefined {
+  return questionWarnings().find((w) => w.id === id);
 }

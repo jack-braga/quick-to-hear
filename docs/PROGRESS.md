@@ -12,20 +12,29 @@
 
 ## Current status
 
-- **Phase of work:** **Stage 5 complete** — **Phase 5 (Theme & aim — the hinge)** + the
-  **help-markdown loader** (`useHelp` + `<Help>` three tiers + global guidance toggle).
-  The two-sentence core (theme frame + author-aim frame), the **group aim** that flows from
-  the author's aim, the **know/feel/do** breakdown, the **five on-demand stuck helpers**, the
-  **Christ & gospel test** (route sentence + the **four traps** as ack checkboxes, with the
-  **Goldsworthy attribution** stored in `traps.yaml` so it can't drift), and the **five litmus
-  tests acknowledged on exit** (soft acks via `litmusAcks`/`trapAcks` — **not** a hard block;
-  the only hard block remains Phase 6e). **"Faithfulness ≠ certainty"** leads the phase as a
-  reassurance callout. This is the **first stage that renders real help prose**: the markdown
-  half of the content loader (`src/lib/content/help.ts` — root-absolute glob, hand-split
-  frontmatter (no gray-matter), `react-markdown`) now backs a `<Help>` component that **replaced
-  every `GuidancePlaceholder`** in Phases 1–5 (unauthored keys still fall back to the placeholder,
-  so the build never blocks on content). New dep: **`react-markdown`**. Verified end-to-end in a
-  real browser (Playwright MCP) — see Test entry points. **Stages 1–4 remain true below.**
+- **Phase of work:** **Stage 6 complete** — **Phase 6 (Build the questions)**, the longest
+  phase, presented as the sequential sub-steps SPEC requires: **6a** weight the Phase-3 sections
+  (heavy/medium/light) → **6b** the question budget + a **running time total** (weight-minutes +
+  4 min/support) vs the Phase-1 duration → **6c** generate wide (the recycled pool + a **formula
+  library** from `formulas.yaml` that drops scaffolded stems + a free brainstorm composer) →
+  **6d** cut (discard-but-keep/restore) → **6e** complete each keeper in a draft editor with the
+  **ONE HARD BLOCK — a question cannot be promoted while its expected answer is empty** (the only
+  hard gate in the whole tool; re-guarded in the pure lib too), plus inline per-type litmus
+  (`litmus.yaml question[]`) and the **soft, overridable** yes-no / leading / double-barrelled
+  warnings → **6f** support passages (3 kinds, budget warning at the 3rd context/quoted,
+  return-question prompt on attach) → **6g** sequence (up/down + the meaning-before-its-observations
+  warning) → **6h** prayer point (soft). **Recycle-forward carried through to promotion:** a
+  Phase-4 anchored note → question candidate → promoted Question keeps its verse anchor (new
+  optional `Candidate.anchor` snapshot); a Phase-3 mark → **background box** that is kept for the
+  handout and **never** enters the question flow (SPEC: "tell them, don't ask them"). All
+  load-bearing logic is **pure + unit-tested** (`src/lib/questions.ts`); the page is a thin wrapper
+  over `applyToCurrent` + a format-guarded `updateBuild`. Verified end-to-end in a real browser
+  (Playwright MCP, 0 console errors) — see Test entry points. **Stages 1–5 remain true below.**
+- **Stage-5 recap:** **Phase 5 (Theme & aim — the hinge)** + the **help-markdown loader**
+  (`useHelp` + `<Help>` three tiers + global guidance toggle); the two-sentence core, group aim,
+  know/feel/do, five stuck helpers, the Christ & gospel test (route + four trap acks, Goldsworthy
+  attribution in `traps.yaml`), and the five litmus tests acknowledged on exit (soft acks). New
+  dep: **`react-markdown`**. **Stages 1–4 remain true below.**
 - **Stage-4 recap:** **Phase 4 (COMA)** + **recycle-forward wiring**.
   Genre-driven COMA note grid (Context/Observation/Meaning/Application), each with a
   free-form note composer + reused **`<VerseAnchorPicker>`** (multi-select) for anchoring;
@@ -95,15 +104,35 @@
   `<GuidanceToggle>` added to the header; Phase 4's "Next: Theme & aim" now links to `/5`;
   **every `GuidancePlaceholder` call in Phases 1–5 swapped to `<Help>`**. New dep:
   **`react-markdown`**. Phase 5 writes into the existing `themeAim` (no schema change).
-- **Next up:** Stage 6 — Phase 6 build the questions (`PLAN.md` §6, SPEC Phase 6).
-  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 6). Weighting (6a) → question budget (6b) →
-  generate from COMA/recycled candidates (6c) → cut (6d) → **the one hard block: no question
-  is promoted without an expected answer (6e)** → support passages / return questions (6f) →
-  sequence (6g) → prayer point (6h). The `build` (discriminated on `format`) already has
-  `candidates`/`questions`/`supportPassages`/`prayerPoint`/`order`; `Question.expectedAnswer`
-  is the always-present hard-block field. `litmus.yaml question[]` is now authored (teaching)
-  and the `<Help>` loader is built — so Phase 6 renders real per-type litmus + help prose with
-  no new content plumbing.
+- **Stage-6 spine (do not recreate):** the **pure Phase-6 core** `src/lib/questions.ts`
+  (budget/time math — `WEIGHT_MINUTES`/`SUPPORT_MINUTES`/`estimatedMinutes`/`suggestedQuestionCount`/
+  `SUGGESTED_ALLOCATION`/`typeCounts`; **`hasExpectedAnswer`** the hard-block predicate;
+  **`detectWarnings`** the three soft regexes; **`meaningBeforeObservation`** the 6g check;
+  `countedSupport`/`supportBudgetWarn`; `orderedQuestionIds`/`orderedQuestions` order-vs-live
+  reconciliation; `emptyDraft`/`questionFromDraft`/`draftFromQuestion`; and the build mutations
+  `addCandidate`/`updateCandidateText`/`removeCandidate`/`discardCandidate`/`restoreCandidate`/
+  **`promoteCandidate`** (re-guards the hard block)/`updateQuestion`/**`deleteQuestion`** (cascade:
+  drop from `order`, reopen source candidate, detach support)/`moveQuestion`/support add/update/
+  remove) + `questions.test.ts` (19); the content-loader extensions in `src/lib/content/method.ts`
+  (`litmusQuestionTests`/`litmusForQuestionType`, `parseFormulas`/`formulaGroups`/`formulasForType`,
+  `parseWarnings`/`questionWarnings`/`warningById`) + `method.test.ts` (+8); `src/pages/Phase6Build.tsx`
+  (all sub-steps 6a–6h; a single draft-based `QuestionEditor` reused for promote + edit, gated on
+  the expected answer; `WeightSection`/`BudgetSection`/`GenerateSection`/`CutSection`/`QuestionsSection`/
+  `SupportSection`). **Model change:** `Candidate` gains optional **`anchor`** (recycle-forward
+  snapshot, additive-optional — no schemaVersion bump); `recycle.ts` `makeCandidateFromSource`
+  now carries it. Wiring: route `/study/:id/6` in `App.tsx`; phase 6 in `Layout.tsx` `BUILT_PHASES`;
+  Phase 5's "Next: Build the questions" now links to `/6`. **No new deps.**
+- **Next up:** Stage 7 — Phase 7 audit + exports → **M1 complete** (`PLAN.md` §6, SPEC Phase 7).
+  Use `docs/DEV-SESSION-PROMPT.md` (STAGE = 7). The audit checklist (each item shows its evidence,
+  dismiss-with-ack): serves theme+aim; expected-answer present (already guaranteed by 6e); the
+  **coverage map** (per-section tag: connective / deferred / needs-question — `audit.coverageTags`);
+  type balance; meaning-order; application last + general→particular; know/feel/do; time vs length;
+  ≥2 load-bearing; **gospel-plain required** when group mixed/one-to-one-not-yet-Christian
+  (`Question.gospelPlain` already set in 6e); prayer point (soft). Then the **exports**: handout
+  (guard-tested — answers excluded, copyright line present) + leader's notes, each as a print-CSS
+  `#/print/:id/…` route + markdown; project-file export already exists (Stage 1). The audit block
+  (`audit.acks`/`coverageTags`) is already in the model; `warnings.yaml`/`audit.yaml` +
+  `translations.yaml` (copyright lines, still unwired) are the method files to load.
 - **Live:** https://jack-braga.github.io/quick-to-hear/ renders the shell (HTTP 200).
   Both `ci.yml` and `deploy.yml` green through Stage 1.
 - **Milestone target:** M1 = Stages 0–7 = complete workbook on bundled Bibles
@@ -153,7 +182,8 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
 - [x] **Stage 4** — Phase 4 COMA + recycle-forward wiring *(M1)* — COMA prompt text is the
       empty `todo` skeleton (owner-transcribed later); machinery + attribution complete
 - [x] **Stage 5** — Phase 5 theme & aim (the hinge) + help-markdown loader (`<Help>`) *(M1)*
-- [ ] **Stage 6** — Phase 6 build the questions *(M1)*
+- [x] **Stage 6** — Phase 6 build the questions *(M1)* — the ONE hard block (6e) enforced; all
+      other checks soft; recycle-forward carries anchors through to promotion
 - [ ] **Stage 7** — Phase 7 audit + exports → **M1 complete**
 - [ ] **Stage 8** — Paste ingest + normalisation + review screen *(M2)*
 - [ ] **Stage 9** — Secondary translations + comparison + versification mapping *(M3)*
@@ -328,6 +358,50 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     `themeAim.{theme,authorAim,groupAim,know,feel,doField,christRoute,litmusAcks,trapAcks}` —
     autosaved **body**. `litmusAcks`/`trapAcks` are `Record<id,bool>` keyed by the method-YAML
     ids, so unknown/added ids are tolerated independently of `schemaVersion`.
+
+- **Stage 6** — Phase 6 build the questions:
+  - Acceptance gate: `npm run typecheck && npm run lint && npm test && npm run build`
+    (all pass; lint 0 warnings; **154 unit tests** — +19 `questions` +8 `content/method`
+    formulas/warnings/question-litmus +1 `recycle` anchor-carry), then `npm run test:e2e` (2/2 —
+    smoke suite unchanged; the full Luke happy-path e2e is Stage 7).
+  - Unit tests of note: `src/lib/questions.test.ts` (`estimatedMinutes` = weight-minutes + 4/support;
+    `suggestedQuestionCount` returns the SPEC 45→6-8 / 60→8-12; **`detectWarnings`** flags yes-no /
+    leading / double-barrelled and stacks them, clean opener → `[]`; **`meaningBeforeObservation`**
+    flags a meaning-before-observation on shared verses only; `supportBudgetWarn` counts context/
+    quoted, warns at 3, ignores background; `orderedQuestionIds` filters dead ids + appends new;
+    `moveQuestion` clamps; **`promoteCandidate` refuses without an expected answer** + marks the
+    candidate promoted + appends order; `updateQuestion` refuses to blank the answer; `deleteQuestion`
+    cascade; `questionFromDraft` trims + sets optionals only when meaningful); `content/method.test.ts`
+    (four `litmus.question` ids = the QuestionType values; `formulas.yaml` parses 6/8/2/4 with blank
+    stems tolerated; `warnings.yaml` three soft messages, `warningById` resolves); `recycle.test.ts`
+    (`makeCandidateFromSource` **carries the source anchor forward**).
+  - **Manual flow (drive the app — verified live via Playwright MCP, 0 console errors):**
+    `npm run dev` → New study → Phase 1: `Luke 1:5-25` → **Load** (genre **Gospels and Acts**),
+    **Duration 45** → Phase 3: **Divide into sections**, **Split** after v13 (two sections), add a
+    **verse mark on Luke 1:20** → Phase 4: add a **Meaning** note anchored to **Luke 1:20** (don't
+    "keep") → **phase-nav step 6** (now enabled). In Phase 6: **6a** weight §2 **heavy**; **6b**
+    shows **6–8 for 45 min · you have 0** + running time; **6c** the recycle panel surfaces the
+    **background box** (the 1:20 mark) and the **meaning candidate** (the anchored note) — click
+    **Add** on the meaning one → it enters the cut pool; the background box goes to a separate
+    **"Background boxes — for the handout"** list (never a question). **6d/6e:** **Complete &
+    promote** the meaning candidate → the editor opens with the text + type prefilled; the
+    **"Promote to the study" button is DISABLED** and a red **"Required"** note shows while the
+    **Expected answer** is empty (**the one hard block**); type an expected answer → the button
+    **enables**, the inline **meaning litmus** shows → promote → it lands as question 1, budget →
+    **you have 1 · ≈3 min**. Brainstorm **"Is Zechariah a righteous man?"** → promote it → the
+    **yes-no soft warning shows but the promote still succeeds once an answer is written** (soft =
+    overridable). Edit the meaning question to also anchor **1:20** with it sequenced first → the
+    **meaning-before-observation warning** fires; **move it down** → the warning clears. **6f:** add
+    **Malachi 4:5-6** (context), **attach it to question 1** → the **return-question** field appears;
+    add two more context/quoted → the **third trips the support-budget warning**; running time →
+    **≈18 min**. **6h:** write a **prayer point**. **Hard reload** (`location.reload()`, clears the
+    in-memory store) → the **sequence, prayer point, section weight, all 3 support passages + the
+    budget warning, the attach + return field, and the background box all rehydrate from IndexedDB**.
+  - Inspect the persisted data (DevTools): IDB DB `quicktohear`, store `studies`, the study's
+    `build.{candidates,questions,supportPassages,prayerPoint,order}` (discriminated on `format`) +
+    `map.sections[].weight` (6a writes the section weight into the Phase-3 map, not `build`) —
+    autosaved **body**. Every `Question` in `build.questions` has a non-empty `expectedAnswer` by
+    construction (the hard block); `order` is filtered-on-read against live questions.
 
 ## Decision & deviation log
 
@@ -702,6 +776,55 @@ _Append-only. Newest last._
     unprompted. (Also saved to auto-memory + noted in ROADMAP §5.)
   - **BSB USFM edition (§8 #4) stays deferred** — app ships WEBBE + ASV; data-only add later.
 
+- **Stage 6 built (this session).** No new deps. Delivered Phase 6 (build the questions) + the
+  pure Phase-6 core (`src/lib/questions.ts`) + the formulas/warnings/question-litmus content
+  loaders. All load-bearing logic is **pure + unit-tested**; the page is a thin wrapper.
+  - **Decisions / deviations (none override a PLAN §2 lock; flagged for the owner):**
+    - **The hard block is enforced at the candidate→question promotion boundary.** SPEC 6d "cut"
+      and 6e "complete each promoted question" are slightly in tension (6e implies the question
+      already exists), but the dev-session brief + Principle 3 are explicit: *a question cannot be
+      **promoted** while `expectedAnswer` is empty*. So the completion editor holds a **draft** and
+      only writes a `Question` on submit; the **"Promote to the study" button is disabled** while the
+      expected answer is blank. The same draft-editor edits an existing question, and its **Save is
+      also gated** on a non-empty answer — so a promoted question can **never** lose its expected
+      answer (the invariant holds airtight, not just at creation). `promoteCandidate`/`updateQuestion`
+      **re-guard** the same rule in the pure lib. The button is *also* disabled on empty question
+      **text** (basic validity); the expected-answer requirement is the one carrying the
+      "this is the enforced discipline" framing (SPEC 6e). Every other check — the three warnings,
+      the meaning-order warning, the support-budget warning, the prayer point — is **soft/overridable**.
+    - **`Candidate` gained an optional `anchor`** (additive-optional, **no `schemaVersion` bump** —
+      `hydrate` fills defaults). Found during the browser drive: a recycled anchored note's verse
+      anchor was being **lost at promotion** because `Candidate` didn't carry it and the promote
+      editor seeded from `emptyDraft`. Recycle-forward *is* the point (Inviolable rule 4), so the
+      anchor now snapshots onto the candidate (`makeCandidateFromSource`) and seeds the promote draft.
+    - **Background boxes never enter the question flow.** A Phase-3 mark → `Candidate{kind:'background-box'}`
+      is shown in a distinct **"Background boxes — for the handout"** list and is **excluded** from the
+      6c brainstorm list and the 6d cut/promote flow (SPEC: marks become boxes, "tell them, don't ask
+      them" — *never* questions). Only `kind:'question'` candidates are brainstormed/cut/promoted. The
+      boxes will render on the handout in Stage 7.
+    - **6a weight writes `map.sections[].weight`, not `build`.** The section weight is a property of
+      the Phase-3 section (the model already had `Section.weight?`), so 6a mutates the map; everything
+      else in Phase 6 writes `build`. A format-guarded page helper `updateBuild(fn)` narrows the
+      `build` discriminated union once so the sub-handlers stay clean.
+    - **Support-passage text is not fetched yet** — 6f captures the reference + kind + attach +
+      return-question + the budget warning (the *tested* behaviours). Rendering the actual verse text
+      of a support passage (via the bundled loader) is deferred to **Stage 7 export**, where the
+      handout must print quoted passages; `SupportPassage.text` stays `null` until then.
+    - **Sequencing is up/down buttons, not drag-and-drop** — accessible, deterministic, and
+      Playwright-drivable (the redesign spike, ROADMAP §5, is deferred post-M1 anyway).
+    - **Budget scaling:** `suggestedQuestionCount` pins the two SPEC anchors (45→6-8, 60→8-12) and
+      scales 30→4-6 / 90→12-16 (the tool's own, matching the help prose which only commits to 45/60);
+      support passages estimate the **midpoint** 4 min of SPEC's 3–5.
+    - **Phase 6 uses controlled inputs + `applyToCurrent`/`updateBuild`**, per the owner-confirmed
+      house standard (no react-hook-form). The one wrinkle: the `QuestionEditor` holds a **local draft**
+      (so the hard block can gate *before* a Question exists) rather than writing each keystroke to the
+      store — the store is still the single source of truth for everything that's committed.
+  - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **154/154** unit —
+    up from 126); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in Test entry points
+    above — the hard block blocks then promotes, a soft warning is overridden, and sequence + prayer
+    point + weights + support + boxes all survive a hard reload; **0 console errors** (only the
+    pre-existing RR v7 future-flag warnings).
+
 ## Known issues / risks being carried
 
 - **[Owner feedback 2026-08-06] Poetry / verse-number rendering is wrong** (e.g. Luke 1:39-80):
@@ -736,9 +859,9 @@ _Append-only. Newest last._
   same-version doc is dropped (newer *versions* are refused, not stripped).
 - **`StudyOverview` (Stage 1) has been removed** — the real Phase-1/2 routes replace it.
   Home's `/study/:id` links now redirect to `/study/:id/1`.
-- **Phase-6–7 routes fall through to NotFound** until built; the phase-nav renders 6–7 as
-  disabled steps and Phase 5's "Next: Build the questions" is disabled. Stage 6 wires
-  `/study/:id/6`. (Phase 5's route `/study/:id/5` landed in Stage 5.)
+- **Phase-7 route falls through to NotFound** until built; the phase-nav renders 7 as a disabled
+  step and Phase 6's "Next: Check & export" is disabled. Stage 7 wires `/study/:id/7`. (Phases 1–6
+  routes + `BUILT_PHASES` now all live; Phase 6's `/study/:id/6` landed in Stage 6.)
 - **Reference-change orphaning (M1 edge, by design):** loading a *different* reference over
   an existing map leaves old sections invalid (UI offers re-divide) and old marks orphaned
   (kept in the doc, hidden from the passage view — never discarded). Switching *translation*

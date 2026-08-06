@@ -2,24 +2,33 @@ import { describe, expect, it } from 'vitest';
 
 // The real method files, imported raw (build-time) so the tests validate what ships.
 import comaRaw from '../../../content/method/coma.yaml?raw';
+import formulasRaw from '../../../content/method/formulas.yaml?raw';
 import genresRaw from '../../../content/method/genres.yaml?raw';
 import litmusRaw from '../../../content/method/litmus.yaml?raw';
 import stuckRaw from '../../../content/method/stuck-helpers.yaml?raw';
 import trapsRaw from '../../../content/method/traps.yaml?raw';
+import warningsRaw from '../../../content/method/warnings.yaml?raw';
 import { GENRES } from '@/types/study';
 
 import {
   comaContent,
   comaSetForGenre,
+  formulasForType,
+  litmusForQuestionType,
+  litmusQuestionTests,
   litmusThemeTests,
   parseComa,
+  parseFormulas,
   parseGenres,
   parseLitmus,
   parseStuckHelpers,
   parseTraps,
+  parseWarnings,
+  questionWarnings,
   readingTipForGenre,
   stuckHelpers,
   trapsContent,
+  warningById,
 } from './method';
 
 describe('parseComa (real coma.yaml)', () => {
@@ -125,6 +134,63 @@ describe('parseLitmus (real litmus.yaml)', () => {
     const tests = litmusThemeTests();
     expect(tests).toHaveLength(5);
     expect(tests.every((t) => t.text.trim().length > 0)).toBe(true);
+  });
+
+  it('has the four per-type question tests, ids matching the QuestionType values', () => {
+    const litmus = parseLitmus(litmusRaw);
+    expect(litmus.question.map((t) => t.id)).toEqual([
+      'context',
+      'observation',
+      'meaning',
+      'application',
+    ]);
+  });
+
+  it('litmusQuestionTests()/litmusForQuestionType resolve the inline Phase-6 tests', () => {
+    expect(litmusQuestionTests()).toHaveLength(4);
+    expect(litmusForQuestionType('meaning')?.text).toMatch(/observations/i);
+    expect(litmusForQuestionType('nope')).toBeUndefined();
+  });
+});
+
+describe('parseFormulas (real formulas.yaml)', () => {
+  const groups = parseFormulas(formulasRaw);
+
+  it('parses the four grouped lists with the authored counts', () => {
+    expect(groups.observation).toHaveLength(6);
+    expect(groups.meaning).toHaveLength(8);
+    expect(groups.context).toHaveLength(2);
+    expect(groups.application).toHaveLength(4);
+  });
+
+  it('keeps each formula id + name; authored stems carry blanks', () => {
+    const countOrList = groups.observation.find((f) => f.id === 'count-or-list');
+    expect(countOrList?.name).toBe('Count or list');
+    expect(countOrList?.stem).toContain('____');
+  });
+
+  it('formulasForType() loads the shipped file via the glob', () => {
+    expect(formulasForType('meaning').map((f) => f.id)).toContain('logic-and-connection');
+  });
+
+  it('tolerates a partially-authored group (empty stems)', () => {
+    // The application group ships with names but not-yet-written stems.
+    expect(groups.application.every((f) => typeof f.stem === 'string')).toBe(true);
+  });
+});
+
+describe('parseWarnings (real warnings.yaml)', () => {
+  const warnings = parseWarnings(warningsRaw);
+
+  it('has the three soft warnings, each with an authored message', () => {
+    expect(warnings.map((w) => w.id)).toEqual(['yes-no', 'leading', 'double-barrelled']);
+    for (const w of warnings) expect(w.message.trim().length).toBeGreaterThan(0);
+  });
+
+  it('questionWarnings()/warningById resolve a message for a detection id', () => {
+    expect(questionWarnings()).toHaveLength(3);
+    expect(warningById('yes-no')?.message).toMatch(/yes-or-no|yes or no/i);
+    expect(warningById('missing')).toBeUndefined();
   });
 });
 
