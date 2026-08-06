@@ -3,10 +3,10 @@ key: p6d.cut
 title: Cut
 phase: 6
 tiers: [inline]
-state: todo        # todo -> cited | uncited | flagged (see content/README.md)
-source:            # inline attribution string, ONLY when state: cited
-flag:              # what would settle it + where to look, ONLY when state: flagged
+state: uncited
+source:
+flag:
 ---
 
 <!-- inline -->
-
+Now judge. Test each candidate against your theme and aim, and keep only what serves them. What you cut is hidden, not deleted, so you can bring it back.
