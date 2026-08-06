@@ -2,12 +2,49 @@
 #   label      — display name (shown to the user)
 #   comaSet    — which key in coma.yaml drives Phase 4 prompts
 #   readingTip — one line on what this genre rewards attention to (Phase 4)
-# Labels are settled; fill `readingTip`; set state per content/README.md.
+# Labels are settled; readingTip authored here (project's own; uncited). Flags note the
+# loose fuller source (Fee & Stuart) for a later citation sweep.
 
 items:
-  - { id: gospels-acts,  label: "Gospels and Acts",                          comaSet: gospels-acts,  readingTip: "", state: todo, source: , flag: }
-  - { id: ot-narrative,  label: "Old Testament narrative",                   comaSet: ot-narrative,  readingTip: "", state: todo, source: , flag: }
-  - { id: epistles,      label: "Epistles",                                  comaSet: epistles,      readingTip: "", state: todo, source: , flag: }
-  - { id: wisdom-poetry, label: "Hebrew wisdom literature and poetry",       comaSet: wisdom-poetry, readingTip: "", state: todo, source: , flag: }
-  - { id: prophetic,     label: "Prophetic literature",                      comaSet: prophetic,     readingTip: "", state: todo, source: , flag: }
-  - { id: apocalyptic,   label: "Apocalyptic literature",                    comaSet: apocalyptic,   readingTip: "", state: todo, source: , flag: }
+  - id: gospels-acts
+    label: "Gospels and Acts"
+    comaSet: gospels-acts
+    readingTip: "Read for the story: who does what, and what has changed by the end. Watch the turning points, and how the writer wants you to see Jesus."
+    state: uncited
+    source:
+    flag: "Genre-reading heuristic; fuller source Fee & Stuart, How to Read the Bible for All Its Worth (not held). Project's own phrasing."
+  - id: ot-narrative
+    label: "Old Testament narrative"
+    comaSet: ot-narrative
+    readingTip: "Read for the story: who does what, and what has changed by the end. Notice how this scene fits the larger account of what God is doing."
+    state: uncited
+    source:
+    flag: "Genre-reading heuristic; fuller source Fee & Stuart, How to Read the Bible for All Its Worth (not held). Project's own phrasing."
+  - id: epistles
+    label: "Epistles"
+    comaSet: epistles
+    readingTip: "Follow the logic. A letter is building a case, so watch the joining words and trace how each step leads to the next."
+    state: uncited
+    source:
+    flag: "Genre-reading heuristic; fuller source Fee & Stuart, How to Read the Bible for All Its Worth (not held). Project's own phrasing."
+  - id: wisdom-poetry
+    label: "Hebrew wisdom literature and poetry"
+    comaSet: wisdom-poetry
+    readingTip: "Slow down for repetition, paired lines, and images. Poetry makes its point through how it speaks, not only what it says."
+    state: uncited
+    source:
+    flag: "Genre-reading heuristic; fuller source Fee & Stuart, How to Read the Bible for All Its Worth (not held). Project's own phrasing."
+  - id: prophetic
+    label: "Prophetic literature"
+    comaSet: prophetic
+    readingTip: "Prophecy warns and promises, so weigh both, and notice where God himself is speaking. Watch for the turn it presses on its hearers, and for echoes of earlier Scripture that carry its weight."
+    state: uncited
+    source:
+    flag: "Genre-reading heuristic; fuller source Fee & Stuart, How to Read the Bible for All Its Worth (not held). Project's own phrasing."
+  - id: apocalyptic
+    label: "Apocalyptic literature"
+    comaSet: apocalyptic
+    readingTip: "The images carry the message. Ask what each one pictures and what it stirs up, rather than decoding it like a code."
+    state: uncited
+    source:
+    flag: "Genre-reading heuristic; fuller source Fee & Stuart, How to Read the Bible for All Its Worth (not held). Project's own phrasing."
