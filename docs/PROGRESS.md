@@ -1201,6 +1201,18 @@ _Append-only. Newest last._
   end-to-end clipboard pass is the owner's (no-inject rule). Verse-number-in-prose disambiguation is a
   monotonic heuristic + the review-screen backstop, not perfect; splitting a merged segment isn't yet a
   review action (rare; editable text).
+- **YouVersion flattens poetry to prose at copy time (a source limitation, not our parser).** A
+  YouVersion paste of the Magnificat/Benedictus arrives as one blob with **no line breaks** — they never
+  reach us, so we can't restore them. Reconstruction was considered + **deferred** (owner decision, 2026-08-07):
+  from the bundled translation we can tell *which* verses are poetry but not *where* to break the paste's
+  (different) wording — word-level cross-translation alignment is unreliable; and YouVersion's per-line
+  capitalisation signal is useless for LSB (it capitalises divine pronouns). Instead the **PasteReview
+  shows an honest, non-blocking heads-up** when the pasted reference is poetry in the bundled text yet the
+  paste has no poetry lines — pointing the user to a bundled primary or a break-preserving source
+  (BibleGateway). **Poetry is detected via `Fragment.qlevel > 0`, not block kind** — WEBBE stores the
+  Magnificat as a `p` block with qlevel-1/2 lines (a gotcha worth remembering for any future poetry check).
+  The real fix for poetry-from-YouVersion is out of scope (would need a review-screen line-splitting action
+  or an OCR-of-the-rendered-page approach) — logged here, not built.
 - **Footnotes / cross-refs / rich passage rendering deferred** (owner, Stage 8) — captured in the data
   (`ParsedText.notes` / `PasteAnalysis.notes`) but **not rendered**; see `ROADMAP.md` §7. Pasted notes
   are dropped at assemble until the renderer exists (additive when it lands).
