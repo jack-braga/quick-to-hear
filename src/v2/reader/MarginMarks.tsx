@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { resolvedMarkText, verseRefLabel } from '@/lib/map';
 import { compareVerseIds } from '@/lib/verse/ids';
@@ -7,32 +7,53 @@ import { allVerses, type ParsedText } from '@/types/passage';
 import type { Mark } from '@/types/study';
 
 /**
- * The right-margin annotation cards (v2.2). For this slice they show the persisted **marks**
- * (SPEC Phase 3b) anchored to their verses, with two-way hover linking (hovering a card lights
- * its verses; hovering a verse lights its cards — driven from the page), a jump-to-verse
- * anchor, and delete. Note / Question / Cross-reference cards join here in the annotation
- * layer (v2.4). Each mark's confusing-red left border matches its verse's action.
+ * The right-margin annotation cards (v2.2). They show the persisted **marks** (SPEC Phase 3b)
+ * anchored to their verses, each with an **editable note** — "what confuses you here? (they'll
+ * feel it too)" — plus two-way hover linking (driven from the page), a jump-to-verse anchor, and
+ * delete. A freshly-created mark's note is auto-focused so the user can type straight away. The
+ * verse text sits above the note as quiet context. Note / Question / Cross-reference cards join
+ * here in the annotation layer (v2.4).
  */
+function autoGrow(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+}
+
 export function MarginMarks({
   passage,
   marks,
   litMarkVerseId,
+  focusMarkId,
   onHoverMark,
+  onEditMark,
   onRemove,
   onJump,
+  onFocusHandled,
 }: {
   passage: ParsedText;
   marks: Mark[];
   litMarkVerseId: string | null;
+  focusMarkId: string | null;
   onHoverMark: (verseIds: string[] | null) => void;
+  onEditMark: (id: string, note: string) => void;
   onRemove: (id: string) => void;
   onJump: (verseId: string) => void;
+  onFocusHandled: () => void;
 }) {
   const byId = useMemo(() => new Map(allVerses(passage).map((v) => [v.verseId, v])), [passage]);
   const shown = useMemo(
     () => marks.filter((m) => byId.has(m.verseId)).sort((a, b) => compareVerseIds(a.verseId, b.verseId)),
     [marks, byId],
   );
+
+  // Focus a just-created mark's note once, then clear the request.
+  useEffect(() => {
+    if (!focusMarkId) return;
+    const el = document.querySelector<HTMLTextAreaElement>(`textarea[data-mark="${CSS.escape(focusMarkId)}"]`);
+    el?.focus();
+    onFocusHandled();
+  }, [focusMarkId, onFocusHandled, shown.length]);
 
   return (
     <div>
@@ -75,11 +96,23 @@ export function MarginMarks({
                 ✕
               </button>
             </div>
-            <p className="font-scripture text-[13.5px] leading-[1.5] text-ink">
+            <p className="mb-1.5 line-clamp-2 font-scripture text-[12.5px] italic leading-snug text-ink-faint">
               {m.kind === 'verse' ? '' : '“'}
               {resolvedMarkText(m, byId.get(m.verseId))}
               {m.kind === 'verse' ? '' : '”'}
             </p>
+            <textarea
+              data-mark={m.id}
+              ref={autoGrow}
+              rows={2}
+              value={m.note ?? ''}
+              placeholder="What confuses you here? (they’ll feel it too)"
+              onChange={(e) => {
+                onEditMark(m.id, e.target.value);
+                autoGrow(e.currentTarget);
+              }}
+              className="w-full resize-none border-none bg-transparent p-0 font-sans text-[13.5px] leading-[1.5] text-ink outline-none placeholder:text-ink-faint"
+            />
           </div>
         );
       })}

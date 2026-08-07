@@ -204,7 +204,12 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
     );
   };
 
-  const proseVerse = (band: ReaderBand, v: ReaderVerse, isBandStart: boolean) => {
+  // `firstInGroup` = the verse opens its paragraph. A poetry line always starts on its own
+  // row, so we break *before* it — except the group's very first line, which would otherwise
+  // leave a blank top line. Emitting the verse number after that leading break (never before
+  // it) keeps the number leading the verse's first rendered line, even when a verse opens
+  // straight into poetry (the Magnificat, Luke 1:46–55, is poetry inside a prose block).
+  const proseVerse = (band: ReaderBand, v: ReaderVerse, isBandStart: boolean, firstInGroup: boolean) => {
     const handle = !isBandStart && <DivideHandle band={band} verseId={v.verseId} />;
     if (!v.present) {
       return (
@@ -228,9 +233,11 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
         >
           {v.lines.map((line, i) => (
             <span key={i}>
-              {line.indent >= 1 && i > 0 && <br />}
+              {line.indent >= 1 && !(firstInGroup && i === 0) && <br />}
               {i === 0 && <VerseNo v={v} />}
-              <span className={line.indent >= 1 ? INDENT[Math.min(line.indent, 3)] : undefined}>
+              <span
+                className={line.indent >= 1 ? cn('inline-block', INDENT[Math.min(line.indent, 3)]) : undefined}
+              >
                 {line.frags.map((f, j) => (
                   <FragmentText key={j} text={f.text} wj={f.wj} />
                 ))}
@@ -276,7 +283,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
       case 'prose':
         return (
           <p key={gi} className="mb-[1.05em] last:mb-0">
-            {group.verses.map((v) => proseVerse(band, v, v.verseId === bandStart))}
+            {group.verses.map((v, i) => proseVerse(band, v, v.verseId === bandStart, i === 0))}
           </p>
         );
       case 'poetry':
@@ -316,7 +323,10 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
           <span className="font-mono text-[11px] tracking-[0.03em] text-ink-faint">{props.leafMeta}</span>
         </header>
 
-        <div ref={containerRef} className="select-none font-scripture text-[1.32rem] leading-[1.72] text-ink">
+        <div
+          ref={containerRef}
+          className={cn('select-none font-scripture text-[1.32rem] leading-[1.72] text-ink', interactive && 'qth-scripture')}
+        >
           {model.bands.map((band) => (
             <section key={band.startVerseId}>
               <BandHeader

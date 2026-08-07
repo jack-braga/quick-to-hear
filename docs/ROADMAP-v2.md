@@ -160,6 +160,18 @@ study opens in either app.
 - Non-live lenses (COMA/Theme/Build/Check) render the canvas read-only with a "coming (v2.6)" note,
   demonstrating "lenses over one canvas — the text stays put; the overlay changes."
 
+**Polish (same session, owner feedback).**
+- Set-up lens reordered: reference → translation → **Load** (Enter still loads).
+- **Poetry-in-prose render fixed** — the Magnificat (Luke 1:46–55 is poetry inside a prose block)
+  was stranding verse numbers mid-line; restored v1's leading-break rule (break before a poetry
+  line except a group's first line; number leads the first rendered line).
+- The **leaf background now wraps all content** — the stage no longer stretches the leaf to the
+  viewport height (`items-start`), so its background covers the whole passage.
+- **Divide affordance made discoverable** — bigger hit area + faint `＋` markers that appear
+  whenever the cursor is over the passage (`.qth-scripture:hover`), brightening on direct hover.
+- **Mark confusing now takes a note** — added additive-optional `Mark.note`; the margin card is an
+  editable, auto-focused textarea (verse text shown as quiet context), persisted and reload-safe.
+
 **Next up (v2.3).** Wire the `/` command *palette* (the bar is already in the shell) over
 `bcv_parser` + the bundled book list; resolve Q1/Q2 vocabulary.
 

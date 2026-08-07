@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { findTranslation } from '@/lib/bible';
 import { newId } from '@/lib/id';
@@ -44,6 +44,8 @@ export function ReaderShell({ study }: { study: Study }) {
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
   const [litFromMark, setLitFromMark] = useState<string[] | null>(null);
   const [flashVerse, setFlashVerse] = useState<string | null>(null);
+  const [focusMarkId, setFocusMarkId] = useState<string | null>(null);
+  const clearFocusMark = useCallback(() => setFocusMarkId(null), []);
 
   const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
   const anchoredVerseIds = useMemo(() => new Set(marks.map((m) => m.verseId)), [marks]);
@@ -97,19 +99,22 @@ export function ReaderShell({ study }: { study: Study }) {
   const onMark = () => {
     if (!passage || selected.length === 0) return;
     const byId = new Map(allVerses(passage).map((v) => [v.verseId, v]));
-    applyToCurrent((s) => {
-      const alreadyWholeVerse = new Set(
-        s.map.marks.filter((m) => m.kind === 'verse').map((m) => m.verseId),
-      );
-      const fresh = selected
-        .map((id) => byId.get(id))
-        .filter((v) => v && v.present && !alreadyWholeVerse.has(v.verseId))
-        .map((v) => makeVerseMark(v!, newId()));
-      if (fresh.length === 0) return s;
-      return { ...s, map: { ...s.map, marks: [...s.map.marks, ...fresh] } };
-    });
+    const already = new Set(marks.filter((m) => m.kind === 'verse').map((m) => m.verseId));
+    const fresh = selected
+      .map((id) => byId.get(id))
+      .filter((v): v is NonNullable<typeof v> => !!v && v.present && !already.has(v.verseId))
+      .map((v) => makeVerseMark(v, newId()));
     clearSelection();
+    if (fresh.length === 0) return;
+    applyToCurrent((s) => ({ ...s, map: { ...s.map, marks: [...s.map.marks, ...fresh] } }));
+    setFocusMarkId(fresh[0]!.id);
   };
+
+  const onEditMark = (markId: string, note: string) =>
+    applyToCurrent((s) => ({
+      ...s,
+      map: { ...s.map, marks: s.map.marks.map((m) => (m.id === markId ? { ...m, note } : m)) },
+    }));
 
   const onRemoveMark = (markId: string) =>
     applyToCurrent((s) => ({ ...s, map: { ...s.map, marks: s.map.marks.filter((m) => m.id !== markId) } }));
@@ -171,9 +176,12 @@ export function ReaderShell({ study }: { study: Study }) {
           passage={passage}
           marks={marks}
           litMarkVerseId={hoveredVerse}
+          focusMarkId={focusMarkId}
           onHoverMark={setLitFromMark}
+          onEditMark={onEditMark}
           onRemove={onRemoveMark}
           onJump={onJump}
+          onFocusHandled={clearFocusMark}
         />
       ) : (
         <MarginPlaceholder
@@ -257,7 +265,9 @@ export function ReaderShell({ study }: { study: Study }) {
           ))}
         </aside>
 
-        <main className="flex justify-center overflow-y-auto px-6 pb-[120px] pt-10">{center}</main>
+        <main className="flex items-start justify-center overflow-y-auto px-6 pb-[120px] pt-10">
+          {center}
+        </main>
 
         <aside className="max-h-[40vh] overflow-y-auto border-t border-line bg-[color-mix(in_srgb,var(--desk)_88%,var(--leaf))] px-4 pb-[120px] pt-[22px] md:max-h-none md:border-l md:border-t-0">
           {margin}

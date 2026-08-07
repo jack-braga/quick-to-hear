@@ -150,11 +150,17 @@
    handle between poetry lines / paragraphs. Both suppress under reduced motion.
 --------------------------------------------------------------------------- */
 @layer components {
+  /* Inline, any-verse handle. Small visual footprint (~5px) but a generous hit area via
+     symmetric padding pulled back with negative margin, so it's easy to hit without pushing
+     the verses apart. Discoverability: a faint ＋ appears whenever the cursor is anywhere over
+     the passage (.qth-scripture:hover), and brightens on direct hover/focus. */
   .qth-divide {
     position: relative;
     display: inline-block;
-    width: 7px;
-    height: 1em;
+    width: 5px;
+    height: 1.3em;
+    padding: 0 7px;
+    margin: 0 -6px;
     vertical-align: middle;
     cursor: pointer;
   }
@@ -162,8 +168,8 @@
     content: '';
     position: absolute;
     left: 50%;
-    top: 0;
-    bottom: 0;
+    top: 0.1em;
+    bottom: 0.1em;
     border-left: 1px dashed transparent;
   }
   .qth-divide:hover::before,
@@ -176,11 +182,14 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font: 600 10px/1 ui-monospace, monospace;
+    font: 600 11px/1 ui-monospace, monospace;
     color: var(--lapis);
     opacity: 0;
     transition: opacity 0.12s ease;
     pointer-events: none;
+  }
+  .qth-scripture:hover .qth-divide::after {
+    opacity: 0.32;
   }
   .qth-divide:hover::after,
   .qth-divide:focus-visible::after {
@@ -190,8 +199,8 @@
   .qth-divide-block {
     position: relative;
     display: block;
-    height: 12px;
-    margin: 0;
+    height: 14px;
+    margin: 2px 0;
     cursor: pointer;
   }
   .qth-divide-block::before {
@@ -201,6 +210,9 @@
     right: 0;
     top: 50%;
     border-top: 1px dashed transparent;
+  }
+  .qth-scripture:hover .qth-divide-block::before {
+    border-top-color: var(--line);
   }
   .qth-divide-block:hover::before,
   .qth-divide-block:focus-visible::before {
@@ -220,6 +232,9 @@
     opacity: 0;
     transition: opacity 0.12s ease;
     pointer-events: none;
+  }
+  .qth-scripture:hover .qth-divide-block::after {
+    opacity: 0.4;
   }
   .qth-divide-block:hover::after,
   .qth-divide-block:focus-visible::after {

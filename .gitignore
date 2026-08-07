@@ -34,3 +34,6 @@ coverage/
 
 # Vite
 .vite/
+
+# stray screenshots from browser automation (belong in the scratchpad)
+/*.png

@@ -112,6 +112,10 @@ export const MarkSchema = z.object({
   // marks omit it. Degrades to whole-verse if the text later changes (PLAN §4.3).
   span: z.object({ start: z.number(), end: z.number() }).optional(),
   text: z.string().default(''),
+  // The user's own note about what confuses them (v2 "Mark confusing" — SPEC Phase 3b:
+  // "what confuses you here? they'll feel it too"). Additive-optional; distinct from `text`
+  // (the verse/phrase snapshot). Left untouched by `reconcileMarks`.
+  note: z.string().optional(),
 });
 export type Mark = z.infer<typeof MarkSchema>;
 

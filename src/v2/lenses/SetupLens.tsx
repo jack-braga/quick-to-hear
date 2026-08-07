@@ -74,27 +74,17 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
           <label htmlFor="v2-reference" className={label}>
             Passage reference
           </label>
-          <div className="flex gap-2">
-            <input
-              id="v2-reference"
-              className={field}
-              value={reference}
-              placeholder="e.g. Luke 1:5-25"
-              autoComplete="off"
-              onChange={(e) => setReference(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') void loadPassage();
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => void loadPassage()}
-              disabled={loading || !reference.trim()}
-              className="shrink-0 rounded-lg bg-lapis px-4 font-sans text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 dark:text-[#10131a]"
-            >
-              {loading ? 'Loading…' : 'Load passage'}
-            </button>
-          </div>
+          <input
+            id="v2-reference"
+            className={field}
+            value={reference}
+            placeholder="e.g. Luke 1:5-25"
+            autoComplete="off"
+            onChange={(e) => setReference(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void loadPassage();
+            }}
+          />
         </div>
 
         <div className="space-y-2">
@@ -115,6 +105,15 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
             ))}
           </select>
         </div>
+
+        <button
+          type="button"
+          onClick={() => void loadPassage()}
+          disabled={loading || !reference.trim()}
+          className="w-full rounded-lg bg-lapis px-4 py-2.5 font-sans text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 dark:text-[#10131a]"
+        >
+          {loading ? 'Loading…' : 'Load passage'}
+        </button>
 
         <div className="space-y-2">
           <label htmlFor="v2-title" className={label}>
