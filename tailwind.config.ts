@@ -116,16 +116,18 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
-        // A verse jump-flash (the `/` "jump to verse" + click-a-note-anchor cue).
+        // A verse jump-flash (click a card's anchor). Only the rubric ring animates — the
+        // verse's resting tint stays, so it fades ring→nothing without a transparent gap or a
+        // snap back to the blue hover/selection colour.
         'verse-flash': {
-          '0%, 100%': { boxShadow: 'none', backgroundColor: 'transparent' },
-          '30%': { boxShadow: 'inset 0 0 0 2px var(--rubric)', backgroundColor: 'var(--rubric-wash)' },
+          '0%': { boxShadow: 'inset 0 0 0 2px var(--rubric)' },
+          '100%': { boxShadow: 'inset 0 0 0 2px transparent' },
         },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'verse-flash': 'verse-flash 1.2s ease',
+        'verse-flash': 'verse-flash 2s ease-out',
       },
     },
   },

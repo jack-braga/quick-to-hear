@@ -108,6 +108,10 @@ export const MarkSchema = z.object({
   id: z.string(),
   kind: z.enum(['verse', 'phrase', 'word']),
   verseId: z.string(),
+  // v2 marks can span a multi-verse selection as ONE annotation (one margin card). Additive-
+  // optional: `verseId` remains the primary anchor (v1 + `reconcileMarks` key on it); when
+  // present, `verseIds` lists every verse the mark covers. Absent → a single-verse mark.
+  verseIds: z.array(z.string()).optional(),
   // Character offsets into the verse's NFC text for phrase/word marks; whole-verse
   // marks omit it. Degrades to whole-verse if the text later changes (PLAN §4.3).
   span: z.object({ start: z.number(), end: z.number() }).optional(),

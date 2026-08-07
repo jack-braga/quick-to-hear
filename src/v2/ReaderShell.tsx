@@ -46,9 +46,14 @@ export function ReaderShell({ study }: { study: Study }) {
   const [flashVerse, setFlashVerse] = useState<string | null>(null);
   const [focusMarkId, setFocusMarkId] = useState<string | null>(null);
   const clearFocusMark = useCallback(() => setFocusMarkId(null), []);
+  const [focusSectionId, setFocusSectionId] = useState<string | null>(null);
+  const clearFocusSection = useCallback(() => setFocusSectionId(null), []);
 
   const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
-  const anchoredVerseIds = useMemo(() => new Set(marks.map((m) => m.verseId)), [marks]);
+  const anchoredVerseIds = useMemo(
+    () => new Set(marks.flatMap((m) => m.verseIds ?? [m.verseId])),
+    [marks],
+  );
   const pvIds = useMemo(() => (passage ? verseIds(passage) : []), [passage]);
 
   const clearSelection = () => {
@@ -69,11 +74,14 @@ export function ReaderShell({ study }: { study: Study }) {
     applyToCurrent((s) => ({ ...s, map: { ...s.map, sections: recipe(s.map.sections) } }));
 
   const onDivide = (sectionId: string, boundaryVerseId: string) => {
+    const newSectionId = newId();
     setSections((prev) => {
       const base = sectionId === '' ? [wholePassageSection(pvIds, newId())] : prev;
       const targetId = sectionId === '' ? base[0]!.id : sectionId;
-      return splitSectionAt(base, targetId, boundaryVerseId, pvIds, newId());
+      return splitSectionAt(base, targetId, boundaryVerseId, pvIds, newSectionId);
     });
+    // Focus the just-created section's name input so it can be named immediately.
+    setFocusSectionId(newSectionId);
   };
 
   const onMerge = (sectionId: string) => setSections((prev) => mergeSectionUp(prev, sectionId, pvIds));
@@ -99,15 +107,13 @@ export function ReaderShell({ study }: { study: Study }) {
   const onMark = () => {
     if (!passage || selected.length === 0) return;
     const byId = new Map(allVerses(passage).map((v) => [v.verseId, v]));
-    const already = new Set(marks.filter((m) => m.kind === 'verse').map((m) => m.verseId));
-    const fresh = selected
-      .map((id) => byId.get(id))
-      .filter((v): v is NonNullable<typeof v> => !!v && v.present && !already.has(v.verseId))
-      .map((v) => makeVerseMark(v, newId()));
+    // One selection → one shared mark/ticket (not one per verse), spanning the present verses.
+    const present = selected.filter((id) => byId.get(id)?.present);
     clearSelection();
-    if (fresh.length === 0) return;
-    applyToCurrent((s) => ({ ...s, map: { ...s.map, marks: [...s.map.marks, ...fresh] } }));
-    setFocusMarkId(fresh[0]!.id);
+    if (present.length === 0) return;
+    const mark = { ...makeVerseMark(byId.get(present[0]!)!, newId()), verseIds: present };
+    applyToCurrent((s) => ({ ...s, map: { ...s.map, marks: [...s.map.marks, mark] } }));
+    setFocusMarkId(mark.id);
   };
 
   const onEditMark = (markId: string, note: string) =>
@@ -122,8 +128,11 @@ export function ReaderShell({ study }: { study: Study }) {
   const onJump = (verseId: string) => {
     const el = document.querySelector(`[data-v="${CSS.escape(verseId)}"]`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setFlashVerse(verseId);
-    window.setTimeout(() => setFlashVerse((cur) => (cur === verseId ? null : cur)), 1200);
+    // Start the flash only after the smooth scroll has settled, then let it run its 2s fade.
+    window.setTimeout(() => {
+      setFlashVerse(verseId);
+      window.setTimeout(() => setFlashVerse((cur) => (cur === verseId ? null : cur)), 2000);
+    }, 450);
   };
 
   // ---- top-bar / leaf labels --------------------------------------------------------------
@@ -158,6 +167,7 @@ export function ReaderShell({ study }: { study: Study }) {
         anchoredVerseIds={anchoredVerseIds}
         litVerseIds={litVerseIds}
         flashVerseId={flashVerse}
+        focusSectionId={focusSectionId}
         onSelect={(r) => {
           setSelected(r.selected);
           setLastAnchor(r.lastAnchor);
@@ -167,6 +177,7 @@ export function ReaderShell({ study }: { study: Study }) {
         onMerge={onMerge}
         onRename={onRename}
         onSelectSectionRange={onSelectSectionRange}
+        onSectionFocusHandled={clearFocusSection}
         onMark={onMark}
       />
     );

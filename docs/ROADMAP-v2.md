@@ -172,8 +172,32 @@ study opens in either app.
 - **Mark confusing now takes a note** — added additive-optional `Mark.note`; the margin card is an
   editable, auto-focused textarea (verse text shown as quiet context), persisted and reload-safe.
 
+**Polish round 2 (owner feedback).**
+- **Poetry-in-prose render rebuilt** — the Benedictus/Magnificat verses were wrapped in
+  `inline-block`s, so a long poetry line dropped to the next row and stranded its number, and
+  the highlight painted as broken boxes. Now any verse containing poetry renders as **block
+  lines** (each wraps + hangs its indent, number leads the first line) and its highlight is one
+  clean box; pure-prose verses stay inline (`box-decoration-break: clone` so wrapped highlights
+  are clean too).
+- **Anchored ≠ hover** — a marked verse now rests at a warm **rubric tint**; hover/selection stay
+  **lapis**. (Verified: marked bg `rgba(166,50,30,.1)`, hover bg `rgba(40,70,138,.1)`.)
+- **Multi-verse mark = one card** — a multi-verse selection makes one shared ticket
+  (additive `Mark.verseIds`), with a combined anchor label + context; two-way hover lights all its
+  verses.
+- **Divide affordance** — shown only for the **hovered verse** (before + after), not the whole
+  passage. Poetry: a full-width bar in the gap; prose: a **zero-width, overlaid ＋** so revealing
+  it never shifts the text. Clicking a divide **focuses the new section's name input**.
+- **Section headers** get more space above them.
+- **Jump flash** — starts only **after** the scroll settles, runs a slower (2s) rubric-ring fade
+  that ends on the verse's resting tint (no transparent gap, no snap to blue).
+
 **Next up (v2.3).** Wire the `/` command *palette* (the bar is already in the shell) over
-`bcv_parser` + the bundled book list; resolve Q1/Q2 vocabulary.
+`bcv_parser` + the bundled book list; resolve Q1/Q2 vocabulary. Then the **Set-up engine**
+(owner idea — see below): reference input with completion + a live normalised-ref validator →
+import a bundled translation OR paste-and-clean your own → add several → pick the primary. This is
+the v1 M3 multi-translation flow reimagined (reuse `bcv_parser` + the paste pipeline); note the
+app is static/offline, so there is **no BibleGateway/YouVersion API** — bundled texts + paste are
+the "engine". Fits as the v2.6 Set-up lens (or a v2.3.5).
 
 ---
 

@@ -142,103 +142,75 @@
 }
 
 /* ---------------------------------------------------------------------------
-   v2 reader — the "＋ divide here" section affordances (v2.2). These are hover-
-   revealed and awkward in pure Tailwind (pseudo-content + no layout shift), so
-   they live here. The glyph is absolutely positioned so revealing it never
-   reflows the Scripture. `qth-divide` is the inline, any-verse handle that sits
-   in the space between two prose verses; `qth-divide-block` is the full-width
-   handle between poetry lines / paragraphs. Both suppress under reduced motion.
+   v2 reader — the "＋ divide here" section affordances (v2.2). Rendered only for the
+   hovered verse (before + after), so the passage stays clean. `qth-divin` is the inline
+   handle between two prose verses; `qth-divbar` is the full-width bar in the gap above/
+   below a poetry verse (absolutely positioned, so revealing it never reflows the text).
 --------------------------------------------------------------------------- */
 @layer components {
-  /* Inline, any-verse handle. Small visual footprint (~5px) but a generous hit area via
-     symmetric padding pulled back with negative margin, so it's easy to hit without pushing
-     the verses apart. Discoverability: a faint ＋ appears whenever the cursor is anywhere over
-     the passage (.qth-scripture:hover), and brightens on direct hover/focus. */
-  .qth-divide {
+  /* Zero-width in flow (no text shift when revealed); the pill is absolutely overlaid on the
+     inter-verse gap. */
+  .qth-divin {
     position: relative;
     display: inline-block;
-    width: 5px;
-    height: 1.3em;
-    padding: 0 7px;
-    margin: 0 -6px;
+    width: 0;
+    height: 1em;
     vertical-align: middle;
     cursor: pointer;
   }
-  .qth-divide::before {
-    content: '';
+  .qth-divin > span {
     position: absolute;
-    left: 50%;
-    top: 0.1em;
-    bottom: 0.1em;
-    border-left: 1px dashed transparent;
-  }
-  .qth-divide:hover::before,
-  .qth-divide:focus-visible::before {
-    border-left-color: var(--lapis-edge);
-  }
-  .qth-divide::after {
-    content: '＋';
-    position: absolute;
-    left: 50%;
+    left: -8px;
     top: 50%;
-    transform: translate(-50%, -50%);
-    font: 600 11px/1 ui-monospace, monospace;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--lapis-edge);
+    border-radius: 5px;
+    background: var(--leaf);
     color: var(--lapis);
-    opacity: 0;
-    transition: opacity 0.12s ease;
-    pointer-events: none;
+    font: 600 11px/1 ui-monospace, monospace;
   }
-  .qth-scripture:hover .qth-divide::after {
-    opacity: 0.32;
-  }
-  .qth-divide:hover::after,
-  .qth-divide:focus-visible::after {
-    opacity: 1;
+  .qth-divin:hover > span,
+  .qth-divin:focus-visible > span {
+    background: var(--lapis-wash);
   }
 
-  .qth-divide-block {
-    position: relative;
-    display: block;
-    height: 14px;
-    margin: 2px 0;
+  .qth-divbar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 16px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
   }
-  .qth-divide-block::before {
+  .qth-divbar::before {
     content: '';
     position: absolute;
     left: 0;
     right: 0;
     top: 50%;
-    border-top: 1px dashed transparent;
+    border-top: 1px dashed var(--lapis-edge);
   }
-  .qth-scripture:hover .qth-divide-block::before {
-    border-top-color: var(--line);
-  }
-  .qth-divide-block:hover::before,
-  .qth-divide-block:focus-visible::before {
-    border-top-color: var(--lapis-edge);
-  }
-  .qth-divide-block::after {
-    content: '＋ divide here';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+  .qth-divbar span {
+    position: relative;
     font: 600 10.5px/1 ui-monospace, monospace;
     letter-spacing: 0.04em;
     color: var(--lapis);
     background: var(--leaf);
-    padding: 0 8px;
-    opacity: 0;
-    transition: opacity 0.12s ease;
-    pointer-events: none;
+    padding: 2px 8px;
+    border: 1px solid var(--lapis-edge);
+    border-radius: 6px;
   }
-  .qth-scripture:hover .qth-divide-block::after {
-    opacity: 0.4;
-  }
-  .qth-divide-block:hover::after,
-  .qth-divide-block:focus-visible::after {
-    opacity: 1;
+  .qth-divbar:hover span,
+  .qth-divbar:focus-visible span {
+    background: var(--lapis-wash);
   }
 }
 

@@ -31,12 +31,14 @@ export interface ReaderCanvasProps {
   anchoredVerseIds: Set<string>;
   litVerseIds: Set<string>;
   flashVerseId: string | null;
+  focusSectionId: string | null;
   onSelect: (r: { selected: string[]; lastAnchor: string | null }) => void;
   onVerseHover: (verseId: string | null) => void;
   onDivide: (sectionId: string, boundaryVerseId: string) => void;
   onMerge: (sectionId: string) => void;
   onRename: (sectionId: string, name: string) => void;
   onSelectSectionRange: (startVerseId: string, endVerseId: string) => void;
+  onSectionFocusHandled: () => void;
   onMark: () => void;
 }
 
@@ -134,6 +136,10 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
     };
   }, [interactive, order, onSelect]);
 
+  // Which verse the pointer is over — drives the divide affordances (shown only for the
+  // hovered verse, before + after) as well as the two-way margin lighting.
+  const [hoverVerse, setHoverVerse] = useState<string | null>(null);
+
   // ---- action-bar position ----------------------------------------------------------------
   const [barPos, setBarPos] = useState<{ left: number; top: number } | null>(null);
   useLayoutEffect(() => {
@@ -165,18 +171,20 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
   }, [interactive, selected]);
 
   // ---- verse rendering --------------------------------------------------------------------
-  const verseClass = (v: ReaderVerse): string => {
-    const sel = selectedSet.has(v.verseId);
-    const lit = !sel && props.litVerseIds.has(v.verseId);
-    const anchored = !sel && !lit && props.anchoredVerseIds.has(v.verseId);
-    const flash = props.flashVerseId === v.verseId;
+  const hasPoetry = (v: ReaderVerse) => v.lines.some((l) => l.indent >= 1);
+
+  // Resting highlight: a **marked** verse gets a warm rubric tint (distinct from the lapis
+  // hover/selection), so "this is annotated" reads differently from "the cursor is here".
+  const verseClass = (v: ReaderVerse, block: boolean): string => {
+    const active = selectedSet.has(v.verseId) || props.litVerseIds.has(v.verseId);
+    const anchored = !active && props.anchoredVerseIds.has(v.verseId);
     return cn(
-      'rounded-[3px] px-[0.06em] py-[0.02em] transition-colors',
+      'rounded-[4px] transition-colors',
+      block ? 'px-2 py-0.5' : 'px-[0.12em] py-[0.04em] [-webkit-box-decoration-break:clone] [box-decoration-break:clone]',
       interactive && 'cursor-pointer hover:bg-lapis-wash',
-      sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
-      lit && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
-      anchored && 'bg-lapis-wash',
-      flash && 'animate-verse-flash',
+      active && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
+      anchored && 'bg-rubric-wash',
+      props.flashVerseId === v.verseId && 'animate-verse-flash',
     );
   };
 
@@ -191,105 +199,114 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
     </sup>
   );
 
-  const DivideHandle = ({ band, verseId, block }: { band: ReaderBand; verseId: string; block?: boolean }) => {
-    if (!interactive) return null;
-    return (
-      <button
-        type="button"
-        className={block ? 'qth-divide-block' : 'qth-divide'}
-        aria-label={`Divide into a new section starting at ${verseRefLabel(verseId)}`}
-        title={`Divide — new section from ${verseRefLabel(verseId)}`}
-        onClick={() => props.onDivide(band.sectionId, verseId)}
-      />
-    );
-  };
+  const divideLabel = (boundary: string) => `Divide into a new section starting at ${verseRefLabel(boundary)}`;
 
-  // `firstInGroup` = the verse opens its paragraph. A poetry line always starts on its own
-  // row, so we break *before* it — except the group's very first line, which would otherwise
-  // leave a blank top line. Emitting the verse number after that leading break (never before
-  // it) keeps the number leading the verse's first rendered line, even when a verse opens
-  // straight into poetry (the Magnificat, Luke 1:46–55, is poetry inside a prose block).
-  const proseVerse = (band: ReaderBand, v: ReaderVerse, isBandStart: boolean, firstInGroup: boolean) => {
-    const handle = !isBandStart && <DivideHandle band={band} verseId={v.verseId} />;
-    if (!v.present) {
+  // Inline "＋" between two prose verses (shown only for the hovered verse). The button takes
+  // zero layout width and the pill is absolutely overlaid, so revealing it never shifts the text.
+  const DivideInline = ({ band, boundary }: { band: ReaderBand; boundary: string }) => (
+    <button
+      type="button"
+      className="qth-divin"
+      aria-label={divideLabel(boundary)}
+      title={divideLabel(boundary)}
+      onClick={() => props.onDivide(band.sectionId, boundary)}
+    >
+      <span>＋</span>
+    </button>
+  );
+
+  // Full-width bar in the gap above/below a poetry verse (shown only for the hovered verse).
+  const DivideBar = ({ band, boundary, where }: { band: ReaderBand; boundary: string; where: 'before' | 'after' }) => (
+    <button
+      type="button"
+      className="qth-divbar"
+      style={where === 'before' ? { top: -9 } : { bottom: -9 }}
+      aria-label={divideLabel(boundary)}
+      title={divideLabel(boundary)}
+      onClick={() => props.onDivide(band.sectionId, boundary)}
+    >
+      <span>＋ divide here</span>
+    </button>
+  );
+
+  const renderVerse = (band: ReaderBand, v: ReaderVerse, nextVerseId: string | null) => {
+    const isBandStart = v.verseId === band.startVerseId;
+    const hovered = interactive && hoverVerse === v.verseId;
+    const showBefore = hovered && !isBandStart;
+    const showAfter = hovered && !!nextVerseId;
+    const enter = () => {
+      if (interactive) setHoverVerse(v.verseId);
+      props.onVerseHover(v.verseId);
+    };
+    const leave = () => {
+      if (interactive) setHoverVerse((c) => (c === v.verseId ? null : c));
+      props.onVerseHover(null);
+    };
+
+    if (!hasPoetry(v)) {
+      // Prose verse — inline, flows in the paragraph; highlight wraps cleanly across lines.
       return (
-        <span key={v.verseId}>
-          {handle}
-          <span className="text-ink-faint">
-            <VerseNo v={v} />
-            <span className="italic">—</span>{' '}
-          </span>
+        <span key={v.verseId} className="qth-verse" onMouseEnter={enter} onMouseLeave={leave}>
+          {showBefore && <DivideInline band={band} boundary={v.verseId} />}
+          {v.present ? (
+            <span data-v={v.verseId} className={verseClass(v, false)}>
+              <VerseNo v={v} />
+              {v.lines[0]?.frags.map((f, j) => <FragmentText key={j} text={f.text} wj={f.wj} />)}
+            </span>
+          ) : (
+            <span data-v={v.verseId} className="text-ink-faint">
+              <VerseNo v={v} />
+              <span className="italic">—</span>
+            </span>
+          )}
+          {showAfter && nextVerseId && <DivideInline band={band} boundary={nextVerseId} />}{' '}
         </span>
       );
     }
+
+    // Poetry verse — each line its own block row (wraps + hangs); highlight is one clean box.
     return (
-      <span key={v.verseId}>
-        {handle}
-        <span
-          data-v={v.verseId}
-          className={verseClass(v)}
-          onMouseEnter={() => props.onVerseHover(v.verseId)}
-          onMouseLeave={() => props.onVerseHover(null)}
-        >
-          {v.lines.map((line, i) => (
-            <span key={i}>
-              {line.indent >= 1 && !(firstInGroup && i === 0) && <br />}
-              {i === 0 && <VerseNo v={v} />}
-              <span
-                className={line.indent >= 1 ? cn('inline-block', INDENT[Math.min(line.indent, 3)]) : undefined}
-              >
+      <div key={v.verseId} className="relative my-[3px]" onMouseEnter={enter} onMouseLeave={leave}>
+        {showBefore && <DivideBar band={band} boundary={v.verseId} where="before" />}
+        {v.present ? (
+          <div data-v={v.verseId} className={verseClass(v, true)}>
+            {v.lines.map((line, i) => (
+              <div key={i} className={line.indent >= 1 ? INDENT[Math.min(line.indent, 3)] : undefined}>
+                {i === 0 && <VerseNo v={v} />}
                 {line.frags.map((f, j) => (
                   <FragmentText key={j} text={f.text} wj={f.wj} />
                 ))}
-              </span>{' '}
-            </span>
-          ))}
-        </span>{' '}
-      </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div data-v={v.verseId} className="px-2 text-ink-faint">
+            <VerseNo v={v} />
+            <span className="italic">—</span>
+          </div>
+        )}
+        {showAfter && nextVerseId && <DivideBar band={band} boundary={nextVerseId} where="after" />}
+      </div>
     );
   };
 
-  const poetryVerse = (band: ReaderBand, v: ReaderVerse, isBandStart: boolean) => (
-    <div key={v.verseId}>
-      {!isBandStart && <DivideHandle band={band} verseId={v.verseId} block />}
-      {!v.present ? (
-        <div className="text-ink-faint">
-          <VerseNo v={v} />
-          <span className="italic">—</span>
-        </div>
-      ) : (
-        <div
-          data-v={v.verseId}
-          className={verseClass(v)}
-          onMouseEnter={() => props.onVerseHover(v.verseId)}
-          onMouseLeave={() => props.onVerseHover(null)}
-        >
-          {v.lines.map((line, i) => (
-            <div key={i} className={INDENT[Math.min(line.indent, 3)]}>
-              {i === 0 && <VerseNo v={v} />}
-              {line.frags.map((f, j) => (
-                <FragmentText key={j} text={f.text} wj={f.wj} />
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
-  const renderGroup = (band: ReaderBand, group: ReaderGroup, gi: number) => {
-    const bandStart = band.startVerseId;
+  const renderGroup = (
+    band: ReaderBand,
+    group: ReaderGroup,
+    gi: number,
+    nextOf: (verseId: string) => string | null,
+  ) => {
     switch (group.kind) {
       case 'prose':
         return (
-          <p key={gi} className="mb-[1.05em] last:mb-0">
-            {group.verses.map((v, i) => proseVerse(band, v, v.verseId === bandStart, i === 0))}
-          </p>
+          <div key={gi} className="mb-[1.05em] last:mb-0">
+            {group.verses.map((v) => renderVerse(band, v, nextOf(v.verseId)))}
+          </div>
         );
       case 'poetry':
         return (
-          <div key={gi} className="my-2 leading-relaxed">
-            {group.verses.map((v) => poetryVerse(band, v, v.verseId === bandStart))}
+          <div key={gi} className="my-3 leading-relaxed">
+            {group.verses.map((v) => renderVerse(band, v, nextOf(v.verseId)))}
           </div>
         );
       case 'super':
@@ -323,22 +340,32 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
           <span className="font-mono text-[11px] tracking-[0.03em] text-ink-faint">{props.leafMeta}</span>
         </header>
 
-        <div
-          ref={containerRef}
-          className={cn('select-none font-scripture text-[1.32rem] leading-[1.72] text-ink', interactive && 'qth-scripture')}
-        >
-          {model.bands.map((band) => (
-            <section key={band.startVerseId}>
-              <BandHeader
-                band={band}
-                interactive={interactive}
-                onMerge={props.onMerge}
-                onRename={props.onRename}
-                onSelectRange={props.onSelectSectionRange}
-              />
-              {band.groups.map((g, gi) => renderGroup(band, g, gi))}
-            </section>
-          ))}
+        <div ref={containerRef} className="select-none font-scripture text-[1.32rem] leading-[1.72] text-ink">
+          {model.bands.map((band) => {
+            // Verse order within this band, so a "divide after V" targets the next verse —
+            // even across a paragraph/stanza boundary inside the same section.
+            const bandVerseIds = band.groups.flatMap((g) =>
+              g.kind === 'prose' || g.kind === 'poetry' ? g.verses.map((v) => v.verseId) : [],
+            );
+            const nextOf = (id: string): string | null => {
+              const i = bandVerseIds.indexOf(id);
+              return i >= 0 && i < bandVerseIds.length - 1 ? bandVerseIds[i + 1]! : null;
+            };
+            return (
+              <section key={band.startVerseId}>
+                <BandHeader
+                  band={band}
+                  interactive={interactive}
+                  focusSectionId={props.focusSectionId}
+                  onMerge={props.onMerge}
+                  onRename={props.onRename}
+                  onSelectRange={props.onSelectSectionRange}
+                  onFocusHandled={props.onSectionFocusHandled}
+                />
+                {band.groups.map((g, gi) => renderGroup(band, g, gi, nextOf))}
+              </section>
+            );
+          })}
         </div>
       </article>
 
@@ -361,20 +388,34 @@ function FragmentText({ text, wj }: { text: string; wj?: boolean }) {
 function BandHeader({
   band,
   interactive,
+  focusSectionId,
   onMerge,
   onRename,
   onSelectRange,
+  onFocusHandled,
 }: {
   band: ReaderBand;
   interactive: boolean;
+  focusSectionId: string | null;
   onMerge: (sectionId: string) => void;
   onRename: (sectionId: string, name: string) => void;
   onSelectRange: (startVerseId: string, endVerseId: string) => void;
+  onFocusHandled: () => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  // After a divide, focus the fresh section's name input so the user can name it straight away.
+  useEffect(() => {
+    if (focusSectionId && focusSectionId === band.sectionId) {
+      inputRef.current?.focus();
+      onFocusHandled();
+    }
+  }, [focusSectionId, band.sectionId, onFocusHandled]);
+
   return (
-    <div className="mt-[26px] flex items-center gap-2.5 border-t border-line pt-3.5 first:mt-0 first:border-t-0 first:pt-0">
+    <div className="mt-11 flex items-center gap-2.5 border-t border-line pt-4 first:mt-0 first:border-t-0 first:pt-0">
       {interactive ? (
         <input
+          ref={inputRef}
           className="min-w-[12ch] flex-[0_1_auto] rounded-[5px] border-none bg-transparent px-1 py-0.5 font-sans text-[13px] font-semibold text-ink outline-none placeholder:font-medium placeholder:text-ink-faint hover:bg-lapis-wash focus:bg-lapis-wash"
           value={band.name}
           placeholder="Name this section"

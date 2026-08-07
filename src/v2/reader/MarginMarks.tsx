@@ -1,10 +1,10 @@
 import { useEffect, useMemo } from 'react';
 
-import { resolvedMarkText, verseRefLabel } from '@/lib/map';
 import { compareVerseIds } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
-import { allVerses, type ParsedText } from '@/types/passage';
+import { allVerses, verseText, type ParsedText } from '@/types/passage';
 import type { Mark } from '@/types/study';
+import { formatVerseIds } from '@/v2/reader/selection';
 
 /**
  * The right-margin annotation cards (v2.2). They show the persisted **marks** (SPEC Phase 3b)
@@ -63,11 +63,17 @@ export function MarginMarks({
       </div>
 
       {shown.map((m) => {
-        const lit = litMarkVerseId === m.verseId;
+        const verseIds = m.verseIds ?? [m.verseId];
+        const lit = litMarkVerseId != null && verseIds.includes(litMarkVerseId);
+        const context = verseIds
+          .map((id) => byId.get(id))
+          .filter((v): v is NonNullable<typeof v> => !!v && v.present)
+          .map((v) => verseText(v))
+          .join(' ');
         return (
           <div
             key={m.id}
-            onMouseEnter={() => onHoverMark([m.verseId])}
+            onMouseEnter={() => onHoverMark(verseIds)}
             onMouseLeave={() => onHoverMark(null)}
             className={cn(
               'group mb-3 rounded-lg border border-line border-l-[3px] border-l-rubric bg-leaf p-[11px_13px] transition-all',
@@ -77,11 +83,11 @@ export function MarginMarks({
             <div className="mb-1.5 flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => onJump(m.verseId)}
+                onClick={() => onJump(verseIds[0]!)}
                 title="Jump to these verses"
                 className="rounded-[5px] bg-lapis-wash px-1.5 py-0.5 font-mono text-[11px] text-lapis-ink hover:underline"
               >
-                {verseRefLabel(m.verseId)}
+                {formatVerseIds(verseIds)}
               </button>
               <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
                 Mark · confusing
@@ -97,9 +103,7 @@ export function MarginMarks({
               </button>
             </div>
             <p className="mb-1.5 line-clamp-2 font-scripture text-[12.5px] italic leading-snug text-ink-faint">
-              {m.kind === 'verse' ? '' : '“'}
-              {resolvedMarkText(m, byId.get(m.verseId))}
-              {m.kind === 'verse' ? '' : '”'}
+              “{context}”
             </p>
             <textarea
               data-mark={m.id}
