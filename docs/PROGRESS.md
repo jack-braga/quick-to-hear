@@ -43,8 +43,16 @@
   (+1 `help` example-tier, +2 `<Help>` example disclosure, +2 `export` placement/pastoral; **237
   total**), verified live in a real browser (attribution page; coverage pips+progress+tagged readout;
   context-above/quoted-below placement; pastoral note leader-only; portrait second-row nav), **0 console
-  errors**. **PWA install/offline to be confirmed on the deployed Pages site once this push deploys**
-  (see Stage-10 Test entry points). **Stages 1–9 remain true below.**
+  errors**. **PWA install/offline verified end-to-end on the production build** (`vite preview` + a
+  browser-context offline toggle): the app shell reloads offline from the precache, a **fetched Bible
+  stays available offline** from the `qth-bibles` runtime cache, a never-fetched book correctly fails
+  offline (proving true offline), and the **"Ready to work offline"** toast fires on first install.
+  **Fixed a real pre-existing bug in the same pass:** the Bibles runtime-cache route had **never
+  worked** — its `urlPattern` was a `({url}) => url.pathname.startsWith(`${BASE}bibles/`)` arrow, which
+  `generateSW` stringifies into the SW verbatim, where **`BASE` is undefined** → the matcher threw and
+  never matched, so no book was ever runtime-cached (broken since Stage 2). Replaced with the
+  **un-anchored `BIBLES_RE` RegExp** (a `RegExpRoute` matches the *full href*, so `^` must not be
+  used). **Stages 1–9 remain true below.**
 - **Stage-9 recap (M3):** The single
   primary passage became a **multi-translation model**: `passage` is now
   `{ translations: Record<translationId, ParsedText>, primaryId: string|null }` (was
@@ -693,12 +701,19 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     phase-nav**: at 390×844 the header's inline nav is `display:none` and a **second full-width row**
     (7 circles, active highlighted) renders below it; at 1280 wide only the inline nav renders —
     exactly one `<nav>` per viewport.
-  - **PWA install / offline (deployed Pages site):** after this push deploys, on
-    https://jack-braga.github.io/quick-to-hear/ — DevTools ▸ Application ▸ Manifest shows the four PNG
-    icons + name/theme; the SW registers (`registerType:'prompt'`); the app **loads offline** (app
-    shell precached) and a **Bible fetched once stays available offline** (runtime `qth-bibles` cache);
-    a redeploy surfaces the **"New version — Reload"** toast (`<PwaReloadToast>`), and a first visit the
-    one-time **"Ready to work offline"** notice. [Filled in below after the deploy check.]
+  - **PWA install / offline (verified on the production build via `vite preview` + Playwright
+    `context.setOffline`):** the SW registers (`registerType:'prompt'`) and controls the page after one
+    reload; precache = **10 app-shell entries** (JS/CSS/HTML/icons/manifest — Bibles are *not*
+    precached); after fetching `bibles/webbe/luke.json` a **`qth-bibles`** runtime cache appears with
+    that book; **going offline + reloading** still renders Home ("Prepare a Bible study") and still
+    serves the cached Luke, while a **never-fetched** `bibles/asv/john.json` fails (`Failed to fetch`)
+    — proving genuine offline, not cached-everything; the **"Ready to work offline"** toast
+    (`<PwaReloadToast>`, `data-testid="pwa-toast"`) fires on first install (Dismiss only; the
+    **"New version" + Reload** branch shows on `needRefresh`). The deployed site serves the identical
+    `sw.js`/manifest/icons (curl-checked: manifest lists the 4 PNG/SVG icons, `sw.js` 200,
+    `icons/icon-512.png` 200 `image/png`, `bibles/webbe/luke.json` 200). **Regression fixed here:** the
+    runtime route matcher was a broken closure (`${BASE}` undefined in the SW) — now the un-anchored
+    `BIBLES_RE` regex; see the recap + decision log.
   - The **[X] worked-example tier shows nothing yet** — no `<!-- example -->` block is authored (by
     design; the machinery is proven by the unit tests). It will render the moment the teaching session
     adds one, no code change.
@@ -1300,11 +1315,23 @@ _Append-only. Newest last._
   - **Pastoral note + placement are additive-optional** — `Question.pastoralNote` is an optional field
     (no `schemaVersion` bump, like `wrongTurns`); `HandoutSupport.type` already carried the
     context/quoted distinction, so placement is a render-time split (no model change).
+  - **BUG FIXED (pre-existing, since Stage 2): Bibles were never runtime-cached.** The
+    `runtimeCaching` route's `urlPattern` was an arrow closure
+    `({url}) => url.pathname.startsWith(`${BASE}bibles/`)`. `generateSW` **stringifies** the matcher
+    into `sw.js` via `.toString()`, which preserves the source text `${BASE}` — but `BASE` doesn't
+    exist in the SW scope, so the matcher threw on every request and the route silently never matched
+    (no `qth-bibles` cache ever formed; "offline Bibles" never worked). **Fix:** an **un-anchored**
+    `BIBLES_RE` RegExp (`/\/quick-to-hear\/bibles\//`). Gotcha worth remembering: a workbox
+    **`RegExpRoute` tests the matcher against `url.href`**, not the pathname — an `^`-anchored path
+    regex would also never match; the navigate-fallback **denylist**, by contrast, tests the pathname,
+    and the un-anchored regex satisfies both. Confirmed with a real offline reload (Playwright
+    `context.setOffline`): app shell + the fetched book load, an unfetched book fails.
   - **Verified:** `typecheck && lint && test && build` all green (lint 0 warnings, **237/237** unit — up
-    from 232; precache **14 entries**); `test:e2e` **2/2**. Full browser walkthrough (Playwright MCP) in
-    the Stage-10 Test entry points; **0 console errors** (only the pre-existing RR v7 future-flag
-    warnings). PWA install/offline on the deployed Pages site is the one remaining check, run right
-    after this push deploys.
+    from 232; precache **14 entries** = app shell + the 4 PNG icons); `test:e2e` **2/2**. Full browser
+    walkthrough (Playwright MCP) in the Stage-10 Test entry points; **0 console errors** (only the
+    pre-existing RR v7 future-flag warnings + one intentional offline-probe error). **PWA install +
+    offline verified end-to-end on the production build** (`vite preview` + `context.setOffline`); the
+    deployed site serves the identical artifact (manifest/sw/icons/bible curl-checked 200).
   - **Deviation from the Stage-10 list:** "Translation comparison notes" in the leader's notes (SPEC §7)
     is **not** built — no note-capture field exists for the M3 comparison viewer; logged as a Known
     issue + a deferred item, not silently skipped.

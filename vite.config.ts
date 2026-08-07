@@ -8,7 +8,11 @@ import path from 'path';
 // start_url / scope must all carry the base (the gotcha local-ledger already solved).
 const BASE = '/quick-to-hear/';
 // A regex matching the runtime-cached Bible routes under BASE, derived so it can't drift.
-const BIBLES_RE = new RegExp('^' + BASE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 'bibles/');
+// NOT anchored with `^`: a workbox `RegExpRoute` tests the matcher against the **full href**
+// (e.g. `https://host/quick-to-hear/bibles/…`), so an anchored `^/quick-to-hear/…` would
+// never match. The un-anchored form matches the path segment as a substring, which also
+// satisfies the navigate-fallback denylist (matched against the pathname).
+const BIBLES_RE = new RegExp(BASE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 'bibles/');
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -34,7 +38,11 @@ export default defineConfig({
         // (not precached): a book fetched once stays available offline for a year.
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith(`${BASE}bibles/`),
+            // Must be a RegExp, NOT a closure: `generateSW` stringifies the matcher into the
+            // SW verbatim, so a `({url}) => url.pathname.startsWith(`${BASE}…`)` arrow would
+            // reference an undefined `BASE` at runtime and silently never match (the bug that
+            // left Bibles un-cached since Stage 2). A RegExp serialises intact.
+            urlPattern: BIBLES_RE,
             handler: 'CacheFirst',
             options: {
               cacheName: 'qth-bibles',
