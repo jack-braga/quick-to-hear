@@ -711,9 +711,11 @@ Mirror of `PLAN.md` §6. Mark `[x]` only when the stage's **done-when** holds.
     (`<PwaReloadToast>`, `data-testid="pwa-toast"`) fires on first install (Dismiss only; the
     **"New version" + Reload** branch shows on `needRefresh`). The deployed site serves the identical
     `sw.js`/manifest/icons (curl-checked: manifest lists the 4 PNG/SVG icons, `sw.js` 200,
-    `icons/icon-512.png` 200 `image/png`, `bibles/webbe/luke.json` 200). **Regression fixed here:** the
-    runtime route matcher was a broken closure (`${BASE}` undefined in the SW) — now the un-anchored
-    `BIBLES_RE` regex; see the recap + decision log.
+    `icons/icon-512.png` 200 `image/png`, `bibles/webbe/luke.json` 200). **Re-confirmed on the live
+    Pages site** (`context.setOffline` after a fetch): offline reload renders Home, the fetched Luke
+    serves from `qth-bibles`, an unfetched Mark fails — matching the preview result. **Regression fixed
+    here:** the runtime route matcher was a broken closure (`${BASE}` undefined in the SW) — now the
+    un-anchored `BIBLES_RE` regex; see the recap + decision log.
   - The **[X] worked-example tier shows nothing yet** — no `<!-- example -->` block is authored (by
     design; the machinery is proven by the unit tests). It will render the moment the teaching session
     adds one, no code change.
