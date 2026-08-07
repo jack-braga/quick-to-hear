@@ -8,6 +8,11 @@ content.** Its reason to exist is to (a) enforce disciplines paper cannot and
 
 ## Start every session here
 
+> **v1 (Stages 0–10) is complete and frozen as a reference. The active work is the v2
+> text-central overhaul.** Building v2? Read **`docs/V2-SESSION-PROMPT.md`** →
+> **`docs/ROADMAP-v2.md`** first; the v1 docs below are the reference crib. Clean break:
+> no users, studies non-upgradable, v1 not maintained.
+
 1. **`docs/PROGRESS.md`** — where the build actually is + how to resume. Read first.
 2. **`docs/PLAN.md`** — locked tech decisions, architecture, and the staged build
    order (Stages 0–9). Read the stage you're on.

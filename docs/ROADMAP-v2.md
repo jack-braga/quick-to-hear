@@ -6,7 +6,14 @@
 > the decisions we've locked, the questions still open, and the build order. It's a working
 > document — edit it as decisions land.
 >
-> First artifact: the clickable prototype at `docs/mockups/v2-reader.html`.
+> **Clean break (owner, 2026-08-07):** there are **no users**, so v1 is **deprecated and frozen
+> as a reference** — do not maintain it, keep it shippable, or migrate its data. **Studies are
+> non-upgradable**: no `hydrate`/migration path from v1 docs; evolve the schema freely. Keep the
+> v1 source in-tree as a crib until v2 reaches parity, then remove it. **Reuse the v1 pure
+> libraries** (the load-bearing logic); the overhaul is the shell + how the phases are presented.
+>
+> First artifact: the clickable prototype at `docs/mockups/v2-reader.html`. Fresh sessions:
+> **`docs/V2-SESSION-PROMPT.md`** is the handoff.
 
 ---
 
@@ -45,36 +52,48 @@ manuscript that answers to a command line*. Full day/night.
 - **Select-a-section is shorthand for its verse range, stored as verses (a snapshot)** — not a
   live link to the section. If the section boundaries later change, the annotation keeps the
   verses it was made against. (Consistent with the existing anchor-ID model + `reconcileMarks`.)
+- **Selection details:** ⌘/Ctrl-click toggles a single verse in/out; a plain click on the sole
+  selected verse **deselects** it. Action-bar kinds carry icons: `✎ Note · ? Question ·
+  ⚑ Mark confusing · ↗ Cross-reference`.
+- **Reference paradigm (resolved).** Two *relationships*, not two paradigms. **Anchor** is
+  first-class and required: every note/question/mark anchors to verses in the **main passage**.
+  A **reference** to another passage is a pointer that lives *inside a note's content* — an
+  `@Malachi 4:5-6` mention rendered as a chip, **not** a separate anchored object. Interactions:
+  click a note's **anchor** → scroll+flash those verses; hover an `@`ref → peek popover; click an
+  `@`ref → open/pull it in. **Promote** an `@`-mention → a full **Support passage** (printed in
+  the handout, framed with a return-question — the v1 support-passage model + `returnQuestion`
+  carry over).
+- **Annotation kinds collapse to three:** **Note** (a "Mark = confusing" and a "Comment" are
+  just notes with a flag; notes may carry an optional COMA type), **Question** (the deliverable;
+  keeps the expected-answer hard block), **Cross-reference** (an `@`-mention / promoted support).
+- **Floating / study-level notes (yes).** Annotations may be unanchored (or anchored to the whole
+  passage) for study-level content — theme, aim, prayer point, notes-to-self — in a distinct
+  margin area, separate from verse-anchored cards.
+- **Build-lens running-order panel:** the promoted questions as an ordered list with **filter by
+  type**, **drag-and-drop reorder**, and **delete**. The anchored cards (spatial) and this list
+  (sequence) are two views of one set; the running order is what exports (defaults to verse
+  order, freely reorderable — observation before meaning, application last).
+- **Parallel translations:** keep **one primary text central** (anchors bind to a single source
+  of truth); secondaries are **tabs** you can pop **side-by-side** or collapse, **default
+  single**. Reuses the M3 compare feature (per-verse peek + optional side-by-side); kept
+  subordinate so the passage stays the subject.
+- **Optional study title** (defaults to the reference) — becomes the handout heading; lives in
+  the Set-up lens.
 
 ---
 
-## 3. Open design questions (resolve before/inside the relevant phase)
+## 3. Open design questions (resolve inside the relevant phase)
 
-1. **Annotation vocabulary — collapse the overlapping kinds.** Today there are mark / note /
-   comment / question / support. Proposal: **three primitives** — **Note** (any observation,
-   with an optional COMA type; a "Mark = confusing" and a "Comment" are just notes with a flag),
-   **Question** (the deliverable; carries the expected-answer hard block), and
-   **Cross-reference** (points to another passage). Fewer, clearer, better icons/labels.
-   *Pending owner confirmation.*
-2. **One reference paradigm, not two.** Anchoring (what verses a note is *about*) and a
-   cross-reference (another passage a note *points to*) are different axes, but a cross-ref
-   isn't a separate paradigm — it's a Note/Question whose anchor is the main text and which also
-   carries an outward pointer. Inline `@Malachi 4:5-6` mentions inside any note become linked
-   chips. **Keep one model:** everything anchors to verses; some annotations also point out.
-3. **Floating / study-level notes.** Allow annotations with no verse anchor (or anchored to the
-   whole passage) for study-level content — theme, aim, prayer point, a note-to-self. These live
-   in a distinct area (top/bottom of the margin), separate from verse-anchored cards.
-4. **Manuscript / flatten reading mode + verse-level sectioning.** A reading toggle:
-   *Formatted* (poetry lines, paragraphs, headings) ↔ *Manuscript* (continuous prose, verse
-   numbers faint/hidden). **Both require one verse-driven render**, which *also* enables
-   **section breaks between any two verses** (not only at paragraph gaps — the current prototype
-   splits at paragraph boundaries for demo simplicity). Ship the verse-driven render once and
-   get both.
-5. **Question ordering — spatial vs sequence.** Questions live anchored on the text (spatial),
-   but the handout needs a deliberate teaching **sequence** (observation before meaning,
-   application last). Resolution: two views of the same set — *anchored* (on the canvas) and an
-   ordered *running order* panel in the Build lens (defaulting to verse order, freely
-   reorderable). The order is what exports.
+1. **Manuscript / flatten reading mode + verse-level sectioning — agreed in principle, unbuilt.**
+   A reading toggle: *Formatted* (poetry lines, paragraphs, headings) ↔ *Manuscript* (continuous
+   prose, verse numbers faint/hidden). **Both require one verse-driven render**, which *also*
+   enables **section breaks between any two verses** (the prototype splits at paragraph gaps for
+   demo simplicity). Ship the verse-driven render once (v2.5) and get both. Detail to settle:
+   how faint/hidden verse numbers get in Manuscript mode while staying selectable.
+2. **Annotation icons/labels — final polish.** The three kinds are decided; the exact glyphs and
+   the COMA-type sub-tagging UI are for the annotation-layer phase (v2.4).
+3. **Translations UX detail.** Tab affordance vs. a translations menu; how the side-by-side
+   column behaves on narrow screens. Settle when the translations lens is built.
 
 ---
 

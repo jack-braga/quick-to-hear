@@ -1,5 +1,11 @@
 # Progress Tracker — Quick to Hear
 
+> ⚠️ **v1 IS COMPLETE (Stages 0–10) AND NOW FROZEN AS A REFERENCE.** The active line of work is
+> the **v2 text-central overhaul** — a clean break (no users, studies non-upgradable, v1 not
+> maintained). **If you're here to build v2, read `docs/V2-SESSION-PROMPT.md` and
+> `docs/ROADMAP-v2.md` instead.** This file below is the v1 build log — keep it only as the crib
+> the v2 prompt points to.
+
 > **This is the first file to read in any session.** It records where the build
 > actually is. Update it at the end of every stage (and any time you stop
 > mid-stage): mark what's done, note deviations, say what the next session should
