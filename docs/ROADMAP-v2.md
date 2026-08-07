@@ -14,6 +14,11 @@
 >
 > First artifact: the clickable prototype at `docs/mockups/v2-reader.html`. Fresh sessions:
 > **`docs/V2-SESSION-PROMPT.md`** is the handoff.
+>
+> **Build status (2026-08-07): v2.1 ✅ and v2.2 ✅ landed.** The v2 app is the default at `/`; the
+> frozen v1 workbook is a separate app under `/v1/`. The reader/Map lens works for real against
+> the store (real Luke 1:5–25 + Psalm 23, selection, any-verse sectioning, marks, reload
+> persistence, day/night). See **§7 Progress log** for what shipped, deviations, and next up.
 
 ---
 
@@ -101,19 +106,66 @@ manuscript that answers to a command line*. Full day/night.
 
 | Phase | Delivers | Notes |
 |---|---|---|
-| **v2.0 — Direction & prototypes** *(in progress)* | Clickable mockups of the signature screens; lock interaction model + visual language. | `docs/mockups/v2-reader.html` done (reader/Map/`/`/selection/sectioning). Next: Build lens; an export. |
-| **v2.1 — Design system + shell** | Type scale (scripture serif + mono tooling), tokens, leaf/desk layout, theming, component inventory, a living styleguide. | Extract the mockup's tokens into the real app (Tailwind theme). |
-| **v2.2 — Selection primitive** | Drag-range + ⌘-disjoint selection + the floating action bar, over the existing anchor logic. | The load-bearing interaction. Reuse `map.ts` anchor model. |
-| **v2.3 — The `/` command** | Slash palette over `bcv_parser` + the bundled book list: reference, insert support, jump, switch translation, run actions. | Resolve open Q1/Q2 (vocabulary) here. |
-| **v2.4 — Annotation layer** | One anchored-annotation surface unifying marks + COMA notes + comments (+ floating notes, Q3). Recycle-forward preserved. | Resolve Q1–Q3. |
-| **v2.5 — Sectioning + reading modes** | Verse-driven render → any-boundary sectioning + the Manuscript/flatten toggle (Q4). Pre-suggest breaks from the translation's own paragraphs/headings. | |
-| **v2.6 — Phases as lenses** | Re-flow 1–7 onto the canvas as modes; keep every discipline (budget, the expected-answer hard block, coverage, audit, exports). Question ordering (Q5). | Migrate incrementally so the app stays shippable throughout. |
+| **v2.0 — Direction & prototypes** ✅ | Clickable mockups of the signature screens; lock interaction model + visual language. | `docs/mockups/v2-reader.html` done (reader/Map/`/`/selection/sectioning). |
+| **v2.1 — Design system + shell** ✅ | Type scale (scripture serif + mono tooling), tokens, leaf/desk layout, theming, a living styleguide. | Tokens ported to `index.css` + `tailwind.config.ts`; shell in `src/v2/`; `/styleguide`. |
+| **v2.2 — Reader / Map lens** ✅ | The selection primitive (drag-range + ⌘-disjoint + click-to-deselect) + floating action bar; the real passage from the store; named section bands (any-verse divide/merge/rename); marks persisted with two-way hover. | Pure libs `v2/reader/{selection,model}.ts` (unit-tested); `ReaderCanvas` a thin component over them. **Any-verse sectioning pulled forward from v2.5 (owner).** Action bar: Mark wired; Note/Question/Cross-ref deferred to v2.4. |
+| **v2.3 — The `/` command** | Slash palette over `bcv_parser` + the bundled book list: reference, insert support, jump, switch translation, run actions. | Resolve open Q1/Q2 (vocabulary) here. The command *bar* is already in the shell; wire the palette. |
+| **v2.4 — Annotation layer** | One anchored-annotation surface unifying marks + COMA notes + comments (+ floating notes, Q3). Recycle-forward preserved. | Resolve Q1–Q3. Grow the action bar to Note/Question/Cross-reference; the margin cards become editable. |
+| **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
+| **v2.6 — Phases as lenses** | Flesh out the remaining lenses (full Set up, Read, COMA, Theme & aim, Build, Check) onto the canvas; keep every discipline (budget, the expected-answer hard block, coverage, audit, exports). Question ordering (Q5). | The shell + lens rail already exist (Set up is minimal, Map is real). Migrate lens-by-lens. |
 | **v2.7 — Exports refresh** | Handout + leader restyled to the new language; carry the Stage-10 wins (coverage pips, support placement, pastoral). | |
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
+## 5. Progress log
+
+### 2026-08-07 — v2.1 + v2.2 (this session)
+
+**Shipped.** The v2 app is a **separate app at the root** (`/`); the frozen v1 workbook renders
+under `/v1/`. Both share the store, autosave, theme, and PWA — v2.2 changes no schema, so a
+study opens in either app.
+
+- **v2.1 — design system + shell.** The mockup's *leaf/desk* palette, *lapis*/*rubric* accents,
+  `--leaf-shadow`/`--leaf-radius`, and the three font roles (`font-scripture` · `font-mono` ·
+  `font-sans`) are CSS vars in `index.css` (under the existing `.light`/`.dark`) exposed to
+  Tailwind (`bg-leaf`, `text-ink`, `text-lapis`, `border-line`, `shadow-leaf`, `animate-verse-flash`…).
+  v1 tokens untouched. The shell (`src/v2/ReaderShell.tsx`) matches the mockup: top bar, lens
+  rail, central leaf, right margin, command bar, day/night. `/styleguide` is a living reference.
+- **v2.2 — reader / Map lens.** Load-bearing logic is pure + unit-tested: `v2/reader/selection.ts`
+  (drag-range · ⌘-disjoint · ⇧-extend · click-to-deselect + a selection→reference formatter) and
+  `v2/reader/model.ts` (`buildReaderModel` → verse-driven render grouped into named section bands,
+  splitting a prose paragraph at any-verse boundaries, preserving poetry/superscriptions/gaps).
+  `ReaderCanvas` is a thin component over them; sectioning is wired to the reused `src/lib/map.ts`;
+  marks persist through the store. Verified live (Playwright): real Luke 1:5–25 and Psalm 23,
+  selection + any-verse divide/merge/rename + marks, **reload persistence**, day + night, 0 console
+  errors bar the known Router future-flag warnings. `npm run typecheck && lint && test (255) &&
+  build && test:e2e (4)` all green.
+
+**Decisions taken (owner, this session).**
+1. **v1↔v2 = two apps.** v1 under `/v1/`, v2 at `/`. Implemented as a **dual-router** in
+   `App.tsx`: one `<HashRouter>` per app, chosen by whether the hash starts with `/v1`; v1 mounts
+   **unchanged** under `basename="/v1"` (every existing v1 `<Link>` resolves to `#/v1/…` with no
+   edits). Boundary crossings use plain `<a href="#/…">` anchors (they fire `hashchange`, which
+   re-selects the router). A one-line "archived v1 → current" banner was added to v1's `Layout`.
+2. **Any-verse sectioning now** (pulled forward from v2.5). The Manuscript/flatten toggle + break
+   pre-suggestion stay in v2.5.
+3. **Action bar: Mark wired; Note/Question/Cross-reference deferred to v2.4** (they need the
+   annotation-model restructure — wiring them into the v1 schema now would only create debt).
+
+**Deviations / notes.**
+- **Set-up lens is minimal** (reference + primary translation + optional title) so v2 stands alone
+  now that v1's Phase-1 lives under `/v1/`. The full Set-up (genre, group, duration, comparison
+  translations, paste) is v2.6. Added an optional `setup.title` (additive; v1 ignores it).
+- Marks are still the v1 single-verse model; "Mark confusing" over a multi-verse selection creates
+  one whole-verse mark per selected verse. The 3-kind annotation collapse is v2.4.
+- Non-live lenses (COMA/Theme/Build/Check) render the canvas read-only with a "coming (v2.6)" note,
+  demonstrating "lenses over one canvas — the text stays put; the overlay changes."
+
+**Next up (v2.3).** Wire the `/` command *palette* (the bar is already in the shell) over
+`bcv_parser` + the bundled book list; resolve Q1/Q2 vocabulary.
+
 ---
 
-## 5. Carries over unchanged (do not rebuild)
+## 6. Carries over unchanged (do not rebuild)
 
 The v1 **pure libraries** are the load-bearing logic and survive the re-skin: `src/lib/verse/*`
 (IDs, ranges, `bcv_parser`), `src/lib/map.ts` (sections, marks, `reconcileMarks`),
@@ -122,7 +174,7 @@ The v1 **pure libraries** are the load-bearing logic and survive the re-skin: `s
 `src/lib/recycle.ts`, the store, storage/hydrate, the paste normaliser, and the compare/
 versification libs. v2 is a new **shell** over these.
 
-## 6. Deferred / ROADMAP (unchanged from v1)
+## 7. Deferred / ROADMAP (unchanged from v1)
 
 Talk mode; series management; BSB edition (owner to pin the berean.bible USFM); footnote /
 cross-ref / rich passage rendering; multi-genre passages; translation-comparison notes in the

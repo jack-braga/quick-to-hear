@@ -82,6 +82,55 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   v2 design tokens — "a manuscript that answers to a command line" (ROADMAP-v2 §1).
+   A warm leaf-on-a-desk reading surface, lapis accent (illuminated-manuscript
+   ultramarine), rubric red for confusion/marks. Ported verbatim from the locked
+   prototype (docs/mockups/v2-reader.html) and driven by the SAME .light/.dark
+   system as v1 (theme.ts) — no second theming engine. These are full colour
+   values (hex + rgba washes), exposed to Tailwind as `var(--…)` utilities in
+   tailwind.config.ts (bg-leaf, text-ink, text-lapis, border-line, shadow-leaf…).
+   v1's HSL tokens above are left untouched; only the day/night *values* differ,
+   so v1 and v2 coexist. `--leaf-radius` is distinct from v1's `--radius`.
+--------------------------------------------------------------------------- */
+@layer base {
+  :root,
+  .light {
+    --desk: #e7e4db;
+    --leaf: #fbf9f2;
+    --panel: #f2efe6;
+    --ink: #1d1b17;
+    --ink-soft: #77726a;
+    --ink-faint: #a49e92;
+    --line: #e2ddd0;
+    --lapis: #28468a;
+    --lapis-ink: #17305f;
+    --lapis-wash: rgba(40, 70, 138, 0.1);
+    --lapis-edge: rgba(40, 70, 138, 0.32);
+    --rubric: #a6321e;
+    --rubric-wash: rgba(166, 50, 30, 0.1);
+    --leaf-shadow: 0 1px 2px rgba(30, 27, 20, 0.05), 0 12px 32px -12px rgba(30, 27, 20, 0.22);
+    --leaf-radius: 10px;
+  }
+
+  .dark {
+    --desk: #131418;
+    --leaf: #1c1e24;
+    --panel: #20232b;
+    --ink: #e9e5db;
+    --ink-soft: #9a958a;
+    --ink-faint: #6b675d;
+    --line: #2b2e36;
+    --lapis: #86a6ea;
+    --lapis-ink: #bcd0f6;
+    --lapis-wash: rgba(124, 160, 230, 0.16);
+    --lapis-edge: rgba(124, 160, 230, 0.4);
+    --rubric: #e0785f;
+    --rubric-wash: rgba(224, 120, 95, 0.16);
+    --leaf-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -14px rgba(0, 0, 0, 0.6);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -89,6 +138,92 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   v2 reader — the "＋ divide here" section affordances (v2.2). These are hover-
+   revealed and awkward in pure Tailwind (pseudo-content + no layout shift), so
+   they live here. The glyph is absolutely positioned so revealing it never
+   reflows the Scripture. `qth-divide` is the inline, any-verse handle that sits
+   in the space between two prose verses; `qth-divide-block` is the full-width
+   handle between poetry lines / paragraphs. Both suppress under reduced motion.
+--------------------------------------------------------------------------- */
+@layer components {
+  .qth-divide {
+    position: relative;
+    display: inline-block;
+    width: 7px;
+    height: 1em;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+  .qth-divide::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed transparent;
+  }
+  .qth-divide:hover::before,
+  .qth-divide:focus-visible::before {
+    border-left-color: var(--lapis-edge);
+  }
+  .qth-divide::after {
+    content: '＋';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font: 600 10px/1 ui-monospace, monospace;
+    color: var(--lapis);
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    pointer-events: none;
+  }
+  .qth-divide:hover::after,
+  .qth-divide:focus-visible::after {
+    opacity: 1;
+  }
+
+  .qth-divide-block {
+    position: relative;
+    display: block;
+    height: 12px;
+    margin: 0;
+    cursor: pointer;
+  }
+  .qth-divide-block::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px dashed transparent;
+  }
+  .qth-divide-block:hover::before,
+  .qth-divide-block:focus-visible::before {
+    border-top-color: var(--lapis-edge);
+  }
+  .qth-divide-block::after {
+    content: '＋ divide here';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font: 600 10.5px/1 ui-monospace, monospace;
+    letter-spacing: 0.04em;
+    color: var(--lapis);
+    background: var(--leaf);
+    padding: 0 8px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    pointer-events: none;
+  }
+  .qth-divide-block:hover::after,
+  .qth-divide-block:focus-visible::after {
+    opacity: 1;
   }
 }
 

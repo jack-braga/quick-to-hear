@@ -58,17 +58,54 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+
+        // --- v2 "leaf on a desk" palette (see index.css + ROADMAP-v2 §1). These are
+        // full colour values (not HSL triplets), so they're consumed as `var(--…)`
+        // directly — no `/opacity` modifier (the washes are their own tokens).
+        desk: 'var(--desk)',
+        leaf: 'var(--leaf)',
+        panel: 'var(--panel)',
+        ink: {
+          DEFAULT: 'var(--ink)',
+          soft: 'var(--ink-soft)',
+          faint: 'var(--ink-faint)',
+        },
+        line: 'var(--line)',
+        lapis: {
+          DEFAULT: 'var(--lapis)',
+          ink: 'var(--lapis-ink)',
+          wash: 'var(--lapis-wash)',
+          edge: 'var(--lapis-edge)',
+        },
+        rubric: {
+          DEFAULT: 'var(--rubric)',
+          wash: 'var(--rubric-wash)',
+        },
       },
       fontFamily: {
-        // The passage is the subject: a readable serif is reserved for scripture;
-        // UI chrome stays in the system sans stack.
+        // The passage is the subject: a humanist serif is reserved for Scripture
+        // (`font-scripture`); every anchor/command is monospace (`font-mono`); the
+        // rest of the UI chrome stays in the system sans stack (`font-sans`).
         sans: ['system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        scripture: [
+          'Iowan Old Style',
+          'Palatino Linotype',
+          'Palatino',
+          'Book Antiqua',
+          'Georgia',
+          'serif',
+        ],
+        mono: ['SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', 'ui-monospace', 'monospace'],
         serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        leaf: 'var(--leaf-radius)',
+      },
+      boxShadow: {
+        leaf: 'var(--leaf-shadow)',
       },
       keyframes: {
         'accordion-down': {
@@ -79,10 +116,16 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        // A verse jump-flash (the `/` "jump to verse" + click-a-note-anchor cue).
+        'verse-flash': {
+          '0%, 100%': { boxShadow: 'none', backgroundColor: 'transparent' },
+          '30%': { boxShadow: 'inset 0 0 0 2px var(--rubric)', backgroundColor: 'var(--rubric-wash)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'verse-flash': 'verse-flash 1.2s ease',
       },
     },
   },

@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react';
 import { HashRouter, Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom';
 
 import { Layout } from '@/components/Layout';
@@ -16,16 +17,46 @@ import Phase7Audit from '@/pages/Phase7Audit';
 import PasteReview from '@/pages/PasteReview';
 import PrintHandout from '@/pages/print/PrintHandout';
 import PrintLeader from '@/pages/print/PrintLeader';
+import { V2App } from '@/v2/V2App';
 
-/** `/study/:id` → the first phase (deep links + old bookmarks still work). */
-function StudyIndexRedirect() {
+/**
+ * Two apps, one HashRouter each (ROADMAP-v2 clean break, owner decision 2026-08-07):
+ *  - **v2** is the default, mounted at the root.
+ *  - **v1** is frozen as a reference and mounted UNCHANGED under `basename="/v1"`, so every
+ *    existing v1 `<Link>` (phases, print, attribution) resolves to `#/v1/…` with no edits.
+ *
+ * We mount exactly one router at a time, chosen by whether the hash is inside `/v1`. Crossing
+ * the boundary uses plain `<a href="#/…">` anchors (they fire `hashchange`, which re-selects
+ * the router); routing *within* an app uses normal `<Link>`s and never remounts. A `key`
+ * forces a clean remount when the boundary is crossed (basename is read once per router).
+ */
+
+function hashPath(): string {
+  return window.location.hash.replace(/^#/, '');
+}
+function isV1Snapshot(): boolean {
+  const p = hashPath();
+  return p === '/v1' || p.startsWith('/v1/');
+}
+function subscribe(cb: () => void): () => void {
+  window.addEventListener('hashchange', cb);
+  window.addEventListener('popstate', cb);
+  return () => {
+    window.removeEventListener('hashchange', cb);
+    window.removeEventListener('popstate', cb);
+  };
+}
+
+// ---------------------------------------------------------------------------------------------
+// v1 (frozen reference) — the exact Stage-0..10 route tree, now under basename="/v1".
+// ---------------------------------------------------------------------------------------------
+
+function V1StudyIndexRedirect() {
   const { id = '' } = useParams();
   return <Navigate to={`/study/${id}/1`} replace />;
 }
 
-/** The chrome (header + phase nav + footer) wraps every screen except the print routes,
- *  which render a bare, ink-safe page for `window.print()` (PLAN §4.8). */
-function Chrome() {
+function V1Chrome() {
   return (
     <Layout>
       <Outlet />
@@ -33,19 +64,16 @@ function Chrome() {
   );
 }
 
-// HashRouter avoids GitHub Pages deep-link/refresh 404s (PLAN §2). `useAutosave` is
-// mounted once inside the router (it flushes on route change). The `#/print/:id/…`
-// routes sit *outside* the Layout so nothing but the artefact prints.
-function AppRoutes() {
+function V1App() {
   useAutosave();
   return (
     <Routes>
       <Route path="/print/:id/handout" element={<PrintHandout />} />
       <Route path="/print/:id/leader" element={<PrintLeader />} />
-      <Route element={<Chrome />}>
+      <Route element={<V1Chrome />}>
         <Route path="/" element={<Home />} />
         <Route path="/attribution" element={<Attribution />} />
-        <Route path="/study/:id" element={<StudyIndexRedirect />} />
+        <Route path="/study/:id" element={<V1StudyIndexRedirect />} />
         <Route path="/study/:id/1" element={<Phase1Setup />} />
         <Route path="/study/:id/paste" element={<PasteReview />} />
         <Route path="/study/:id/2" element={<Phase2Read />} />
@@ -61,9 +89,19 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const isV1 = useSyncExternalStore(subscribe, isV1Snapshot, () => false);
+
+  if (isV1) {
+    return (
+      <HashRouter key="v1" basename="/v1">
+        <V1App />
+        <PwaReloadToast />
+      </HashRouter>
+    );
+  }
   return (
-    <HashRouter>
-      <AppRoutes />
+    <HashRouter key="v2">
+      <V2App />
       <PwaReloadToast />
     </HashRouter>
   );

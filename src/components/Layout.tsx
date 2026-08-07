@@ -76,6 +76,14 @@ function PhaseNav({ className }: { className?: string }) {
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
+      {/* v2 clean break: v1 is archived under /v1/. A plain anchor (not a Link) crosses the
+          app boundary — it changes the hash, which re-selects the v2 router in App.tsx. */}
+      <div className="border-b border-border bg-muted/40 px-4 py-1 text-center text-xs text-muted-foreground">
+        You’re in the archived v1 workbook.{' '}
+        <a href="#/" className="underline underline-offset-2 hover:text-foreground">
+          Go to the current version →
+        </a>
+      </div>
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-4 px-4">
           <Link to="/" className="flex items-baseline gap-2 font-semibold tracking-tight">

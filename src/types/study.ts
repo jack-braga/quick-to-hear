@@ -76,6 +76,9 @@ export type VerseAnchor = z.infer<typeof VerseAnchorSchema>;
 
 export const SetupSchema = z.object({
   reference: z.string().default(''),
+  // Optional study title (v2 locked decision) — defaults to the reference; becomes the
+  // handout heading. Additive-optional, so v1 docs load unchanged (default '').
+  title: z.string().default(''),
   genre: GenreSchema.nullable().default(null),
   format: FormatSchema.default('study'),
   durationMinutes: z.number().nullable().default(null),
