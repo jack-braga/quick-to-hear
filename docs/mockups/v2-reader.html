@@ -228,7 +228,13 @@
       .scripture { -webkit-user-select: none; user-select: none; }
       /* two-way hover link: a verse lights its notes; a note lights its verses */
       .v.lit { background: color-mix(in srgb, var(--lapis-wash) 85%, transparent); box-shadow: inset 0 0 0 1px var(--lapis-edge); }
-      .note.lit { border-color: var(--lapis); box-shadow: 0 0 0 2px var(--lapis-wash); }
+      .note.lit {
+        border-color: var(--lapis);
+        border-left-width: 4px;
+        background: var(--lapis-wash);
+        box-shadow: 0 0 0 2px var(--lapis), 0 8px 20px -8px rgba(40, 70, 138, 0.4);
+        transform: translateX(-3px);
+      }
 
       /* ---- sectioning (the Map lens): named bands over the same text ---- */
       .sec-head {
@@ -303,6 +309,7 @@
         padding: 11px 13px;
         margin-bottom: 12px;
         box-shadow: 0 1px 0 rgba(30, 27, 20, 0.02);
+        transition: box-shadow 0.12s ease, background 0.12s ease, transform 0.12s ease, border-color 0.12s ease;
       }
       .note.kind-mark { border-left-color: var(--rubric); }
       .note.kind-ask { border-left-color: #b98a1e; }
@@ -562,10 +569,10 @@
     <div class="actionbar" id="actionbar" role="toolbar" aria-label="Do something with the selected verses">
       <span class="sel-label" id="selLabel">Luke 1:8</span>
       <span class="divider"></span>
-      <button class="act" data-kind="note">Note</button>
-      <button class="act" data-kind="ask">Question</button>
-      <button class="act" data-kind="mark">Mark confusing</button>
-      <button class="act" data-kind="support" id="actSupport">Cross-reference</button>
+      <button class="act" data-kind="note"><span class="g">✎</span>Note</button>
+      <button class="act" data-kind="ask"><span class="g">?</span>Question</button>
+      <button class="act" data-kind="mark"><span class="g">⚑</span>Mark confusing</button>
+      <button class="act" data-kind="support" id="actSupport"><span class="g">↗</span>Cross-reference</button>
     </div>
 
     <!-- the / command palette -->
@@ -636,10 +643,12 @@
         bar.classList.add('show');
       }
 
-      // Selection = press-and-drag a range; hold ⌘/Ctrl to add a *second, disjoint* range;
-      // ⇧ extends from the last anchor. Native text-highlight is suppressed (annotation-first).
+      // Selection: press-and-drag a range; ⌘/Ctrl adds a disjoint range (or toggles a single
+      // verse); ⇧ extends from the last anchor. A plain click on the sole selected verse
+      // *deselects* it. Native text-highlight is suppressed (annotation-first).
       const scriptureNode = document.getElementById('scripture');
-      let dragging = false, dragAnchor = null, dragBase = new Set();
+      let dragging = false, dragAnchor = null, dragBase = new Set(), preSel = new Set();
+      let moved = false, modMeta = false, modShift = false;
 
       function applyDrag(n) {
         const a = order.indexOf(dragAnchor), b = order.indexOf(n);
@@ -654,19 +663,36 @@
         if (!v) return;
         e.preventDefault();
         const n = +v.dataset.v;
-        dragging = true;
-        if (e.metaKey || e.ctrlKey) { dragBase = new Set(selected); dragAnchor = n; }
-        else if (e.shiftKey && lastClicked != null) { dragBase = new Set(selected); dragAnchor = lastClicked; }
+        dragging = true; moved = false; preSel = new Set(selected);
+        modMeta = e.metaKey || e.ctrlKey;
+        modShift = e.shiftKey && lastClicked != null;
+        if (modMeta) { dragBase = new Set(selected); dragAnchor = n; }
+        else if (modShift) { dragBase = new Set(selected); dragAnchor = lastClicked; }
         else { dragBase = new Set(); dragAnchor = n; }
         applyDrag(n);
       });
       scriptureNode.addEventListener('pointerover', (e) => {
         if (!dragging) return;
         const v = e.target.closest('.v');
-        if (v) applyDrag(+v.dataset.v);
+        if (!v) return;
+        const n = +v.dataset.v;
+        if (n !== dragAnchor) moved = true;
+        applyDrag(n);
       });
       window.addEventListener('pointerup', () => {
-        if (dragging) { dragging = false; lastClicked = dragAnchor; }
+        if (!dragging) return;
+        dragging = false;
+        // A pure click (no drag, no ⇧-extend) → click / toggle semantics.
+        if (!moved && !modShift) {
+          const n = dragAnchor;
+          selected.clear();
+          preSel.forEach((x) => selected.add(x));
+          if (modMeta) { selected.has(n) ? selected.delete(n) : selected.add(n); }
+          else if (preSel.size === 1 && preSel.has(n)) { selected.clear(); } // click again → deselect
+          else { selected.clear(); selected.add(n); }
+          refreshSelection();
+        }
+        lastClicked = selected.size ? dragAnchor : null;
       });
 
       // select a whole section as shorthand for its range (stores the verses, not a live
