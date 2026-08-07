@@ -173,16 +173,21 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
   // ---- verse rendering --------------------------------------------------------------------
   const hasPoetry = (v: ReaderVerse) => v.lines.some((l) => l.indent >= 1);
 
-  // Resting highlight: a **marked** verse gets a warm rubric tint (distinct from the lapis
-  // hover/selection), so "this is annotated" reads differently from "the cursor is here".
+  // Highlight states, mutually exclusive so exactly one wins:
+  //  - selected → lapis (blue) wash + edge; a neutral pick.
+  //  - lit (its mark card is hovered) → the marked tint with a **bolder rubric border** — the
+  //    two-way link for a confusing-mark reads red, not blue.
+  //  - anchored (rests with a mark) → a faint rubric tint (distinct from the lapis cursor-hover).
   const verseClass = (v: ReaderVerse, block: boolean): string => {
-    const active = selectedSet.has(v.verseId) || props.litVerseIds.has(v.verseId);
-    const anchored = !active && props.anchoredVerseIds.has(v.verseId);
+    const sel = selectedSet.has(v.verseId);
+    const lit = !sel && props.litVerseIds.has(v.verseId);
+    const anchored = !sel && !lit && props.anchoredVerseIds.has(v.verseId);
     return cn(
       'rounded-[4px] transition-colors',
       block ? 'px-2 py-0.5' : 'px-[0.12em] py-[0.04em] [-webkit-box-decoration-break:clone] [box-decoration-break:clone]',
       interactive && 'cursor-pointer hover:bg-lapis-wash',
-      active && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
+      sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
+      lit && 'bg-rubric-wash shadow-[inset_0_0_0_2px_var(--rubric)]',
       anchored && 'bg-rubric-wash',
       props.flashVerseId === v.verseId && 'animate-verse-flash',
     );

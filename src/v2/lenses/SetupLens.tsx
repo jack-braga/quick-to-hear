@@ -1,149 +1,299 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
-import { BUNDLED_TRANSLATIONS, DEFAULT_TRANSLATION_ID, findTranslation, loadReading } from '@/lib/bible';
-import { loadFreshPrimary, primaryText } from '@/lib/passage';
-import { inferGenreForBook, parseReference } from '@/lib/verse';
+import { BUNDLED_TRANSLATIONS, findTranslation, loadReading } from '@/lib/bible';
+import {
+  addSecondary,
+  loadFreshPrimary,
+  primaryText,
+  removeTranslation,
+  setPrimary,
+  translationOrder,
+} from '@/lib/passage';
+import { BOOKS, inferGenreForBook, parseReference, type ParsedReference } from '@/lib/verse';
 import { allVerses } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
 import type { Study } from '@/types/study';
 
 /**
- * The **Set up** lens (v2.2) — the minimal, self-contained way to get a primary passage into
- * the store so v2 stands alone (v1's Phase-1 page now lives under /v1/). It is deliberately
- * small: a reference, the primary translation, an optional title. The full Set-up lens
- * (genre, group, duration, comparison translations, paste) is filled out in v2.6; the pure
- * loaders it uses (`parseReference`, `loadReading`, `loadFreshPrimary`) carry over unchanged.
+ * The **Set-up engine** (v2.6, first increment). The owner's flow: type a reference (with book
+ * completion) under a **live normalised-ref validator**, import one or more bundled translations
+ * for it, then choose which is the **primary** (everything anchors to it). It reuses the pure
+ * libs wholesale — `parseReference` (`bcv_parser`) for parse/normalise, `loadReading` for the
+ * bundled text, and the M3 passage builders (`loadFreshPrimary`/`addSecondary`/`setPrimary`).
+ *
+ * The app is static + offline, so there is **no BibleGateway/YouVersion API**; bundled
+ * public-domain texts are one source and **paste-and-clean** (reusing `analysePaste`) is the
+ * other — the paste path lands in the next increment.
  */
+
+/** A friendly, normalised label for a parsed reference (what the validator shows). */
+function normaliseRefLabel(ref: ParsedReference): string {
+  const s = ref.start;
+  const e = ref.end;
+  if (s.verseId === e.verseId) return `${s.book.name} ${s.chapter}:${s.verse}`;
+  if (s.book.id !== e.book.id) return `${s.book.name} ${s.chapter}:${s.verse} – ${e.book.name} ${e.chapter}:${e.verse}`;
+  if (s.chapter === e.chapter) return `${s.book.name} ${s.chapter}:${s.verse}–${e.verse}`;
+  return `${s.book.name} ${s.chapter}:${s.verse}–${e.chapter}:${e.verse}`;
+}
+
+const FIELD =
+  'h-10 w-full rounded-lg border border-line bg-panel px-3 font-sans text-[15px] text-ink outline-none placeholder:text-ink-faint focus:border-lapis-edge';
+const LABEL = 'block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint';
+
 export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => void }) {
   const updateSetup = useStudyStore((s) => s.updateSetup);
   const setPassage = useStudyStore((s) => s.setPassage);
 
-  const setup = study.setup;
-  const passage = primaryText(study.passage);
-  const translationId = setup.primaryTranslationId ?? DEFAULT_TRANSLATION_ID;
+  const passage = study.passage;
+  const primary = primaryText(passage);
+  const loadedIds = translationOrder(passage);
+  const hasTranslations = loadedIds.length > 0;
 
-  const [reference, setReference] = useState(setup.reference);
-  const [loading, setLoading] = useState(false);
+  const [reference, setReference] = useState(study.setup.reference);
+  const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [warnings, setWarnings] = useState<string[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const loadPassage = async () => {
+  const parsed = useMemo(() => parseReference(reference), [reference]);
+
+  // Book completion: only while a bare book token is typed (no chapter yet).
+  const bookToken = reference.trim().match(/^([1-3]?\s?[A-Za-z]+)$/)?.[1];
+  const suggestions = useMemo(() => {
+    if (!bookToken) return [];
+    const q = bookToken.toLowerCase().replace(/\s+/g, ' ');
+    return BOOKS.filter((b) => b.name.toLowerCase().startsWith(q)).slice(0, 6);
+  }, [bookToken]);
+
+  const addBundled = async (id: string) => {
+    if (!parsed) return;
     setError(null);
-    const ref = parseReference(reference);
-    if (!ref) {
-      setError('Could not recognise that reference. Try “Luke 1:5-25”, “Psalm 23”, or “Acts 2”.');
-      setWarnings([]);
-      return;
-    }
-    const notes: string[] = [];
-    if (ref.extraPassages) notes.push('More than one passage was found — using the first.');
-    if (!ref.singleBook) notes.push('Passages spanning two books aren’t supported yet — using the start book.');
-
-    setLoading(true);
+    setBusy(id);
     try {
-      const parsed = await loadReading(translationId, ref);
-      updateSetup({
-        reference: ref.input,
-        genre: inferGenreForBook(ref.start.book.id),
-        primaryTranslationId: translationId,
-      });
-      await setPassage(loadFreshPrimary(parsed));
-      setWarnings(notes);
-      onLoaded?.();
+      const text = await loadReading(id, parsed);
+      const first = translationOrder(passage).length === 0;
+      await setPassage(first ? loadFreshPrimary(text) : addSecondary(passage, text));
+      if (first) {
+        updateSetup({
+          reference: parsed.input,
+          genre: inferGenreForBook(parsed.start.book.id),
+          primaryTranslationId: id,
+        });
+      }
     } catch {
-      setError('Could not load that passage from the bundled text. Please try again.');
+      setError('Could not load that passage in the chosen translation.');
     } finally {
-      setLoading(false);
+      setBusy(null);
     }
   };
 
-  const label = 'block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint';
-  const field =
-    'h-10 w-full rounded-lg border border-line bg-panel px-3 font-sans text-[15px] text-ink outline-none placeholder:text-ink-faint focus:border-lapis-edge';
+  const makePrimary = async (id: string) => {
+    const text = passage.translations[id];
+    if (!text) return;
+    await setPassage(setPrimary(passage, text));
+    updateSetup({ primaryTranslationId: id });
+  };
+
+  const remove = async (id: string) => {
+    await setPassage(removeTranslation(passage, id));
+  };
+
+  const changePassage = async () => {
+    await setPassage({ translations: {}, primaryId: null });
+    setReference('');
+    setError(null);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const availableBundled = BUNDLED_TRANSLATIONS.filter((t) => !passage.translations[t.id]);
 
   return (
     <article className="mx-auto w-full max-w-[42rem] rounded-leaf border border-line bg-leaf px-[clamp(28px,6vw,56px)] py-12 shadow-leaf">
       <h1 className="font-scripture text-[28px] leading-tight text-ink">Set up the study</h1>
       <p className="mt-1 text-[14px] text-ink-soft">
-        Name the passage and pick a translation. Everything else in the workbook hangs off the
-        text you load here.
+        Name the passage, import the translations you want to work from, then choose your primary —
+        the one everything else anchors to.
       </p>
 
       <div className="mt-8 space-y-6">
+        {/* 1 — reference + live validator (locked once translations are loaded) */}
+        {!hasTranslations ? (
+          <div className="space-y-2">
+            <label htmlFor="v2-reference" className={LABEL}>
+              Passage reference
+            </label>
+            <div className="relative">
+              <input
+                id="v2-reference"
+                ref={inputRef}
+                className={FIELD}
+                value={reference}
+                placeholder="e.g. Luke 1:5-25"
+                autoComplete="off"
+                spellCheck={false}
+                onChange={(e) => setReference(e.target.value)}
+              />
+              {suggestions.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-line bg-leaf shadow-leaf">
+                  {suggestions.map((b) => (
+                    <li key={b.id}>
+                      <button
+                        type="button"
+                        className="flex w-full items-baseline gap-2 px-3 py-2 text-left text-[14px] hover:bg-lapis-wash"
+                        onClick={() => {
+                          setReference(`${b.name} `);
+                          inputRef.current?.focus();
+                        }}
+                      >
+                        <span className="font-scripture">{b.name}</span>
+                        <span className="font-mono text-[11px] text-ink-faint">{b.osis}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {/* validator */}
+            {parsed ? (
+              <p className="flex items-center gap-2 text-[13px] text-ink">
+                <span className="text-lapis">✓</span>
+                <span>
+                  Detected <b className="font-semibold">{normaliseRefLabel(parsed)}</b>
+                </span>
+                <span className="font-mono text-[11px] text-ink-faint">{parsed.osis}</span>
+              </p>
+            ) : reference.trim() ? (
+              <p className="text-[13px] text-ink-faint">Keep typing a reference — e.g. “Luke 1:5-25”, “Psalm 23”.</p>
+            ) : null}
+            {parsed?.extraPassages && (
+              <p className="text-[13px] text-ink-soft">More than one passage found — the first will be used.</p>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">Passage</span>
+            <span className="rounded-md border border-line bg-panel px-2.5 py-1 font-scripture text-[15px]">
+              {primary?.reference || study.setup.reference}
+            </span>
+            <button
+              type="button"
+              onClick={() => void changePassage()}
+              className="font-mono text-[12px] text-ink-faint underline underline-offset-2 hover:text-ink"
+            >
+              change passage
+            </button>
+          </div>
+        )}
+
+        {/* 2 — import translations */}
         <div className="space-y-2">
-          <label htmlFor="v2-reference" className={label}>
-            Passage reference
-          </label>
-          <input
-            id="v2-reference"
-            className={field}
-            value={reference}
-            placeholder="e.g. Luke 1:5-25"
-            autoComplete="off"
-            onChange={(e) => setReference(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') void loadPassage();
-            }}
-          />
+          <span className={LABEL}>Translations</span>
+          {loadedIds.length > 0 && (
+            <ul className="space-y-1.5">
+              {loadedIds.map((id) => {
+                const text = passage.translations[id]!;
+                const isPrimary = id === passage.primaryId;
+                const tr = findTranslation(id);
+                return (
+                  <li
+                    key={id}
+                    className="flex items-center gap-3 rounded-lg border border-line bg-panel px-3 py-2 text-[14px]"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => void makePrimary(id)}
+                      aria-pressed={isPrimary}
+                      title={isPrimary ? 'Primary translation' : 'Make this the primary'}
+                      className="flex items-center gap-2"
+                    >
+                      <span
+                        className={
+                          isPrimary
+                            ? 'grid size-4 place-items-center rounded-full border-[4px] border-lapis'
+                            : 'size-4 rounded-full border border-ink-faint'
+                        }
+                      />
+                      <span className="font-medium">
+                        {tr?.name ?? text.translationId.replace(/^pasted-/, '').replace(/-/g, ' ')}
+                        {tr && <span className="ml-1.5 font-mono text-[11px] text-ink-faint">{tr.shortName}</span>}
+                      </span>
+                    </button>
+                    {isPrimary && (
+                      <span className="rounded bg-lapis-wash px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.08em] text-lapis-ink">
+                        primary
+                      </span>
+                    )}
+                    <span className="flex-1 text-right font-mono text-[11px] text-ink-faint">
+                      {allVerses(text).length} verses
+                    </span>
+                    {!isPrimary && (
+                      <button
+                        type="button"
+                        onClick={() => void remove(id)}
+                        aria-label={`Remove ${tr?.shortName ?? id}`}
+                        className="text-ink-faint hover:text-rubric"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {parsed && availableBundled.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-[13px] text-ink-soft">
+                {hasTranslations ? 'Add another:' : 'Import a bundled translation:'}
+              </span>
+              {availableBundled.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  disabled={busy != null}
+                  onClick={() => void addBundled(t.id)}
+                  className="rounded-lg border border-line bg-panel px-3 py-1.5 font-sans text-[13px] text-ink hover:border-lapis-edge disabled:opacity-50"
+                >
+                  {busy === t.id ? 'Loading…' : `+ ${t.shortName}`}
+                </button>
+              ))}
+              <span
+                title="Paste-and-clean your own translation — arrives in the next increment"
+                className="cursor-not-allowed rounded-lg border border-dashed border-line px-3 py-1.5 font-sans text-[13px] text-ink-faint"
+              >
+                + Paste your own (soon)
+              </span>
+            </div>
+          )}
+          {!parsed && !hasTranslations && (
+            <p className="text-[13px] text-ink-faint">Enter a valid reference above to import a translation.</p>
+          )}
+          {error && <p className="text-[13px] text-rubric">{error}</p>}
         </div>
 
+        {/* 3 — optional title */}
         <div className="space-y-2">
-          <label htmlFor="v2-translation" className={label}>
-            Primary translation
-          </label>
-          <select
-            id="v2-translation"
-            className={field}
-            value={translationId}
-            onChange={(e) => updateSetup({ primaryTranslationId: e.target.value })}
-            disabled={passage?.source === 'pasted'}
-          >
-            {BUNDLED_TRANSLATIONS.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name} ({t.shortName})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => void loadPassage()}
-          disabled={loading || !reference.trim()}
-          className="w-full rounded-lg bg-lapis px-4 py-2.5 font-sans text-[14px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 dark:text-[#10131a]"
-        >
-          {loading ? 'Loading…' : 'Load passage'}
-        </button>
-
-        <div className="space-y-2">
-          <label htmlFor="v2-title" className={label}>
+          <label htmlFor="v2-title" className={LABEL}>
             Study title <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
           </label>
           <input
             id="v2-title"
-            className={field}
-            value={setup.title}
-            placeholder={setup.reference || 'Defaults to the reference'}
+            className={FIELD}
+            value={study.setup.title}
+            placeholder={study.setup.reference || 'Defaults to the reference'}
             onChange={(e) => updateSetup({ title: e.target.value })}
           />
         </div>
 
-        {error && <p className="text-[14px] text-rubric">{error}</p>}
-        {warnings.map((w) => (
-          <p key={w} className="text-[13px] text-ink-soft">
-            {w}
-          </p>
-        ))}
-
-        {passage && (
-          <div className="rounded-lg border border-line bg-panel p-3 text-[13px]">
-            <div className="font-medium text-ink">
-              {passage.reference || 'Passage'} · {findTranslation(passage.translationId)?.shortName ?? passage.translationId}
-            </div>
-            <div className="mt-0.5 text-ink-soft">
-              {allVerses(passage).length} verses loaded — switch to the <b className="font-semibold">Map</b> lens
-              to divide and mark it.
-            </div>
+        {primary && (
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              onClick={() => onLoaded?.()}
+              className="rounded-lg bg-lapis px-4 py-2 font-sans text-[14px] font-medium text-white hover:opacity-90 dark:text-[#10131a]"
+            >
+              Start mapping →
+            </button>
           </div>
         )}
       </div>

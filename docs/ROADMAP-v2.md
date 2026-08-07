@@ -191,13 +191,19 @@ study opens in either app.
 - **Jump flash** — starts only **after** the scroll settles, runs a slower (2s) rubric-ring fade
   that ends on the verse's resting tint (no transparent gap, no snap to blue).
 
-**Next up (v2.3).** Wire the `/` command *palette* (the bar is already in the shell) over
-`bcv_parser` + the bundled book list; resolve Q1/Q2 vocabulary. Then the **Set-up engine**
-(owner idea — see below): reference input with completion + a live normalised-ref validator →
-import a bundled translation OR paste-and-clean your own → add several → pick the primary. This is
-the v1 M3 multi-translation flow reimagined (reuse `bcv_parser` + the paste pipeline); note the
-app is static/offline, so there is **no BibleGateway/YouVersion API** — bundled texts + paste are
-the "engine". Fits as the v2.6 Set-up lens (or a v2.3.5).
+**Set-up engine — increment 1 (owner-requested, done).** The Set-up lens is now the owner's
+flow: a **reference input with book completion** + a **live normalised-ref validator** (`✓ Detected
+Luke 1:5–25 · Luke.1.5-Luke.1.25`), **import one or more bundled translations** for it, a loaded
+list with verse counts, a **radio primary picker** (`setPrimary` — the top-bar chip follows),
+remove-secondary, change-passage, optional title, and a **Start mapping →**. Reuses `parseReference`
++ `loadReading` + the M3 passage builders. The hover two-way link now reads **rubric** (a marked
+verse's card hover borders the verse in bolder red, not blue).
+
+**Next up.** (a) **Set-up engine increment 2** — paste-and-clean your own translation in v2 (reuse
+the pure `analysePaste`/`assembleParsedText` behind a v2 review UI; app is static/offline so
+paste is the only route for non-bundled text — no BibleGateway/YouVersion API). (b) **v2.3** —
+wire the `/` command *palette* (the bar is already in the shell). (c) **v2.4** — the annotation
+layer (Note / Question / Cross-reference), which also unlocks the greyed action-bar buttons.
 
 ---
 

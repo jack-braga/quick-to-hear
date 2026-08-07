@@ -77,7 +77,7 @@ export function MarginMarks({
             onMouseLeave={() => onHoverMark(null)}
             className={cn(
               'group mb-3 rounded-lg border border-line border-l-[3px] border-l-rubric bg-leaf p-[11px_13px] transition-all',
-              lit && '-translate-x-[3px] border-lapis bg-lapis-wash shadow-[0_0_0_2px_var(--lapis),0_8px_20px_-8px_rgba(40,70,138,0.4)]',
+              lit && '-translate-x-[3px] border-rubric bg-rubric-wash shadow-[0_0_0_2px_var(--rubric),0_8px_20px_-8px_rgba(166,50,30,0.4)]',
             )}
           >
             <div className="mb-1.5 flex items-center gap-2">

@@ -10,9 +10,10 @@ test('v2 reader: load a passage, mark a verse, and it survives a reload', async 
 
   await page.getByRole('button', { name: /new study/i }).click();
 
-  // The Set-up lens loads a real bundled passage into the store.
+  // The Set-up engine: enter a reference, import a bundled translation, start mapping.
   await page.fill('#v2-reference', 'Luke 1:5-25');
-  await page.getByRole('button', { name: /load passage/i }).click();
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
 
   // The Map lens renders the real verses.
   const verse8 = page.locator('[data-v="LUKE.1.8"]');
