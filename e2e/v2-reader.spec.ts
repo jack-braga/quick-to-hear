@@ -33,6 +33,33 @@ test('v2 reader: load a passage, mark a verse, and it survives a reload', async 
   await expect(page.getByRole('button', { name: 'Luke 1:8', exact: true })).toBeVisible();
 });
 
+test('v2 set-up: paste-and-clean lands a passage', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.getByRole('button', { name: /paste your own/i }).click();
+
+  await page.fill(
+    '#v2-paste',
+    [
+      'Psalm 23',
+      'American Standard Version',
+      'A Psalm of David.',
+      '1 Jehovah is my shepherd;',
+      '    I shall not want.',
+      '2 He maketh me to lie down in green pastures;',
+      '    He leadeth me beside still waters.',
+      'Read full chapter',
+    ].join('\n'),
+  );
+  await page.getByRole('button', { name: /tidy it up/i }).click();
+  await page.getByRole('button', { name: /accept as the passage/i }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+
+  // The pasted text becomes the real passage and renders in the Map lens.
+  await expect(page.locator('[data-v="PS.23.1"]')).toBeVisible();
+  await expect(page.getByText(/Jehovah is my shepherd/i)).toBeVisible();
+});
+
 test('v1 is archived under /v1/ and reachable', async ({ page }) => {
   await page.goto('./#/v1/');
   await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();

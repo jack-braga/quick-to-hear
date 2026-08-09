@@ -199,11 +199,20 @@ remove-secondary, change-passage, optional title, and a **Start mapping →**. R
 + `loadReading` + the M3 passage builders. The hover two-way link now reads **rubric** (a marked
 verse's card hover borders the verse in bolder red, not blue).
 
-**Next up.** (a) **Set-up engine increment 2** — paste-and-clean your own translation in v2 (reuse
-the pure `analysePaste`/`assembleParsedText` behind a v2 review UI; app is static/offline so
-paste is the only route for non-bundled text — no BibleGateway/YouVersion API). (b) **v2.3** —
-wire the `/` command *palette* (the bar is already in the shell). (c) **v2.4** — the annotation
-layer (Note / Question / Cross-reference), which also unlocks the greyed action-bar buttons.
+**Set-up engine — increment 2: paste-and-clean (done).** "+ Paste your own" opens a v2-styled
+review panel (`src/v2/lenses/PastePanel.tsx`) that reuses the pure pipeline wholesale: paste raw →
+`analysePaste` (auto-detects reference + translation, strips app chrome, flags uncertain lines) →
+an **editable segment review** (line type · verse number · poetry indent · drop) with a **live
+preview** → `assembleParsedText` (+ `reversifyToKjv` for the rare foreign-numbered text) → accept.
+It adds the pasted text (`source:'pasted'`) to the passage with the same first-is-primary rule as
+bundled import; a paste while a passage exists locks to that reference and joins as a comparison.
+Verified live end-to-end on a real BibleGateway Psalm 23 (ASV) paste — it renders as poetry in the
+Map lens. (App is static/offline, so paste is the only route for non-bundled text — no
+BibleGateway/YouVersion API.)
+
+**Next up.** (a) **v2.3** — wire the `/` command *palette* (the bar is already in the shell). (b)
+**v2.4** — the annotation layer (Note / Question / Cross-reference), which also unlocks the greyed
+action-bar buttons. (c) Reader polish as it comes up.
 
 ---
 

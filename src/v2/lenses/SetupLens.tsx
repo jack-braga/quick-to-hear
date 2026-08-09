@@ -13,6 +13,7 @@ import { BOOKS, inferGenreForBook, parseReference, type ParsedReference } from '
 import { allVerses } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
 import type { Study } from '@/types/study';
+import { PastePanel } from '@/v2/lenses/PastePanel';
 
 /**
  * The **Set-up engine** (v2.6, first increment). The owner's flow: type a reference (with book
@@ -52,6 +53,7 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
   const [reference, setReference] = useState(study.setup.reference);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pasteMode, setPasteMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const parsed = useMemo(() => parseReference(reference), [reference]);
@@ -105,6 +107,16 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
   };
 
   const availableBundled = BUNDLED_TRANSLATIONS.filter((t) => !passage.translations[t.id]);
+
+  if (pasteMode) {
+    return (
+      <PastePanel
+        study={study}
+        defaultReference={primary?.reference || reference || study.setup.reference || ''}
+        onDone={() => setPasteMode(false)}
+      />
+    );
+  }
 
   return (
     <article className="mx-auto w-full max-w-[42rem] rounded-leaf border border-line bg-leaf px-[clamp(28px,6vw,56px)] py-12 shadow-leaf">
@@ -241,12 +253,10 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
             </ul>
           )}
 
-          {parsed && availableBundled.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[13px] text-ink-soft">
-                {hasTranslations ? 'Add another:' : 'Import a bundled translation:'}
-              </span>
-              {availableBundled.map((t) => (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-[13px] text-ink-soft">{hasTranslations ? 'Add another:' : 'Import:'}</span>
+            {parsed &&
+              availableBundled.map((t) => (
                 <button
                   key={t.id}
                   type="button"
@@ -257,16 +267,19 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                   {busy === t.id ? 'Loading…' : `+ ${t.shortName}`}
                 </button>
               ))}
-              <span
-                title="Paste-and-clean your own translation — arrives in the next increment"
-                className="cursor-not-allowed rounded-lg border border-dashed border-line px-3 py-1.5 font-sans text-[13px] text-ink-faint"
-              >
-                + Paste your own (soon)
-              </span>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setPasteMode(true)}
+              className="rounded-lg border border-line bg-panel px-3 py-1.5 font-sans text-[13px] text-ink hover:border-lapis-edge"
+            >
+              + Paste your own
+            </button>
+          </div>
           {!parsed && !hasTranslations && (
-            <p className="text-[13px] text-ink-faint">Enter a valid reference above to import a translation.</p>
+            <p className="text-[13px] text-ink-faint">
+              Enter a valid reference to import a bundled translation — or paste your own (it can carry
+              its own reference).
+            </p>
           )}
           {error && <p className="text-[13px] text-rubric">{error}</p>}
         </div>
