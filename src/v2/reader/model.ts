@@ -220,21 +220,22 @@ export function buildReaderModel(passage: ParsedText, sections: Section[]): Read
 }
 
 /**
- * The **Manuscript** reading transform (v2.5) — collapse the formatted render into one continuous
- * flow: poetry flattened to running prose, editorial headings + blank spacers dropped, and the
- * section bands ignored (the whole passage becomes a single unnamed band). The verse **numbers**
- * survive — the one marker the manuscript keeps — as do Psalm superscriptions (they are text, not
- * editorial). It is **display-only**: the underlying sections, annotations, and verse anchors are
- * untouched, and the same `verseIds` flow through, so selection and two-way hover keep working.
+ * The **Manuscript** reading transform (v2.5) — flatten the *text* within each section: poetry
+ * collapsed to running prose, editorial headings + blank spacers dropped, so each band reads as one
+ * continuous flow. The verse **numbers** survive (the one marker the manuscript keeps), as do Psalm
+ * superscriptions (they are text, not editorial). The user's **section bands are kept** (owner: a
+ * section should show in every reading mode, and stay dividable) — only the formatting inside them
+ * flattens. It is **display-only**: sections, annotations, and verse anchors are untouched, and the
+ * same `verseIds` flow through, so selection, sectioning, and two-way hover keep working.
  */
 export function manuscriptModel(model: ReaderModel): ReaderModel {
-  const groups: ReaderGroup[] = [];
-  let run: ReaderVerse[] = [];
-  const flush = () => {
-    if (run.length > 0) groups.push({ kind: 'prose', verses: run });
-    run = [];
-  };
-  for (const band of model.bands) {
+  const bands = model.bands.map((band) => {
+    const groups: ReaderGroup[] = [];
+    let run: ReaderVerse[] = [];
+    const flush = () => {
+      if (run.length > 0) groups.push({ kind: 'prose', verses: run });
+      run = [];
+    };
     for (const g of band.groups) {
       if (g.kind === 'prose' || g.kind === 'poetry') {
         for (const v of g.verses) run.push(flattenVerse(v));
@@ -244,25 +245,10 @@ export function manuscriptModel(model: ReaderModel): ReaderModel {
       }
       // 'heading' + 'space' are editorial scaffolding — dropped in manuscript.
     }
-  }
-  flush();
-
-  const first = model.verseIds[0] ?? '';
-  const last = model.verseIds[model.verseIds.length - 1] ?? '';
-  const band: ReaderBand = {
-    sectionId: '',
-    name: '',
-    startVerseId: first,
-    endVerseId: last,
-    ref: first ? rangeRef(first, last) : '',
-    groups,
-    canMergeUp: false,
-  };
-  return {
-    ...model,
-    bands: model.bands.length > 0 ? [band] : [],
-    firstVerseOfBand: new Set(first ? [first] : []),
-  };
+    flush();
+    return { ...band, groups };
+  });
+  return { ...model, bands };
 }
 
 /** Flatten a verse's rendered lines into one inline (indent-0) line, joining former poetry lines

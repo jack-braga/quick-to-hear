@@ -55,7 +55,6 @@ export interface ReaderCanvasProps {
 
 export function ReaderCanvas(props: ReaderCanvasProps) {
   const { model, interactive, selected, lastAnchor } = props;
-  const manuscript = props.mode === 'manuscript';
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedSet = new Set(selected);
   const order = model.verseIds;
@@ -163,8 +162,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
 
   const renderVerse = (band: ReaderBand, v: ReaderVerse, nextVerseId: string | null) => {
     const isBandStart = v.verseId === band.startVerseId;
-    // Manuscript mode is one continuous flow — no sectioning, so no divide handles.
-    const hovered = interactive && !manuscript && hoverVerse === v.verseId;
+    const hovered = interactive && hoverVerse === v.verseId;
     const showBefore = hovered && !isBandStart;
     const showAfter = hovered && !!nextVerseId;
     const enter = () => {
@@ -289,17 +287,15 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
             };
             return (
               <section key={band.startVerseId}>
-                {!manuscript && (
-                  <BandHeader
-                    band={band}
-                    interactive={interactive}
-                    focusSectionId={props.focusSectionId}
-                    onMerge={props.onMerge}
-                    onRename={props.onRename}
-                    onSelectRange={props.onSelectSectionRange}
-                    onFocusHandled={props.onSectionFocusHandled}
-                  />
-                )}
+                <BandHeader
+                  band={band}
+                  interactive={interactive}
+                  focusSectionId={props.focusSectionId}
+                  onMerge={props.onMerge}
+                  onRename={props.onRename}
+                  onSelectRange={props.onSelectSectionRange}
+                  onFocusHandled={props.onSectionFocusHandled}
+                />
                 {band.groups.map((g, gi) => renderGroup(band, g, gi, nextOf))}
               </section>
             );

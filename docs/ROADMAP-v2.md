@@ -94,11 +94,12 @@ manuscript that answers to a command line*. Full day/night.
 
 ## 3. Open design questions (resolve inside the relevant phase)
 
-1. **Manuscript / flatten reading mode — built (2026-08-10).** A global *Formatted* ↔ *Manuscript*
-   toggle. **Owner call:** Manuscript keeps it simple — flatten *everything* to one continuous flow
-   and keep verse **numbers visible** (not faint); no poetry indents, editorial headings, paragraph
-   breaks, or section bands. It's a display-only transform (`manuscriptModel`); sections/annotations
-   are untouched. **Owner call:** the "pre-suggest section breaks from the translation's paragraphs"
+1. **Manuscript / flatten reading mode — built (2026-08-10; sections-in-every-mode 2026-08-11).** A
+   global *Formatted* ↔ *Manuscript* toggle. **Owner call:** Manuscript flattens the *text* — poetry
+   → prose, no editorial headings or paragraph breaks — keeping verse **numbers visible** (not
+   faint). **Owner call (2026-08-11):** the user's **section bands are kept in every mode** (a
+   section should show whether Formatted or Manuscript, and stay dividable) — only the formatting
+   inside them flattens. Display-only transform (`manuscriptModel`); sections/annotations untouched. **Owner call:** the "pre-suggest section breaks from the translation's paragraphs"
    idea is **dropped** — *making sections is part of the exegetical work* (the tool must not do the
    user's thinking — Inviolable rule 1). Any-verse sectioning already shipped in v2.2.
 2. **Annotation icons/labels — final polish.** The three kinds are decided; the exact glyphs and

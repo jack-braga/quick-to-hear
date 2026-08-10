@@ -161,28 +161,19 @@ describe('buildReaderModel — empty passage', () => {
 });
 
 describe('manuscriptModel — flatten to one continuous flow', () => {
-  it('merges every paragraph (and ignores section bands) into a single unnamed prose band', () => {
-    // Divided into two sections — manuscript ignores the division entirely.
+  it('keeps the section bands (owner: sections show in every mode), flattening the text within each', () => {
     const sections: Section[] = [
       { id: 'a', startVerseId: 'LUKE.1.5', endVerseId: 'LUKE.1.7', name: 'Introduction' },
       { id: 'b', startVerseId: 'LUKE.1.8', endVerseId: 'LUKE.1.10', name: 'The service' },
     ];
     const model = manuscriptModel(buildReaderModel(LUKE, sections));
-    expect(model.bands).toHaveLength(1);
-    const band = model.bands[0]!;
-    expect(band.sectionId).toBe('');
-    expect(band.name).toBe('');
-    // One prose group holding all six verses, in order.
-    expect(band.groups.map((g) => g.kind)).toEqual(['prose']);
-    const verses = (band.groups[0] as { verses: { verseId: string }[] }).verses;
-    expect(verses.map((v) => v.verseId)).toEqual([
-      'LUKE.1.5',
-      'LUKE.1.6',
-      'LUKE.1.7',
-      'LUKE.1.8',
-      'LUKE.1.9',
-      'LUKE.1.10',
-    ]);
+    // Both bands survive, with their ids + names.
+    expect(model.bands.map((b) => b.sectionId)).toEqual(['a', 'b']);
+    expect(model.bands.map((b) => b.name)).toEqual(['Introduction', 'The service']);
+    // Each band flattens to one continuous prose group.
+    for (const band of model.bands) expect(band.groups.map((g) => g.kind)).toEqual(['prose']);
+    const first = model.bands[0]!.groups[0] as { verses: { verseId: string }[] };
+    expect(first.verses.map((v) => v.verseId)).toEqual(['LUKE.1.5', 'LUKE.1.6', 'LUKE.1.7']);
     // Verse ids (the selection basis) are untouched.
     expect(model.verseIds).toEqual(buildReaderModel(LUKE, sections).verseIds);
   });

@@ -115,31 +115,34 @@ test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persis
   );
 });
 
-test('v2.5 reading modes: Manuscript flattens the passage and the choice persists', async ({ page }) => {
+test('v2.5 reading modes: the Manuscript toggle persists, and sections show in every mode', async ({
+  page,
+}) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /start mapping/i }).click();
-
-  // Formatted (default) — an undivided passage shows one section-band header.
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
+
+  // Sections show in every reading mode now (owner call), so assert the mode toggle itself.
+  await expect(page.getByRole('button', { name: 'Formatted' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('textbox', { name: 'Section name' })).toBeVisible();
 
-  // Manuscript — one continuous flow: the section chrome is gone; the verse stays (selectable).
   await page.getByRole('button', { name: 'Manuscript' }).click();
-  await expect(page.getByRole('textbox', { name: 'Section name' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Manuscript' })).toHaveAttribute('aria-pressed', 'true');
+  // The section band is still there in Manuscript, and the verse stays selectable.
+  await expect(page.getByRole('textbox', { name: 'Section name' })).toBeVisible();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
   // The choice persists across a reload (a global display preference).
   await page.waitForTimeout(1000); // let the study autosave before reloading
   await page.reload();
   await expect(page.getByRole('button', { name: 'Manuscript' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('textbox', { name: 'Section name' })).toHaveCount(0);
 
-  // Back to Formatted restores the section chrome.
+  // Back to Formatted round-trips.
   await page.getByRole('button', { name: 'Formatted' }).click();
-  await expect(page.getByRole('textbox', { name: 'Section name' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Formatted' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('v2 parallel translations: add ASV, compare side by side (cross-column hover), swap primary', async ({
