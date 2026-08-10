@@ -109,7 +109,7 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.0 — Direction & prototypes** ✅ | Clickable mockups of the signature screens; lock interaction model + visual language. | `docs/mockups/v2-reader.html` done (reader/Map/`/`/selection/sectioning). |
 | **v2.1 — Design system + shell** ✅ | Type scale (scripture serif + mono tooling), tokens, leaf/desk layout, theming, a living styleguide. | Tokens ported to `index.css` + `tailwind.config.ts`; shell in `src/v2/`; `/styleguide`. |
 | **v2.2 — Reader / Map lens** ✅ | The selection primitive (drag-range + ⌘-disjoint + click-to-deselect) + floating action bar; the real passage from the store; named section bands (any-verse divide/merge/rename); marks persisted with two-way hover. | Pure libs `v2/reader/{selection,model}.ts` (unit-tested); `ReaderCanvas` a thin component over them. **Any-verse sectioning pulled forward from v2.5 (owner).** Action bar: Mark wired; Note/Question/Cross-ref deferred to v2.4. |
-| **v2.3 — The `/` command** | Slash palette over `bcv_parser` + the bundled book list: reference, insert support, jump, switch translation, run actions. | Resolve open Q1/Q2 (vocabulary) here. The command *bar* is already in the shell; wire the palette. |
+| **v2.3 — The `/` command** ✅ | Slash palette over `bcv_parser` + the bundled book list: jump to verse/ref, insert a cross-reference, switch translation, create note/question/mark on the selection, go to a lens, book completion. | Pure `v2/reader/paletteItems.ts` (+tests); dialog with keyboard nav; `/` global + the command bar open it. The `@`-mention-in-content chips + promote-to-support are still open (need a richer text surface). |
 | **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Cross-reference (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`; the four action-bar kinds are wired. Recycle-forward / promote-to-support land with the Build lens (v2.6). |
 | **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
 | **v2.6 — Phases as lenses** | Flesh out the remaining lenses (full Set up, Read, COMA, Theme & aim, Build, Check) onto the canvas; keep every discipline (budget, the expected-answer hard block, coverage, audit, exports). Question ordering (Q5). | The shell + lens rail already exist (Set up is minimal, Map is real). Migrate lens-by-lens. |
@@ -222,11 +222,20 @@ that tone. A **Study notes** area holds floating notes. Pure `v2/annotations.ts`
 the tone/priority/logic. Verified live (all four kinds + floating, tones, hover, ready-flip,
 reload) and by a new e2e.
 
-**Next up.** (a) **v2.3** — wire the `/` command *palette* (the bar is already in the shell); this
-also enables the richer cross-reference model (an `@`-mention *inside* a note's content, with
-peek/open, and **promote → Support passage**). (b) **v2.5** — the Manuscript/flatten reading toggle
-+ pre-suggested section breaks. (c) **v2.6** — flesh out the remaining lenses (Read, COMA, Theme &
-aim, Build with the running order + promotion, Check) onto the canvas.
+**The `/` command palette (v2.3, done).** A keyboard-first palette over `bcv_parser` + the bundled
+book list, opened by `/` anywhere (or the command bar). It resolves the query into: **jump** to a
+verse (`:20`) or a reference already in the passage; **insert a cross-reference** to another passage
+(→ a cross-ref annotation, anchored to the selection or floating); **switch** the primary
+translation (among those loaded); **create** a note/question/mark on the current selection; **go
+to** a lens; and **book-name completion**. Pure `v2/reader/paletteItems.ts` (+ tests) owns the
+parsing; a thin dialog with `↑ ↓ / ↵ / esc` renders it. Verified live (all actions, global `/`,
+0 console errors) + a new e2e.
+
+**Next up.** (a) **Cross-reference, richer** — the `@`-mention *inside* a note's content (chip +
+hover-peek + open) and **promote → Support passage** (needs a richer text surface than a
+`<textarea>`; pairs with the Build/export work). (b) **v2.5** — the Manuscript/flatten reading
+toggle + pre-suggested section breaks. (c) **v2.6** — flesh out the remaining lenses (Read, COMA,
+Theme & aim, Build with the running order + promotion, Check) onto the canvas.
 
 ---
 

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { findTranslation } from '@/lib/bible';
 import { newId } from '@/lib/id';
 import { mergeSectionUp, renameSection, splitSectionAt, wholePassageSection } from '@/lib/map';
-import { primaryText } from '@/lib/passage';
+import { primaryText, setPrimary, translationOrder } from '@/lib/passage';
 import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
@@ -11,6 +11,7 @@ import { useStudyStore } from '@/store/study';
 import type { Annotation, Section, Study } from '@/types/study';
 import { anchorToneByVerse, makeAnnotation, toneFor, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
+import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
 import { LENSES, LIVE_LENSES, type LensId } from '@/v2/lenses';
 import { SetupLens } from '@/v2/lenses/SetupLens';
@@ -18,6 +19,7 @@ import { buildReaderModel } from '@/v2/reader/model';
 import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
 import { ReaderCanvas } from '@/v2/reader/ReaderCanvas';
 import type { ActionKind } from '@/v2/reader/ActionBar';
+import type { PaletteAction, PaletteContext } from '@/v2/reader/paletteItems';
 
 /**
  * The v2 shell (ROADMAP-v2 §1) — top bar, lens rail, the central **leaf**, the right margin,
@@ -29,6 +31,8 @@ import type { ActionKind } from '@/v2/reader/ActionBar';
  */
 export function ReaderShell({ study }: { study: Study }) {
   const applyToCurrent = useStudyStore((s) => s.applyToCurrent);
+  const setPassage = useStudyStore((s) => s.setPassage);
+  const updateSetup = useStudyStore((s) => s.updateSetup);
 
   const passage = primaryText(study.passage);
   const sections = study.map.sections;
@@ -44,6 +48,7 @@ export function ReaderShell({ study }: { study: Study }) {
   const clearFocusAnnotation = useCallback(() => setFocusAnnotationId(null), []);
   const [focusSectionId, setFocusSectionId] = useState<string | null>(null);
   const clearFocusSection = useCallback(() => setFocusSectionId(null), []);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
   const anchorTone = useMemo(() => anchorToneByVerse(annotations), [annotations]);
@@ -54,10 +59,18 @@ export function ReaderShell({ study }: { study: Study }) {
     setLastAnchor(null);
   };
 
-  // Escape clears the live selection (mirrors the prototype).
+  // Escape clears the live selection; "/" opens the command palette (unless typing in a field).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') clearSelection();
+      if (e.key === '/') {
+        const el = e.target as HTMLElement | null;
+        const tag = el?.tagName?.toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea' && !el?.isContentEditable) {
+          e.preventDefault();
+          setPaletteOpen(true);
+        }
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
@@ -139,6 +152,64 @@ export function ReaderShell({ study }: { study: Study }) {
       setFlashVerse(verseId);
       window.setTimeout(() => setFlashVerse((cur) => (cur === verseId ? null : cur)), 2000);
     }, 450);
+  };
+
+  // ---- the "/" command palette ------------------------------------------------------------
+  const paletteCtx: PaletteContext = useMemo(
+    () => ({
+      passageVerseIds: pvIds,
+      hasSelection: selected.length > 0,
+      translations: translationOrder(study.passage).map((id) => {
+        const tr = findTranslation(id);
+        return {
+          id,
+          name: tr?.name ?? id,
+          shortName: tr?.shortName ?? id,
+          isPrimary: id === study.passage.primaryId,
+        };
+      }),
+      lenses: LENSES.map((l) => ({ id: l.id, name: l.name })),
+    }),
+    [pvIds, selected.length, study.passage],
+  );
+
+  const switchTranslation = async (id: string) => {
+    const text = study.passage.translations[id];
+    if (!text || id === study.passage.primaryId) return;
+    await setPassage(setPrimary(study.passage, text));
+    updateSetup({ primaryTranslationId: id });
+  };
+
+  const onPaletteAction = (action: PaletteAction) => {
+    switch (action.type) {
+      case 'jump':
+        onJump(action.verseId);
+        break;
+      case 'insert-xref': {
+        const present = passage
+          ? new Set(allVerses(passage).filter((v) => v.present).map((v) => v.verseId))
+          : new Set<string>();
+        const verseIdsSel = selected.filter((id) => present.has(id));
+        clearSelection();
+        addAnnotation({
+          ...makeAnnotation(newId(), { kind: 'cross-ref', verseIds: verseIdsSel }),
+          reference: action.reference,
+        });
+        if (lens !== 'map') setLens('map');
+        break;
+      }
+      case 'create':
+        onAction(action.kind);
+        break;
+      case 'switch-translation':
+        void switchTranslation(action.id);
+        break;
+      case 'go-lens':
+        setLens(action.lens);
+        break;
+      case 'fill':
+        break; // handled inside the palette
+    }
   };
 
   // ---- top-bar / leaf labels --------------------------------------------------------------
@@ -294,7 +365,14 @@ export function ReaderShell({ study }: { study: Study }) {
         </aside>
       </div>
 
-      <CommandBar />
+      <CommandBar onOpen={() => setPaletteOpen(true)} />
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        ctx={paletteCtx}
+        onAction={onPaletteAction}
+      />
     </div>
   );
 }

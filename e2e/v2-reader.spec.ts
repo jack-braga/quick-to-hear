@@ -84,6 +84,29 @@ test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persis
   );
 });
 
+test('v2 command palette: insert a cross-reference and switch translation', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: '+ ASV' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
+
+  const openPalette = () => page.getByRole('button', { name: /\/ command/ }).click();
+
+  // Insert a cross-reference to another passage.
+  await openPalette();
+  await page.getByRole('dialog').getByRole('textbox').fill('Malachi 4:5-6');
+  await page.getByRole('button', { name: /insert cross-reference/i }).click();
+  await expect(page.locator('input[placeholder="e.g. Malachi 4:5-6"]')).toHaveValue('Malachi 4:5-6');
+
+  // Switch the primary translation.
+  await openPalette();
+  await page.getByRole('button', { name: /switch to american standard/i }).click();
+  await expect(page.getByText('ASV · public domain')).toBeVisible();
+});
+
 test('v1 is archived under /v1/ and reachable', async ({ page }) => {
   await page.goto('./#/v1/');
   await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();
