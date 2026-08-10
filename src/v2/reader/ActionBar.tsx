@@ -8,20 +8,27 @@ import type { CSSProperties } from 'react';
  */
 export type ActionKind = 'note' | 'ask' | 'mark';
 
-const ACTIONS: { kind: ActionKind; glyph: string; label: string }[] = [
-  { kind: 'mark', glyph: '⚑', label: 'Mark confusing' },
-  { kind: 'note', glyph: '✎', label: 'Note' },
-  { kind: 'ask', glyph: '?', label: 'Question' },
-];
+const ACTION_META: Record<ActionKind, { glyph: string; label: string }> = {
+  mark: { glyph: '⚑', label: 'Mark confusing' },
+  note: { glyph: '✎', label: 'Note' },
+  ask: { glyph: '?', label: 'Question' },
+};
+
+/** Default set + order when a lens doesn't specify its own. */
+const DEFAULT_KINDS: ActionKind[] = ['mark', 'note', 'ask'];
 
 export function ActionBar({
   label,
   style,
   onAction,
+  kinds = DEFAULT_KINDS,
 }: {
   label: string;
   style: CSSProperties;
   onAction: (kind: ActionKind) => void;
+  /** Which actions to offer, **in display order** (the lens decides — e.g. Map omits `ask`, and
+   *  Questions leads with it). */
+  kinds?: ActionKind[];
 }) {
   return (
     <div
@@ -32,15 +39,15 @@ export function ActionBar({
     >
       <span className="whitespace-nowrap px-2 pl-1.5 font-mono text-[11px] text-[#cfc9bd]">{label}</span>
       <span className="mx-0.5 h-[18px] w-px bg-white/15" />
-      {ACTIONS.map((a) => (
+      {kinds.map((kind) => (
         <button
-          key={a.kind}
+          key={kind}
           type="button"
-          onClick={() => onAction(a.kind)}
+          onClick={() => onAction(kind)}
           className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] text-[#efe9dd] transition-colors hover:bg-white/10"
         >
-          <span className="text-[13px] opacity-85">{a.glyph}</span>
-          {a.label}
+          <span className="text-[13px] opacity-85">{ACTION_META[kind].glyph}</span>
+          {ACTION_META[kind].label}
         </button>
       ))}
     </div>

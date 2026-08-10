@@ -254,7 +254,7 @@ export function BuildLens({
       {shown.length === 0 && (
         <p className="mt-4 rounded-lg border border-dashed border-line p-4 text-[14px] text-ink-soft">
           {ordered.length === 0
-            ? 'No questions yet. In the Map lens, select verses and add a Question — they’ll appear here in verse order.'
+            ? 'No questions yet. In the Questions lens, author questions (or turn prior notes/answers into questions) — they’ll appear here in verse order.'
             : 'No questions of that type. Clear the filter to see them all.'}
         </p>
       )}

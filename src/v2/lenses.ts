@@ -11,8 +11,9 @@ export const LENSES = [
   { id: 'map', num: '03', name: 'Map' },
   { id: 'coma', num: '04', name: 'COMA' },
   { id: 'theme', num: '05', name: 'Theme & aim' },
-  { id: 'build', num: '06', name: 'Build' },
-  { id: 'check', num: '07', name: 'Check' },
+  { id: 'questions', num: '06', name: 'Questions' },
+  { id: 'build', num: '07', name: 'Build' },
+  { id: 'check', num: '08', name: 'Check' },
 ] as const;
 
 export type LensId = (typeof LENSES)[number]['id'];
@@ -24,6 +25,7 @@ export const LENS_ICON: Record<LensId, string> = {
   map: '▤',
   coma: '▦',
   theme: '◎',
+  questions: '?',
   build: '▥',
   check: '✓',
 };

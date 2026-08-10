@@ -99,11 +99,11 @@ test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persis
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '06 Questions' }).click();
 
-  // Select a verse and add a Question from the action bar.
+  // Select a verse and add a Question from the action bar (authoring lives in the Questions lens).
   await page.locator('[data-v="LUKE.1.10"]').click();
-  await page.getByRole('button', { name: /question/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
 
   // The one enforced discipline: it needs an expected answer before it's promotable.
   await expect(page.getByText(/needs answer/i)).toBeVisible();
@@ -146,6 +146,29 @@ test('v2 anchor capture: click a card’s chip, pick a verse, and it anchors (pe
   await page.waitForTimeout(1000);
   await page.reload();
   await expect(page.getByRole('button', { name: 'Luke 1:9', exact: true })).toBeVisible();
+});
+
+test('v2 Questions lens: recycle-forward turns a prior note into a question at its anchor', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // Make a note in the Map lens, anchored to v8.
+  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('toolbar').getByRole('button', { name: /note/i }).click();
+
+  // In the Questions lens the note carries "→ make a question"; clicking it seeds a question at v8.
+  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: /make a question/i }).click();
+
+  // The new (empty) question needs an expected answer, and now two cards anchor to Luke 1:8.
+  await expect(page.getByText(/needs answer/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Luke 1:8', exact: true })).toHaveCount(2);
 });
 
 test('v2.5 reading modes: the Manuscript toggle persists, and sections show in every mode', async ({
@@ -278,11 +301,11 @@ test('v2 Build lens: questions order by verse, reorder, and persist', async ({ p
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '06 Questions' }).click();
 
   const addQuestion = async (v: string) => {
     await page.locator(`[data-v="${v}"]`).click();
-    await page.getByRole('button', { name: /question/i }).click();
+    await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
   };
   // Created out of verse order (13 then 8).
   await addQuestion('LUKE.1.13');
@@ -311,11 +334,11 @@ test('v2 exports: handout excludes answers, leader includes them', async ({ page
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '06 Questions' }).click();
 
   // Author one question with text + an expected answer.
   await page.locator('[data-v="LUKE.1.8"]').click();
-  await page.getByRole('button', { name: /question/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
   await page.locator('textarea[data-focus]').fill('What was his role?');
   await page.locator('input[placeholder^="Expected answer"]').fill('He served as priest.');
   await page.waitForTimeout(1000); // let autosave persist before reloading into the print route
@@ -342,9 +365,9 @@ test('v2: theme & aim + set-up reach the documents, and the Check lens audits', 
   await page.getByRole('button', { name: /theme & aim/i }).click();
   await page.fill('#v2-theme', 'God keeps his covenant promise.');
 
-  await page.getByRole('button', { name: /map/i }).first().click();
+  await page.getByRole('button', { name: '06 Questions' }).click();
   await page.locator('[data-v="LUKE.1.8"]').click();
-  await page.getByRole('button', { name: /question/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
   await page.locator('textarea[data-focus]').fill('What is Zechariah doing?');
   await page.locator('input[placeholder^="Expected answer"]').fill('Serving as priest.');
 

@@ -48,6 +48,8 @@ export interface ReaderCanvasProps {
   onSelectSectionRange: (startVerseId: string, endVerseId: string) => void;
   onSectionFocusHandled: () => void;
   onAction: (kind: ActionKind) => void;
+  /** Which actions the floating bar offers, in order (the lens decides). */
+  actionKinds?: ActionKind[];
   /** Anchor-capture mode: the selection re-anchors a card, so the action bar is suppressed and
    *  the verses read as a crosshair target. */
   capturing?: boolean;
@@ -317,6 +319,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
           label={formatVerseIds(selected)}
           style={{ left: barPos.left, top: barPos.top }}
           onAction={props.onAction}
+          kinds={props.actionKinds}
         />
       )}
     </>

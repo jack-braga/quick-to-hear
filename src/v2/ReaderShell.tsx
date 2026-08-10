@@ -9,7 +9,7 @@ import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Annotation, NoteFlag, Section, Study } from '@/types/study';
+import type { Annotation, AnnotationKind, AnnotationOrigin, NoteFlag, Section, Study } from '@/types/study';
 import { annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
@@ -128,9 +128,9 @@ export function ReaderShell({ study }: { study: Study }) {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  // Anchor capture is a Map-lens interaction (its panel lives there); leaving the lens ends it.
+  // Anchor capture lives in the card-panel lenses (Map + Questions); leaving them ends it.
   useEffect(() => {
-    if (lens !== 'map') setCapturingId(null);
+    if (lens !== 'map' && lens !== 'questions') setCapturingId(null);
   }, [lens]);
 
   // While capturing, the live selection *is* the card's anchor — mirror it (present verses only)
@@ -183,7 +183,11 @@ export function ReaderShell({ study }: { study: Study }) {
     setFocusAnnotationId(a.id);
   };
 
-  // The floating action bar → one shared annotation over the present verses of the selection.
+  // The current text-central lens's origin — Map authors notes/marks, Questions authors questions.
+  const lensOrigin: AnnotationOrigin = lens === 'questions' ? 'questions' : 'map';
+
+  // The floating action bar → one shared annotation over the present verses of the selection, in the
+  // current lens's origin. (Map offers mark/note; Questions offers question/note/mark.)
   const onAction = (kind: ActionKind) => {
     if (!passage || selected.length === 0) return;
     const present = new Set(allVerses(passage).filter((v) => v.present).map((v) => v.verseId));
@@ -192,17 +196,22 @@ export function ReaderShell({ study }: { study: Study }) {
     if (verseIdsSel.length === 0) return;
     const a =
       kind === 'mark'
-        ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, flag: 'confusing', origin: 'map' })
+        ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, flag: 'confusing', origin: lensOrigin })
         : kind === 'ask'
-          ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel, origin: 'map' })
-          : makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, origin: 'map' });
+          ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel, origin: lensOrigin })
+          : makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, origin: lensOrigin });
     addAnnotation(a);
   };
 
-  // Add a study-level (unanchored) card from the panel — a plain note, or a confusion mark
-  // (flag: 'confusing'). Its anchor is set later via the card (Slice 4 click-chip capture).
-  const onAddFloating = (flag?: NoteFlag) =>
-    addAnnotation(makeAnnotation(newId(), { kind: 'note', verseIds: [], flag, origin: 'map' }));
+  // Add a study-level (unanchored) card of the current lens's kind — its anchor is set later via the
+  // card (Slice 4 click-chip capture). Map → note (+ optional confusing flag); Questions → question.
+  const onAddCard = (kind: AnnotationKind, flag?: NoteFlag) =>
+    addAnnotation(makeAnnotation(newId(), { kind, verseIds: [], flag, origin: lensOrigin }));
+
+  // Recycle-forward (Questions lens): seed an EMPTY question at a prior card's anchor (copy the
+  // verses only — never the content). The user writes the question + its expected answer.
+  const onMakeQuestion = (source: Annotation) =>
+    addAnnotation(makeAnnotation(newId(), { kind: 'question', verseIds: [...source.verseIds], origin: 'questions' }));
 
   // Promote an inline @-mention (inside a note) to a cross-ref annotation anchored to the host's
   // verses — this is what `projectForExport` turns into a printed Support passage. De-duped by OSIS.
@@ -260,9 +269,10 @@ export function ReaderShell({ study }: { study: Study }) {
     }, 450);
   };
 
-  // From the Build lens, jump to a question's verses: switch to Map, then scroll once it mounts.
+  // From the Build lens, jump to a question's verses to refine it: switch to the Questions lens (its
+  // authoring home), then scroll once it mounts.
   const jumpFromBuild = (verseId: string) => {
-    setLens('map');
+    setLens('questions');
     window.setTimeout(() => onJump(verseId), 60);
   };
 
@@ -420,7 +430,9 @@ export function ReaderShell({ study }: { study: Study }) {
       <MarginPlaceholder text="Produce the two documents here. The running order (Build) is what they contain." />
     );
   } else {
-    const interactive = lens === 'map';
+    // Map + Questions are the interactive, card-panel lenses; Read + COMA read the same text.
+    const interactive = lens === 'map' || lens === 'questions';
+    const actionKinds: ActionKind[] = lens === 'questions' ? ['ask', 'note', 'mark'] : ['mark', 'note'];
     center = parallelActive ? (
       <ParallelCanvas
         translations={viewedTranslations.map((t) => study.passage.translations[t.id]!)}
@@ -437,6 +449,7 @@ export function ReaderShell({ study }: { study: Study }) {
         capturing={capturingId != null}
         onVerseHover={setHoveredVerse}
         onAction={onAction}
+        actionKinds={actionKinds}
       />
     ) : (
       <ReaderCanvas
@@ -459,27 +472,35 @@ export function ReaderShell({ study }: { study: Study }) {
         onSelectSectionRange={onSelectSectionRange}
         onSectionFocusHandled={clearFocusSection}
         onAction={onAction}
+        actionKinds={actionKinds}
+      />
+    );
+    const cardPanel = (origin: AnnotationOrigin, makeQuestion?: (source: Annotation) => void) => (
+      <MarginAnnotations
+        passage={passage}
+        annotations={annotations}
+        litVerseId={hoveredVerse}
+        focusAnnotationId={focusAnnotationId}
+        translationId={passage.translationId}
+        promotedKeys={promotedKeys}
+        lensOrigin={origin}
+        onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
+        onEdit={onEditAnnotation}
+        onRemove={onRemoveAnnotation}
+        capturingId={capturingId}
+        onStartCapture={startCapture}
+        onEndCapture={endCapture}
+        onAdd={onAddCard}
+        onMakeQuestion={makeQuestion}
+        onPromoteMention={onPromoteMention}
+        onFocusHandled={clearFocusAnnotation}
       />
     );
     margin =
       lens === 'map' ? (
-        <MarginAnnotations
-          passage={passage}
-          annotations={annotations}
-          litVerseId={hoveredVerse}
-          focusAnnotationId={focusAnnotationId}
-          translationId={passage.translationId}
-          promotedKeys={promotedKeys}
-          onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
-          onEdit={onEditAnnotation}
-          onRemove={onRemoveAnnotation}
-          capturingId={capturingId}
-          onStartCapture={startCapture}
-          onEndCapture={endCapture}
-          onAddFloating={onAddFloating}
-          onPromoteMention={onPromoteMention}
-          onFocusHandled={clearFocusAnnotation}
-        />
+        cardPanel('map')
+      ) : lens === 'questions' ? (
+        cardPanel('questions', onMakeQuestion)
       ) : lens === 'read' ? (
         <ReadPanel study={study} />
       ) : lens === 'coma' ? (

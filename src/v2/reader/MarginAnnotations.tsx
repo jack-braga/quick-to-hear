@@ -3,7 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { parseReference } from '@/lib/verse';
 import { cn } from '@/lib/utils';
 import { allVerses, verseText, type ParsedText } from '@/types/passage';
-import { ANNOTATION_ORIGINS, type Annotation, type AnnotationOrigin, type NoteFlag } from '@/types/study';
+import {
+  ANNOTATION_ORIGINS,
+  type Annotation,
+  type AnnotationKind,
+  type AnnotationOrigin,
+  type NoteFlag,
+} from '@/types/study';
 import {
   ORIGIN_LABEL,
   annotationMeta,
@@ -77,14 +83,21 @@ export interface MarginAnnotationsProps {
   onHover: (a: Annotation | null) => void;
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
+  /** The origin of cards this lens authors — `'map'` (note/mark) or `'questions'` (question). Drives
+   *  the add buttons + the empty-state copy. */
+  lensOrigin: AnnotationOrigin;
   /** The card currently in anchor-capture mode (its chip is the trigger), or null. */
   capturingId: string | null;
   /** Enter capture for a card — the next passage selection sets its anchor verse(s). */
   onStartCapture: (id: string) => void;
   /** Finish capture (also on Esc / Done from the canvas banner). */
   onEndCapture: () => void;
-  /** Add a study-level (unanchored) card — a plain note, or a confusion mark (`'confusing'`). */
-  onAddFloating: (flag?: NoteFlag) => void;
+  /** Add a study-level (unanchored) card of this lens's kind — note (+ optional confusing flag) or
+   *  question. Its anchor is set later via the card. */
+  onAdd: (kind: AnnotationKind, flag?: NoteFlag) => void;
+  /** Recycle-forward (Questions lens only): seed a question at a prior card's anchor. When set, every
+   *  non-question card shows a **→ make a question**. */
+  onMakeQuestion?: (source: Annotation) => void;
   onPromoteMention: (host: Annotation, reference: string) => void;
   onFocusHandled: () => void;
 }
@@ -286,8 +299,20 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           />
         )}
 
-        {/* source-step line — which lens this card came from (drives the chip filter above) */}
-        <div className="mt-2 font-mono text-[9.5px] text-ink-faint">{sourceLine(annotationOrigin(a))}</div>
+        {/* source-step line + recycle-forward (Questions lens: seed a question at this anchor) */}
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <span className="font-mono text-[9.5px] text-ink-faint">{sourceLine(annotationOrigin(a))}</span>
+          {props.onMakeQuestion && a.kind !== 'question' && (
+            <button
+              type="button"
+              onClick={() => props.onMakeQuestion!(a)}
+              title="Seed a question at this anchor (you write the question)"
+              className="whitespace-nowrap font-mono text-[10px] text-lapis-ink hover:underline"
+            >
+              → make a question
+            </button>
+          )}
+        </div>
       </div>
     );
   };
@@ -302,22 +327,35 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
         <span className="whitespace-nowrap font-mono text-[10px] text-ink-faint">{shownCount} shown</span>
       </div>
       <div className="mx-1 mb-3 flex justify-end gap-1.5">
-        <button
-          type="button"
-          onClick={() => props.onAddFloating()}
-          title="Add a note (anchor it to verses later)"
-          className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
-        >
-          ＋ note
-        </button>
-        <button
-          type="button"
-          onClick={() => props.onAddFloating('confusing')}
-          title="Add a confusion mark (anchor it to verses later)"
-          className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-rubric hover:text-rubric"
-        >
-          ＋ mark
-        </button>
+        {props.lensOrigin === 'questions' ? (
+          <button
+            type="button"
+            onClick={() => props.onAdd('question')}
+            title="Add a question (anchor it to verses later)"
+            className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
+          >
+            ＋ question
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => props.onAdd('note')}
+              title="Add a note (anchor it to verses later)"
+              className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
+            >
+              ＋ note
+            </button>
+            <button
+              type="button"
+              onClick={() => props.onAdd('note', 'confusing')}
+              title="Add a confusion mark (anchor it to verses later)"
+              className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-rubric hover:text-rubric"
+            >
+              ＋ mark
+            </button>
+          </>
+        )}
       </div>
 
       {present.length > 0 && (
@@ -330,13 +368,22 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
       )}
 
       {annotations.length === 0 ? (
-        <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
-          Select verses, then <b className="font-semibold text-ink">Note</b>,{' '}
-          <b className="font-semibold text-ink">Question</b>, or{' '}
-          <b className="font-semibold text-ink">Mark confusing</b> — or hover between two verses to
-          divide the passage. Reference another passage by typing{' '}
-          <b className="font-mono text-[12px] text-lapis-ink">@Malachi 4:5-6</b> inside a note.
-        </div>
+        props.lensOrigin === 'questions' ? (
+          <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
+            Select verses, then <b className="font-semibold text-ink">Question</b> — or turn a prior{' '}
+            <b className="font-semibold text-ink">note</b> or{' '}
+            <b className="font-semibold text-ink">COMA answer</b> into a question with{' '}
+            <b className="font-mono text-[12px] text-lapis-ink">→ make a question</b>. Every question
+            needs an <b className="font-semibold text-ink">expected answer</b> before it’s ready.
+          </div>
+        ) : (
+          <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
+            Select verses, then <b className="font-semibold text-ink">Note</b> or{' '}
+            <b className="font-semibold text-ink">Mark confusing</b> — or hover between two verses to
+            divide the passage. Reference another passage by typing{' '}
+            <b className="font-mono text-[12px] text-lapis-ink">@Malachi 4:5-6</b> inside a note.
+          </div>
+        )
       ) : shownCount === 0 ? (
         <p className="mx-1 py-6 text-center text-[12.5px] text-ink-faint">
           Nothing from these steps touches the passage. Turn a chip back on above.
