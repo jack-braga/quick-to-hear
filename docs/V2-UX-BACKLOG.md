@@ -194,8 +194,14 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
 - **`/` command palette rework (msg#2128).** Owner "not 100% on it" — revisit its scope + UX. **[open]**
 - **Set-Up UX once-over (msg#1999, #2128).** Make the study Set-Up page sleek and tidy; consider doing
   step 1 in the right panel (except the initial translation load). **[open]**
-- **Questions appearing in the Map phase? (msg#2749).** Owner asks to confirm questions don't belong in
-  the Map (phase 3) surface — verify against the documented flow. **[verify]**
+- ~~**Questions appearing in the Map phase? (msg#2749).**~~ **[resolved `bb34d46`]** — confirmed:
+  questions don't belong in Map. With the Questions lens (#4c) as the authoring home, the **Map action
+  bar is now mark/note only** (item 2 from the 2026-08-11 field feedback).
+- **Live-version visual feedback (2026-08-11) — [fixed `b279456`]:** (a) light-mode tone washes too
+  muted → bumped (`--lapis/rubric-wash` 0.1→0.17; amber now a `--amber-wash` var); (b) the verse
+  action bar was unreadable in **dark** mode (`bg-ink` flips light) → constant dark surface; (c) verse
+  hover/selection shared the note's `lapis-wash` → new neutral **`--sel-wash` (teal)**, distinct from
+  every annotation tone. *(Owner also confirmed set-up-lands-on-Read + ＋mark in `f9c3c18`.)*
 
 **Fixed already** (from the same feedback, for the record): clickable parallel columns + action bar
 over the clicked column (`c2e229a`/`2b5a1ad`), tooltips clamp on-screen + no inherited mono/uppercase

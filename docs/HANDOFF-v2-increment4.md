@@ -66,6 +66,15 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   `multiToneGradient` in `tones.ts`; shell passes `verseTones`, retired `anchorTone`); `9fce981`
   manuscript mode now works in parallel (cells render via `verseToLines` — formatted keeps poetry
   lines, manuscript flattens; prose unchanged).
+- **#4c the Questions lens** `bb34d46` — the 8th lens (`Set up · Read · Map · COMA · Theme & aim ·
+  **Questions**(06,`?`) · Build(07) · Check(08)`). Text-central card-panel lens; author questions
+  (bar leads with Question) or `＋ question`; **recycle-forward** `→ make a question` seeds an empty
+  question at a prior card's anchor (verses only). **Item 2 done:** Map bar is now mark/note only (the
+  `ActionBar` takes an ordered `kinds` prop). `MarginAnnotations` gained `lensOrigin` + `onMakeQuestion`.
+- **Visual polish** `b279456` (live feedback) — stronger light-mode washes (`--lapis/rubric-wash`
+  0.1→0.17; amber now a `--amber-wash` var); action bar fixed to a constant dark surface (`bg-ink`
+  flipped light in dark → unreadable); verse hover/selection moved to a neutral **`--sel-wash` (teal)**,
+  distinct from every annotation tone (was `lapis-wash` = the note tone).
 
 ## Do next — in slices, each testable + committable
 
@@ -76,13 +85,14 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   `MarginAnnotations` filter header, per `v2-panel-filters.html`. Persist both toggles alongside the
   chip set.
 - ~~**Slice 4 — click-chip anchor capture.**~~ ✅ shipped `f5719b7` (see "Shipped so far").
-- **#4c the new Questions lens** — add the 8th lens (`src/v2/lenses.ts` + branch in `ReaderShell`);
-  author + convert-from-prior-cards. **This unblocks item 2** (no Question button in Map): Map is
-  currently the ONLY place to author a question (Build only edits/reorders), so remove the Map Question
-  action only *after* this lands. (Owner call 2026-08-11: "Questions lens first.")
-- Then **#4b COMA** (answer-on-demand cards + `setup.genres` multi-select in `SetupLens` + labelled
-  prompts in `ComaPanel.tsx`), **Slice 3b** (the two panel switches), **#4d Build → pure assembly**,
-  **#4e Read → strip tints/cards** (pure reading).
+- ~~**#4c the new Questions lens** (unblocks item 2)~~ ✅ shipped `bb34d46` (see "Shipped so far").
+- **#4b COMA answer-cards** (the biggest remaining piece) — in the COMA lens the genre's Helm prompts
+  are quiet rows with a **✎ Answer** that spawns an answer-card (answer field + editable anchor via the
+  click-chip capture; **multiple answers per prompt**; write-first). Plus **multi-genre**:
+  `setup.genre` → `setup.genres` (Set-up multi-select; `comaSetForGenre` iterates; prompts labelled by
+  text-type). Helm attribution renders (rule 8). See `v2-coma-answer-cards.html` + `v2-coma-multigenre.html`.
+- Then **Slice 3b** (the two panel switches), **#4d Build → pure assembly**, **#4e Read → strip
+  tints/cards** (pure reading).
 - Still-open parallel item (V2-UX-BACKLOG §4): **sectioning is disabled in parallel** — enable
   any-verse divide/merge on the primary column while parallel.
 
