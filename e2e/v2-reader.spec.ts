@@ -193,6 +193,26 @@ test('v2 Questions lens: recycle-forward turns a prior note into a question at i
   await expect(page.getByRole('button', { name: 'Luke 1:8', exact: true })).toHaveCount(2);
 });
 
+test('v2 Read lens is pure reading: annotation tones are suppressed on the passage', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // Mark a verse in Map → v8 paints a (rubric) tone on the passage.
+  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveClass(/rubric-wash/);
+
+  // In the Read lens the same verse carries no tone — pure reading.
+  await page.getByRole('button', { name: '02 Read' }).click();
+  await expect(page.locator('[data-v="LUKE.1.8"]')).not.toHaveClass(/rubric-wash/);
+});
+
 test('v2.5 reading modes: the Manuscript toggle persists, and sections show in every mode', async ({
   page,
 }) => {

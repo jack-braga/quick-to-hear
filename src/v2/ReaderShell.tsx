@@ -47,6 +47,10 @@ function loadReadingMode(): ReadingMode {
   }
 }
 
+/** A stable empty tone map — the Read lens is **pure reading**, so the passage paints no verse
+ *  tones/highlights (and its margin is the pray-and-read panel, not cards). */
+const NO_TONES: Map<string, AnnotationTone[]> = new Map();
+
 export function ReaderShell({ study }: { study: Study }) {
   const applyToCurrent = useStudyStore((s) => s.applyToCurrent);
   const setPassage = useStudyStore((s) => s.setPassage);
@@ -443,6 +447,8 @@ export function ReaderShell({ study }: { study: Study }) {
     // an answer-card (it has no action bar — you create via ✎ Answer, not select-to-create).
     const interactive = lens === 'map' || lens === 'questions' || (lens === 'coma' && capturingId != null);
     const actionKinds: ActionKind[] = lens === 'questions' ? ['ask', 'note', 'mark'] : ['mark', 'note'];
+    // Read is pure reading — suppress the verse tones (#4e); every other lens paints them.
+    const canvasTones = lens === 'read' ? NO_TONES : verseToneSets;
     center = parallelActive ? (
       <ParallelCanvas
         translations={viewedTranslations.map((t) => study.passage.translations[t.id]!)}
@@ -452,7 +458,7 @@ export function ReaderShell({ study }: { study: Study }) {
         manuscript={readingMode === 'manuscript'}
         selected={selected}
         lastAnchor={lastAnchor}
-        verseTones={verseToneSets}
+        verseTones={canvasTones}
         lit={litForCanvas}
         flashVerseId={flashVerse}
         onSelect={handleSelect}
@@ -469,7 +475,7 @@ export function ReaderShell({ study }: { study: Study }) {
         leafMeta={leafMeta}
         selected={selected}
         lastAnchor={lastAnchor}
-        verseTones={verseToneSets}
+        verseTones={canvasTones}
         lit={litForCanvas}
         flashVerseId={flashVerse}
         focusSectionId={focusSectionId}
