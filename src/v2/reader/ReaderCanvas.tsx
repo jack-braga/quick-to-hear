@@ -2,10 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { verseRefLabel } from '@/lib/map';
-import { ActionBar } from '@/v2/reader/ActionBar';
+import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
+import type { AnnotationTone } from '@/v2/annotations';
 import type { ReaderBand, ReaderGroup, ReaderModel, ReaderVerse } from '@/v2/reader/model';
 import { clickSelection, dragSelection, formatVerseIds } from '@/v2/reader/selection';
 import { useCallbackRef } from '@/v2/reader/useCallbackRef';
+import { TONE } from '@/v2/tones';
 
 /**
  * The Scripture canvas (v2.2) — renders the {@link ReaderModel} as the passage-as-canvas, and
@@ -28,8 +30,10 @@ export interface ReaderCanvasProps {
   leafMeta: string;
   selected: string[];
   lastAnchor: string | null;
-  anchoredVerseIds: Set<string>;
-  litVerseIds: Set<string>;
+  /** Resting tint per annotated verse (highest-priority tone wins). */
+  anchorTone: Map<string, AnnotationTone>;
+  /** Verses lit by a hovered margin card, in that card's tone. */
+  lit: { ids: Set<string>; tone: AnnotationTone } | null;
   flashVerseId: string | null;
   focusSectionId: string | null;
   onSelect: (r: { selected: string[]; lastAnchor: string | null }) => void;
@@ -39,7 +43,7 @@ export interface ReaderCanvasProps {
   onRename: (sectionId: string, name: string) => void;
   onSelectSectionRange: (startVerseId: string, endVerseId: string) => void;
   onSectionFocusHandled: () => void;
-  onMark: () => void;
+  onAction: (kind: ActionKind) => void;
 }
 
 export function ReaderCanvas(props: ReaderCanvasProps) {
@@ -175,20 +179,20 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
 
   // Highlight states, mutually exclusive so exactly one wins:
   //  - selected → lapis (blue) wash + edge; a neutral pick.
-  //  - lit (its mark card is hovered) → the marked tint with a **bolder rubric border** — the
-  //    two-way link for a confusing-mark reads red, not blue.
-  //  - anchored (rests with a mark) → a faint rubric tint (distinct from the lapis cursor-hover).
+  //  - lit (a margin card is hovered) → that annotation's tone, with a bolder border.
+  //  - anchored (rests with an annotation) → a faint tint in its highest-priority tone.
   const verseClass = (v: ReaderVerse, block: boolean): string => {
     const sel = selectedSet.has(v.verseId);
-    const lit = !sel && props.litVerseIds.has(v.verseId);
-    const anchored = !sel && !lit && props.anchoredVerseIds.has(v.verseId);
+    const isLit = !sel && props.lit != null && props.lit.ids.has(v.verseId);
+    const tone = props.anchorTone.get(v.verseId);
+    const anchored = !sel && !isLit && tone != null;
     return cn(
       'rounded-[4px] transition-colors',
       block ? 'px-2 py-0.5' : 'px-[0.12em] py-[0.04em] [-webkit-box-decoration-break:clone] [box-decoration-break:clone]',
       interactive && 'cursor-pointer hover:bg-lapis-wash',
       sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
-      lit && 'bg-rubric-wash shadow-[inset_0_0_0_2px_var(--rubric)]',
-      anchored && 'bg-rubric-wash',
+      isLit && props.lit && TONE[props.lit.tone].ring,
+      anchored && tone && TONE[tone].wash,
       props.flashVerseId === v.verseId && 'animate-verse-flash',
     );
   };
@@ -378,7 +382,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
         <ActionBar
           label={formatVerseIds(selected)}
           style={{ left: barPos.left, top: barPos.top }}
-          onMark={props.onMark}
+          onAction={props.onAction}
         />
       )}
     </>

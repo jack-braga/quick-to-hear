@@ -2,26 +2,22 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { findTranslation } from '@/lib/bible';
 import { newId } from '@/lib/id';
-import {
-  makeVerseMark,
-  mergeSectionUp,
-  renameSection,
-  splitSectionAt,
-  wholePassageSection,
-} from '@/lib/map';
+import { mergeSectionUp, renameSection, splitSectionAt, wholePassageSection } from '@/lib/map';
 import { primaryText } from '@/lib/passage';
 import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Section, Study } from '@/types/study';
+import type { Annotation, Section, Study } from '@/types/study';
+import { anchorToneByVerse, makeAnnotation, toneFor, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { DayNightToggle } from '@/v2/DayNightToggle';
 import { LENSES, LIVE_LENSES, type LensId } from '@/v2/lenses';
 import { SetupLens } from '@/v2/lenses/SetupLens';
 import { buildReaderModel } from '@/v2/reader/model';
-import { MarginMarks } from '@/v2/reader/MarginMarks';
+import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
 import { ReaderCanvas } from '@/v2/reader/ReaderCanvas';
+import type { ActionKind } from '@/v2/reader/ActionBar';
 
 /**
  * The v2 shell (ROADMAP-v2 §1) — top bar, lens rail, the central **leaf**, the right margin,
@@ -36,24 +32,21 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const passage = primaryText(study.passage);
   const sections = study.map.sections;
-  const marks = study.map.marks;
+  const annotations = study.annotations;
 
   const [lens, setLens] = useState<LensId>(passage ? 'map' : 'setup');
   const [selected, setSelected] = useState<string[]>([]);
   const [lastAnchor, setLastAnchor] = useState<string | null>(null);
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
-  const [litFromMark, setLitFromMark] = useState<string[] | null>(null);
+  const [litAnnotation, setLitAnnotation] = useState<{ ids: string[]; tone: AnnotationTone } | null>(null);
   const [flashVerse, setFlashVerse] = useState<string | null>(null);
-  const [focusMarkId, setFocusMarkId] = useState<string | null>(null);
-  const clearFocusMark = useCallback(() => setFocusMarkId(null), []);
+  const [focusAnnotationId, setFocusAnnotationId] = useState<string | null>(null);
+  const clearFocusAnnotation = useCallback(() => setFocusAnnotationId(null), []);
   const [focusSectionId, setFocusSectionId] = useState<string | null>(null);
   const clearFocusSection = useCallback(() => setFocusSectionId(null), []);
 
   const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
-  const anchoredVerseIds = useMemo(
-    () => new Set(marks.flatMap((m) => m.verseIds ?? [m.verseId])),
-    [marks],
-  );
+  const anchorTone = useMemo(() => anchorToneByVerse(annotations), [annotations]);
   const pvIds = useMemo(() => (passage ? verseIds(passage) : []), [passage]);
 
   const clearSelection = () => {
@@ -104,26 +97,39 @@ export function ReaderShell({ study }: { study: Study }) {
     setLastAnchor(ids[0] ?? null);
   };
 
-  const onMark = () => {
-    if (!passage || selected.length === 0) return;
-    const byId = new Map(allVerses(passage).map((v) => [v.verseId, v]));
-    // One selection → one shared mark/ticket (not one per verse), spanning the present verses.
-    const present = selected.filter((id) => byId.get(id)?.present);
-    clearSelection();
-    if (present.length === 0) return;
-    const mark = { ...makeVerseMark(byId.get(present[0]!)!, newId()), verseIds: present };
-    applyToCurrent((s) => ({ ...s, map: { ...s.map, marks: [...s.map.marks, mark] } }));
-    setFocusMarkId(mark.id);
+  const addAnnotation = (a: Annotation) => {
+    applyToCurrent((s) => ({ ...s, annotations: [...s.annotations, a] }));
+    setFocusAnnotationId(a.id);
   };
 
-  const onEditMark = (markId: string, note: string) =>
+  // The floating action bar → one shared annotation over the present verses of the selection.
+  const onAction = (kind: ActionKind) => {
+    if (!passage || selected.length === 0) return;
+    const present = new Set(allVerses(passage).filter((v) => v.present).map((v) => v.verseId));
+    const verseIdsSel = selected.filter((id) => present.has(id));
+    clearSelection();
+    if (verseIdsSel.length === 0) return;
+    const a =
+      kind === 'mark'
+        ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, flag: 'confusing' })
+        : kind === 'note'
+          ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel })
+          : kind === 'ask'
+            ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel })
+            : makeAnnotation(newId(), { kind: 'cross-ref', verseIds: verseIdsSel });
+    addAnnotation(a);
+  };
+
+  const onAddFloating = () => addAnnotation(makeAnnotation(newId(), { kind: 'note', verseIds: [] }));
+
+  const onEditAnnotation = (id: string, patch: Partial<Annotation>) =>
     applyToCurrent((s) => ({
       ...s,
-      map: { ...s.map, marks: s.map.marks.map((m) => (m.id === markId ? { ...m, note } : m)) },
+      annotations: s.annotations.map((a) => (a.id === id ? { ...a, ...patch } : a)),
     }));
 
-  const onRemoveMark = (markId: string) =>
-    applyToCurrent((s) => ({ ...s, map: { ...s.map, marks: s.map.marks.filter((m) => m.id !== markId) } }));
+  const onRemoveAnnotation = (id: string) =>
+    applyToCurrent((s) => ({ ...s, annotations: s.annotations.filter((a) => a.id !== id) }));
 
   const onJump = (verseId: string) => {
     const el = document.querySelector(`[data-v="${CSS.escape(verseId)}"]`);
@@ -143,7 +149,9 @@ export function ReaderShell({ study }: { study: Study }) {
   const activeIndex = LENSES.findIndex((l) => l.id === lens);
 
   // ---- lens content ----------------------------------------------------------------------
-  const litVerseIds = useMemo(() => new Set(litFromMark ?? []), [litFromMark]);
+  const litForCanvas = litAnnotation
+    ? { ids: new Set(litAnnotation.ids), tone: litAnnotation.tone }
+    : null;
 
   let center: React.ReactNode;
   let margin: React.ReactNode;
@@ -164,8 +172,8 @@ export function ReaderShell({ study }: { study: Study }) {
         leafMeta={leafMeta}
         selected={selected}
         lastAnchor={lastAnchor}
-        anchoredVerseIds={anchoredVerseIds}
-        litVerseIds={litVerseIds}
+        anchorTone={anchorTone}
+        lit={litForCanvas}
         flashVerseId={flashVerse}
         focusSectionId={focusSectionId}
         onSelect={(r) => {
@@ -178,21 +186,22 @@ export function ReaderShell({ study }: { study: Study }) {
         onRename={onRename}
         onSelectSectionRange={onSelectSectionRange}
         onSectionFocusHandled={clearFocusSection}
-        onMark={onMark}
+        onAction={onAction}
       />
     );
     margin =
       lens === 'map' ? (
-        <MarginMarks
+        <MarginAnnotations
           passage={passage}
-          marks={marks}
-          litMarkVerseId={hoveredVerse}
-          focusMarkId={focusMarkId}
-          onHoverMark={setLitFromMark}
-          onEditMark={onEditMark}
-          onRemove={onRemoveMark}
+          annotations={annotations}
+          litVerseId={hoveredVerse}
+          focusAnnotationId={focusAnnotationId}
+          onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
+          onEdit={onEditAnnotation}
+          onRemove={onRemoveAnnotation}
           onJump={onJump}
-          onFocusHandled={clearFocusMark}
+          onAddFloating={onAddFloating}
+          onFocusHandled={clearFocusAnnotation}
         />
       ) : (
         <MarginPlaceholder

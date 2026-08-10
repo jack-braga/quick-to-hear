@@ -1,27 +1,28 @@
 import type { CSSProperties } from 'react';
 
 /**
- * The floating action bar shown over a live verse selection (ROADMAP-v2 §2). v2.2 wires
- * **⚑ Mark confusing** — it persists a whole-verse mark per selected verse (SPEC Phase 3b).
- * Note / Question / Cross-reference are shown but disabled: they belong to the annotation
- * layer (v2.4), which restructures the note model — wiring them into the v1 schema now would
- * only create migration debt. The four-kind bar is the locked interaction shape.
+ * The floating action bar over a live verse selection (ROADMAP-v2 §2). All four kinds are wired
+ * (v2.4): a **Note**, a **Question** (the deliverable — keeps the expected-answer hard block), a
+ * **Mark confusing** (a note flagged confusing), and a **Cross-reference** to another passage.
+ * Each anchors to the selected verses and opens its card in the margin.
  */
+export type ActionKind = 'note' | 'ask' | 'mark' | 'cross-ref';
 
-const DEFERRED = [
-  { glyph: '✎', label: 'Note' },
-  { glyph: '?', label: 'Question' },
-  { glyph: '↗', label: 'Cross-reference' },
-] as const;
+const ACTIONS: { kind: ActionKind; glyph: string; label: string }[] = [
+  { kind: 'mark', glyph: '⚑', label: 'Mark confusing' },
+  { kind: 'note', glyph: '✎', label: 'Note' },
+  { kind: 'ask', glyph: '?', label: 'Question' },
+  { kind: 'cross-ref', glyph: '↗', label: 'Cross-reference' },
+];
 
 export function ActionBar({
   label,
   style,
-  onMark,
+  onAction,
 }: {
   label: string;
   style: CSSProperties;
-  onMark: () => void;
+  onAction: (kind: ActionKind) => void;
 }) {
   return (
     <div
@@ -32,23 +33,15 @@ export function ActionBar({
     >
       <span className="whitespace-nowrap px-2 pl-1.5 font-mono text-[11px] text-[#cfc9bd]">{label}</span>
       <span className="mx-0.5 h-[18px] w-px bg-white/15" />
-      <button
-        type="button"
-        onClick={onMark}
-        className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] text-[#efe9dd] transition-colors hover:bg-white/10"
-      >
-        <span className="text-[13px] opacity-85">⚑</span>Mark confusing
-      </button>
-      {DEFERRED.map((d) => (
+      {ACTIONS.map((a) => (
         <button
-          key={d.label}
+          key={a.kind}
           type="button"
-          disabled
-          title={`${d.label} arrives in the annotation layer (v2.4)`}
-          className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] text-[#efe9dd] opacity-40"
+          onClick={() => onAction(a.kind)}
+          className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] text-[#efe9dd] transition-colors hover:bg-white/10"
         >
-          <span className="text-[13px] opacity-85">{d.glyph}</span>
-          {d.label}
+          <span className="text-[13px] opacity-85">{a.glyph}</span>
+          {a.label}
         </button>
       ))}
     </div>

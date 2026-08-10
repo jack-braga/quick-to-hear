@@ -130,6 +130,44 @@ export const MapSchema = z.object({
 export type StudyMap = z.infer<typeof MapSchema>;
 
 // ---------------------------------------------------------------------------
+// Annotations (v2.4) — the unified anchored-annotation surface (ROADMAP-v2 §2)
+// ---------------------------------------------------------------------------
+
+/** The three annotation kinds. A "Mark = confusing" and a "Comment" are just **notes** with a
+ *  `flag`; a **question** is the deliverable (keeps the expected-answer hard block); a
+ *  **cross-ref** points at another passage. */
+export const ANNOTATION_KINDS = ['note', 'question', 'cross-ref'] as const;
+export const AnnotationKindSchema = z.enum(ANNOTATION_KINDS);
+export type AnnotationKind = z.infer<typeof AnnotationKindSchema>;
+
+export const NoteFlagSchema = z.enum(['confusing', 'comment']);
+export type NoteFlag = z.infer<typeof NoteFlagSchema>;
+
+/**
+ * A v2 annotation. It anchors to **main-passage verses** by canonical id (translation-
+ * independent — no reconcile needed); an empty `verseIds` is a **floating / study-level** note
+ * (theme, aim, prayer, notes-to-self). Kept flat (not a strict discriminated union) so per-kind
+ * fields stay additive-optional. Recycle-forward + promote-to-support land with the Build lens.
+ */
+export const AnnotationSchema = z.object({
+  id: z.string(),
+  kind: AnnotationKindSchema,
+  verseIds: z.array(z.string()).default([]),
+  text: z.string().default(''),
+  // note — a `flag` makes it a "mark confusing" / a comment; `comaType` optionally tags it.
+  flag: NoteFlagSchema.optional(),
+  comaType: QuestionTypeSchema.optional(),
+  // question — the one enforced discipline (SPEC 6e): no promotion without an expected answer.
+  expectedAnswer: z.string().optional(),
+  questionType: QuestionTypeSchema.optional(),
+  weight: WeightSchema.optional(),
+  // cross-reference — the other passage + an optional bring-them-back question.
+  reference: z.string().optional(),
+  returnQuestion: z.string().optional(),
+});
+export type Annotation = z.infer<typeof AnnotationSchema>;
+
+// ---------------------------------------------------------------------------
 // Phase 4 — COMA notes
 // ---------------------------------------------------------------------------
 
@@ -291,6 +329,9 @@ export const StudySchema = z.object({
   passage: PassageSchema,
   read: z.object({ count: z.number().default(0) }).default({ count: 0 }),
   map: MapSchema.default({ sections: [], marks: [] }),
+  // v2.4 unified annotation surface (Note / Question / Cross-ref + floating). Additive —
+  // v1/old docs default to []; v2's reader reads this, not `map.marks`.
+  annotations: z.array(AnnotationSchema).default([]),
   coma: ComaSchema.default({ context: [], observation: [], meaning: [], application: [] }),
   themeAim: ThemeAimSchema.default({}),
   build: BuildSchema.default(emptyStudyBuild()),

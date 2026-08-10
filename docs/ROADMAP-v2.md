@@ -110,7 +110,7 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.1 — Design system + shell** ✅ | Type scale (scripture serif + mono tooling), tokens, leaf/desk layout, theming, a living styleguide. | Tokens ported to `index.css` + `tailwind.config.ts`; shell in `src/v2/`; `/styleguide`. |
 | **v2.2 — Reader / Map lens** ✅ | The selection primitive (drag-range + ⌘-disjoint + click-to-deselect) + floating action bar; the real passage from the store; named section bands (any-verse divide/merge/rename); marks persisted with two-way hover. | Pure libs `v2/reader/{selection,model}.ts` (unit-tested); `ReaderCanvas` a thin component over them. **Any-verse sectioning pulled forward from v2.5 (owner).** Action bar: Mark wired; Note/Question/Cross-ref deferred to v2.4. |
 | **v2.3 — The `/` command** | Slash palette over `bcv_parser` + the bundled book list: reference, insert support, jump, switch translation, run actions. | Resolve open Q1/Q2 (vocabulary) here. The command *bar* is already in the shell; wire the palette. |
-| **v2.4 — Annotation layer** | One anchored-annotation surface unifying marks + COMA notes + comments (+ floating notes, Q3). Recycle-forward preserved. | Resolve Q1–Q3. Grow the action bar to Note/Question/Cross-reference; the margin cards become editable. |
+| **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Cross-reference (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`; the four action-bar kinds are wired. Recycle-forward / promote-to-support land with the Build lens (v2.6). |
 | **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
 | **v2.6 — Phases as lenses** | Flesh out the remaining lenses (full Set up, Read, COMA, Theme & aim, Build, Check) onto the canvas; keep every discipline (budget, the expected-answer hard block, coverage, audit, exports). Question ordering (Q5). | The shell + lens rail already exist (Set up is minimal, Map is real). Migrate lens-by-lens. |
 | **v2.7 — Exports refresh** | Handout + leader restyled to the new language; carry the Stage-10 wins (coverage pips, support placement, pastoral). | |
@@ -210,9 +210,23 @@ Verified live end-to-end on a real BibleGateway Psalm 23 (ASV) paste — it rend
 Map lens. (App is static/offline, so paste is the only route for non-bundled text — no
 BibleGateway/YouVersion API.)
 
-**Next up.** (a) **v2.3** — wire the `/` command *palette* (the bar is already in the shell). (b)
-**v2.4** — the annotation layer (Note / Question / Cross-reference), which also unlocks the greyed
-action-bar buttons. (c) Reader polish as it comes up.
+**Annotation layer (v2.4, done).** One unified `study.annotations` surface (a flat union — Note /
+Question / Cross-reference, with `verseIds:[]` = a floating study-level note), replacing v2.2's
+marks (clean break — old marks don't carry forward). All four action-bar kinds are wired:
+**Note**, **Question** (with an **expected-answer** field + a *needs-answer → ready* indicator —
+the SPEC 6e hard block signalled; promotion itself is Build/v2.6), **Mark confusing** (a note
+flagged confusing), **Cross-reference** (a reference to another passage + a return-question).
+Margin cards are editable in place, in per-kind accents (confusing = rubric, question = amber,
+note/cross-ref = lapis); verses tint in their annotation's tone and **two-way hover** lights in
+that tone. A **Study notes** area holds floating notes. Pure `v2/annotations.ts` (+ tests) owns
+the tone/priority/logic. Verified live (all four kinds + floating, tones, hover, ready-flip,
+reload) and by a new e2e.
+
+**Next up.** (a) **v2.3** — wire the `/` command *palette* (the bar is already in the shell); this
+also enables the richer cross-reference model (an `@`-mention *inside* a note's content, with
+peek/open, and **promote → Support passage**). (b) **v2.5** — the Manuscript/flatten reading toggle
++ pre-suggested section breaks. (c) **v2.6** — flesh out the remaining lenses (Read, COMA, Theme &
+aim, Build with the running order + promotion, Check) onto the canvas.
 
 ---
 

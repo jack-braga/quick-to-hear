@@ -60,6 +60,30 @@ test('v2 set-up: paste-and-clean lands a passage', async ({ page }) => {
   await expect(page.getByText(/Jehovah is my shepherd/i)).toBeVisible();
 });
 
+test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persists', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+
+  // Select a verse and add a Question from the action bar.
+  await page.locator('[data-v="LUKE.1.10"]').click();
+  await page.getByRole('button', { name: /question/i }).click();
+
+  // The one enforced discipline: it needs an expected answer before it's promotable.
+  await expect(page.getByText(/needs answer/i)).toBeVisible();
+  await page.fill('input[placeholder^="Expected answer"]', 'They prayed outside while incense was offered.');
+  await expect(page.getByText(/^ready$/i)).toBeVisible();
+
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Luke 1:10', exact: true })).toBeVisible();
+  await expect(page.locator('input[placeholder^="Expected answer"]')).toHaveValue(
+    'They prayed outside while incense was offered.',
+  );
+});
+
 test('v1 is archived under /v1/ and reachable', async ({ page }) => {
   await page.goto('./#/v1/');
   await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();
