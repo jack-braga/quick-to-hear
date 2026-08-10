@@ -99,8 +99,8 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   per-question timing, cut/reserve.
 - ~~**Slice 3b — the two panel switches**~~ ✅ shipped `69d39a8` — Reveal-only-on-hover + Hide-vs-dim
   in `MarginAnnotations`, both persisted. **Increment #4 is now complete.**
-- **Sectioning in the parallel view** (V2-UX-BACKLOG §4) — enable any-verse divide/merge on the
-  primary column while parallel; the manuscript flatten in parallel also lands there.
+- ~~**Sectioning in the parallel view** (V2-UX-BACKLOG §4)~~ ✅ shipped `148caa7` — full-width band
+  headers + divide/merge/rename on the primary column (ParallelCanvas takes the primary `model`).
 - **Deferred #4d extras** — filler / timing / cut-reserve, when the owner wants them.
 - Still-open parallel item (V2-UX-BACKLOG §4): **sectioning is disabled in parallel** — enable
   any-verse divide/merge on the primary column while parallel.

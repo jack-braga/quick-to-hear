@@ -176,9 +176,9 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
   `@Matthew 1` and references the whole chapter. Also wants a **search dropdown** while typing a
   mention. Fix `longestReference` in `src/v2/reader/mentions.ts` so it extends to the `:verse` (and
   ranges) before falling back to the chapter. **[open]**
-- **Sectioning disabled in parallel (msg#2304, #2749).** `ParallelCanvas` has no divide/merge
-  affordance; you can only section in single-column. Enable any-verse sectioning on the primary column
-  while parallel. **[open]**
+- ~~**Sectioning disabled in parallel (msg#2304, #2749).**~~ **[fixed `148caa7`]** — `ParallelCanvas`
+  renders full-width section band headers (name/range/merge) + a "＋ divide here" pill on the primary
+  column (reuses ReaderShell's section handlers; takes the primary reader `model`).
 - ~~**Manuscript looks identical to formatted in parallel (msg#2749).**~~ **[fixed `9fce981`]** —
   parallel cells now render via `verseToLines(span)`: formatted keeps the poetry lines/indents,
   manuscript flattens each verse to prose, so the two modes visibly differ (prose is unchanged).
