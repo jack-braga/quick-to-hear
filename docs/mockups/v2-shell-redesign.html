@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — shell redesign (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.1); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.13); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.1); --rubric-edge: rgba(166,50,30,0.35);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --pop-shadow: 0 2px 6px rgba(30,27,20,0.08), 0 20px 44px -14px rgba(30,27,20,0.34);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #131418; --leaf: #1c1e24; --panel: #20232b;
+        --ink: #e9e5db; --ink-soft: #9a958a; --ink-faint: #6b675d;
+        --line: #2b2e36;
+        --lapis: #86a6ea; --lapis-ink: #bcd0f6; --lapis-wash: rgba(124,160,230,0.16); --lapis-edge: rgba(124,160,230,0.4);
+        --amber-wash: rgba(217,182,91,0.14); --amber-ink: #e2c877; --amber-edge: rgba(217,182,91,0.4);
+        --rubric: #e0785f; --rubric-wash: rgba(224,120,95,0.16); --rubric-edge: rgba(224,120,95,0.4);
+        --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 14px 32px -14px rgba(0,0,0,0.6);
+        --pop-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 24px 50px -14px rgba(0,0,0,0.7);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+
+      .app { height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+
+      /* ---------- header ---------- */
+      .topbar { display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); position: relative; z-index: 30; }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; white-space: nowrap; }
+      .ref { font-family: var(--font-scripture); font-size: 19px; white-space: nowrap; }
+      .grow { flex: 1; }
+
+      /* lens tracker (replaces the left rail) */
+      .lenses { display: flex; align-items: center; gap: 3px; }
+      .lens { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--ink-faint); font-size: 15px; }
+      .lens:hover { color: var(--ink); background: var(--panel); }
+      .lens.done { color: var(--ink-soft); }
+      .lens.active { color: #fff; background: var(--lapis); border-color: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #10131a; }
+      .lens .tip { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink); background: var(--leaf); border: 1px solid var(--line); border-radius: 6px; padding: 3px 7px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 40; }
+      .lens:hover .tip, .lens.show-tip .tip { opacity: 1; }
+
+      .hbtn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; }
+      .hbtn:hover { border-color: var(--lapis-edge); color: var(--ink); }
+      .hlink { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); text-decoration: none; }
+      .hlink:hover { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); width: 32px; height: 32px; border-radius: 8px; }
+
+      /* unified text-options menu */
+      .textwrap { position: relative; }
+      .textmenu { position: absolute; right: 0; top: 38px; width: 250px; background: var(--leaf); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--pop-shadow); padding: 10px; display: none; }
+      .textmenu.open { display: block; }
+      .tm-group { margin-bottom: 12px; }
+      .tm-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-faint); margin-bottom: 6px; }
+      .seg { display: inline-flex; gap: 2px; border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 2px; width: 100%; }
+      .seg button { flex: 1; border: none; background: none; border-radius: 5px; padding: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+      .seg button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg button.on { color: #10131a; }
+      .tm-row { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 7px; font-size: 13px; }
+      .tm-row:hover { background: var(--lapis-wash); }
+      .tm-row .k { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .tm-row .chk { width: 13px; color: var(--lapis); }
+      .tm-add { font-family: var(--font-mono); font-size: 11px; color: var(--lapis-ink); padding: 5px 6px; }
+      .tm-toggle { display: flex; align-items: center; justify-content: space-between; }
+      .switch { width: 34px; height: 19px; border-radius: 999px; background: var(--line); position: relative; border: none; }
+      .switch.on { background: var(--lapis); }
+      .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: left .15s; }
+      .switch.on::after { left: 17px; }
+
+      /* ---------- three columns ---------- */
+      .work { display: grid; grid-template-columns: 340px minmax(0,1fr) 340px; gap: 0; overflow: hidden; }
+      @media (max-width: 1180px) { .work { grid-template-columns: 300px minmax(0,1fr); } .col-right { display: none; } }
+      .col { overflow-y: auto; padding: 20px 16px 40px; }
+      .col-left { border-right: 1px solid var(--line); }
+      .col-right { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); }
+      .col-center { display: flex; justify-content: center; padding: 26px 22px 60px; }
+      .col-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+      .col-head .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .col-head .badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .col-sub { font-size: 12px; color: var(--ink-soft); margin: -6px 0 14px; }
+
+      /* the leaf (passage — always centered) */
+      .leaf { width: 100%; max-width: 40rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 30px clamp(22px,3vw,40px) 44px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 26px; margin: 0 0 3px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.24rem; line-height: 1.7; color: var(--ink); margin-top: 18px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.6em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v { border-radius: 4px; padding: 0 2px; }
+      .v.amber { background: var(--amber-wash); }
+      .v.rubric { background: var(--rubric-wash); }
+      .v.lapis { background: var(--lapis-wash); }
+
+      /* cards */
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow); margin-bottom: 11px; }
+      .card.amber { border-left-color: var(--amber-edge); }
+      .card.rubric { border-left-color: var(--rubric-edge); }
+      .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+      .anchor { font-family: var(--font-mono); font-size: 10.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; cursor: pointer; }
+      .tag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+      .tag.amber { color: var(--amber-ink); }
+      .grip { margin-left: auto; color: var(--ink-faint); cursor: grab; }
+      .card .q { font-size: 13.5px; color: var(--ink); }
+      .card .ea { margin-top: 7px; font-size: 12px; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 6px; }
+      .card .ea b { color: var(--ink); font-weight: 600; }
+      .card .src { margin-top: 6px; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); }
+      .newcard { border: 1px dashed var(--line); border-radius: var(--radius); padding: 9px 12px; font-size: 12.5px; color: var(--ink-faint); text-align: center; }
+
+      /* concept banner */
+      .concept { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 50; max-width: 900px; width: calc(100% - 28px); background: var(--leaf); border: 1px solid var(--lapis-edge); border-radius: 12px; box-shadow: var(--pop-shadow); padding: 11px 14px; font-size: 12px; color: var(--ink-soft); display: flex; gap: 12px; align-items: flex-start; }
+      .concept b { color: var(--ink); }
+      .concept .close { margin-left: auto; border: none; background: none; color: var(--ink-faint); font-size: 14px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- ================= header ================= -->
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <div class="grow"></div>
+
+        <!-- lens tracker (was the left rail) -->
+        <nav class="lenses" aria-label="Study phases">
+          <button class="lens done" title="Set up">⚙<span class="tip">01 · Set up</span></button>
+          <button class="lens done" title="Read">◉<span class="tip">02 · Read</span></button>
+          <button class="lens done show-tip" title="Map">▤<span class="tip">03 · Map</span></button>
+          <button class="lens done" title="COMA">▦<span class="tip">04 · COMA</span></button>
+          <button class="lens done" title="Theme &amp; aim">◎<span class="tip">05 · Theme &amp; aim</span></button>
+          <button class="lens active" title="Build">▥<span class="tip">06 · Build</span></button>
+          <button class="lens" title="Check">✓<span class="tip">07 · Check</span></button>
+        </nav>
+
+        <div class="grow"></div>
+
+        <!-- unified text-options menu -->
+        <div class="textwrap">
+          <button class="hbtn" id="textBtn">Aa Text <span style="font-size:9px;opacity:.7">▾</span></button>
+          <div class="textmenu open" id="textMenu">
+            <div class="tm-group">
+              <div class="tm-label">Reading mode</div>
+              <div class="seg"><button class="on">Formatted</button><button>Manuscript</button></div>
+            </div>
+            <div class="tm-group">
+              <div class="tm-label">Primary translation</div>
+              <div class="tm-row"><span class="chk">✓</span> World English Bible <span class="k">WEBBE</span></div>
+              <div class="tm-row"><span class="chk"></span> American Standard <span class="k">ASV</span></div>
+              <div class="tm-row tm-add">＋ Add a translation…</div>
+            </div>
+            <div class="tm-group" style="margin-bottom:0">
+              <div class="tm-label">Parallel</div>
+              <div class="tm-row tm-toggle"><span>Compare side by side · ASV</span><button class="switch on" aria-label="parallel"></button></div>
+            </div>
+          </div>
+        </div>
+        <a class="hlink" href="#/about">About</a>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <!-- ================= workspace ================= -->
+      <div class="work">
+        <!-- LEFT: what you're doing in THIS lens -->
+        <div class="col col-left">
+          <div class="col-head"><span class="t">This step · Build</span><span class="badge">running order</span></div>
+          <div class="col-sub">Arrange the questions you're promoting. Drag to reorder — every question is a card.</div>
+
+          <div class="card amber">
+            <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag amber">Observation · 1</span><span class="grip">⠿</span></div>
+            <div class="q">What is Zechariah doing when the angel appears, and where are the people?</div>
+            <div class="ea"><b>Expected:</b> Serving as priest, burning incense; the people pray outside.</div>
+          </div>
+          <div class="card amber">
+            <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag amber">Meaning · 2</span><span class="grip">⠿</span></div>
+            <div class="q">Why does the angel say “your prayer has been heard”?</div>
+            <div class="ea"><b>Expected:</b> God is answering a long-held prayer in his own timing.</div>
+          </div>
+          <div class="newcard">＋ New question — or promote one from the right →</div>
+        </div>
+
+        <!-- CENTER: the passage, always here -->
+        <div class="col col-center">
+          <div class="leaf">
+            <h1>Luke 1:5–25</h1>
+            <span class="meta">WEBBE · public domain</span>
+            <div class="scripture">
+              <span class="v"><sup>5</sup>There was in the days of Herod, the king of Judea, a certain priest named Zacharias… </span>
+              <span class="v"><sup>6</sup>They were both righteous before God… </span>
+              <span class="v"><sup>7</sup>But they had no child, because Elizabeth was barren… </span>
+              <span class="v amber"><sup>8</sup>Now while he executed the priest's office before God… </span>
+              <span class="v amber"><sup>9</sup>his lot was to enter into the temple of the Lord and burn incense. </span>
+              <span class="v amber"><sup>10</sup>The whole multitude of the people were praying outside… </span>
+              <span class="v rubric"><sup>11</sup>An angel of the Lord appeared to him… </span>
+              <span class="v"><sup>12</sup>Zacharias was troubled when he saw him… </span>
+              <span class="v amber"><sup>13</sup>But the angel said, “Don't be afraid, Zacharias, because your request has been heard…” </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: carried forward from earlier steps -->
+        <div class="col col-right">
+          <div class="col-head"><span class="t">Carried forward</span><span class="badge">from earlier</span></div>
+          <div class="col-sub">Your raw material — notes, marks, and COMA answers feed the questions on the left.</div>
+
+          <div class="card" style="border-left-color:var(--lapis-edge)">
+            <div class="card-top"><span class="tag">Theme · from step 05</span></div>
+            <div class="q">God keeps his covenant promise, answering long prayer in his own timing.</div>
+          </div>
+          <div class="card rubric">
+            <div class="card-top"><span class="anchor">Luke 1:11</span><span class="tag">Mark · confusing</span></div>
+            <div class="q">Why does an angel appear here specifically?</div>
+            <div class="src">▸ from step 03 · Map</div>
+          </div>
+          <div class="card">
+            <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag">COMA · Observation</span></div>
+            <div class="q">The temple duty and the praying crowd set the scene — ordinary faithfulness interrupted.</div>
+            <div class="src">▸ from step 04 · COMA</div>
+          </div>
+          <div class="card">
+            <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag">Note</span></div>
+            <div class="q">“Your request has been heard” — cf. <span style="font-family:var(--font-mono);font-size:11px;color:var(--lapis-ink)">↗ Mal 4:5–6</span></div>
+            <div class="src">▸ from step 03 · Map</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept" id="concept">
+      <div>
+        <b>The idea (first pass — react freely).</b> The <b>passage stays centered</b> the whole way through. The <b>left</b> column is what you're making in the <em>current</em> lens (here: questions as cards). The <b>right</b> column is everything you've <em>already</em> gathered — notes, marks, COMA answers — carried forward as raw material (Rule 4). Lens tracking lives in the <b>header</b> now (hover an icon — Map is showing its label); the left rail is gone. One <b>Aa Text</b> menu holds mode · translation · parallel.
+        <div style="margin-top:6px;color:var(--ink-faint);font-family:var(--font-mono);font-size:10.5px">Open questions: does “carried forward” = every earlier artifact, or only what's relevant to the current step? On narrow screens the right column collapses — into a tab? Should promoting a right-card → left be one drag?</div>
+      </div>
+      <button class="close" onclick="document.getElementById('concept').remove()">✕</button>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const night = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', night ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = night ? '☾' : '☀';
+      });
+      document.getElementById('textBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('textMenu').classList.toggle('open');
+      });
+      document.addEventListener('click', () => document.getElementById('textMenu').classList.remove('open'));
+      document.getElementById('textMenu').addEventListener('click', (e) => e.stopPropagation());
+    </script>
+  </body>
+</html>

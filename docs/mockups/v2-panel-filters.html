@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — right panel + step filters (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --pop-shadow: 0 2px 6px rgba(30,27,20,0.08), 0 20px 44px -14px rgba(30,27,20,0.34);
+        --radius: 10px;
+      }
+      /* muted, warmer night — less deep than before */
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65;
+        --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.16); --lapis-edge: rgba(144,176,239,0.38);
+        --amber-wash: rgba(221,187,97,0.17); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.42);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.16); --rubric-edge: rgba(226,128,95,0.4);
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+        --pop-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 22px 46px -14px rgba(0,0,0,0.58);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+
+      .topbar { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); position: relative; z-index: 30; }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; white-space: nowrap; }
+      .ref { font-family: var(--font-scripture); font-size: 19px; white-space: nowrap; }
+      .grow { flex: 1; }
+      .lenses { display: flex; align-items: center; gap: 3px; }
+      .lens { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--ink-faint); font-size: 15px; }
+      .lens:hover { color: var(--ink); background: var(--panel); }
+      .lens.done { color: var(--ink-soft); }
+      .lens.active { color: #fff; background: var(--lapis); border-color: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #16181d; }
+      .lens .tip { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink); background: var(--leaf); border: 1px solid var(--line); border-radius: 6px; padding: 3px 7px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 40; }
+      .lens:hover .tip { opacity: 1; }
+      .hbtn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; }
+      .hbtn:hover { border-color: var(--lapis-edge); color: var(--ink); }
+      .hlink { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); text-decoration: none; }
+      .hlink:hover { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); width: 32px; height: 32px; border-radius: 8px; }
+
+      /* layout: passage + one right panel (no left panel) */
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 380px; overflow: hidden; }
+      @media (max-width: 900px) { .work { grid-template-columns: 1fr; } .panel { display: none; } }
+      .center { overflow-y: auto; display: flex; justify-content: center; padding: 26px 22px 60px; }
+      .leaf { width: 100%; max-width: 42rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 30px clamp(24px,3vw,48px) 48px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 27px; margin: 0 0 3px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.28rem; line-height: 1.72; color: var(--ink); margin-top: 20px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.58em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v { border-radius: 4px; padding: 1px 2px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+      .v.amber { background: var(--amber-wash); }
+      .v.rubric { background: var(--rubric-wash); }
+      .v.lapis { background: var(--lapis-wash); }
+      .v.multi { background: repeating-linear-gradient(45deg, var(--amber-wash) 0 7px, var(--lapis-wash) 7px 14px); }
+      .v.hot { box-shadow: inset 0 0 0 2px var(--lapis-edge); }
+
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+      .filters { border-bottom: 1px solid var(--line); padding: 12px 14px; }
+      .filters .row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+      .filters .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .filters .count { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+      .chip { font-family: var(--font-mono); font-size: 10.5px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 999px; padding: 3px 9px; }
+      .chip.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .opts { display: flex; gap: 14px; margin-top: 11px; }
+      .opt { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); }
+      .sw { width: 30px; height: 17px; border-radius: 999px; background: var(--line); position: relative; border: none; flex: none; }
+      .sw.on { background: var(--lapis); }
+      .sw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: #fff; transition: left .15s; }
+      .sw.on::after { left: 15px; }
+
+      .cards { overflow-y: auto; padding: 14px; }
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow); margin-bottom: 10px; transition: opacity .12s, box-shadow .12s; }
+      .card.amber { border-left-color: var(--amber-edge); }
+      .card.rubric { border-left-color: var(--rubric-edge); }
+      .card.dim { opacity: .32; }
+      .card.gone { display: none; }
+      .card.hot { box-shadow: 0 0 0 2px var(--lapis-edge), var(--shadow); }
+      .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+      .anchor { font-family: var(--font-mono); font-size: 10.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; }
+      .tag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+      .tag.amber { color: var(--amber-ink); }
+      .card .q { font-size: 13.5px; color: var(--ink); }
+      .card .src { margin-top: 6px; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); }
+      .empty { font-size: 12.5px; color: var(--ink-faint); text-align: center; padding: 20px 8px; }
+
+      .concept { position: fixed; left: 24px; bottom: 14px; z-index: 50; max-width: 560px; background: var(--leaf); border: 1px solid var(--lapis-edge); border-radius: 12px; box-shadow: var(--pop-shadow); padding: 11px 14px; font-size: 12px; color: var(--ink-soft); }
+      .concept b { color: var(--ink); }
+      .concept .close { position: absolute; top: 8px; right: 10px; border: none; background: none; color: var(--ink-faint); font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <div class="grow"></div>
+        <nav class="lenses" aria-label="Study phases">
+          <button class="lens done">⚙<span class="tip">01 · Set up</span></button>
+          <button class="lens done">◉<span class="tip">02 · Read</span></button>
+          <button class="lens done">▤<span class="tip">03 · Map</span></button>
+          <button class="lens done">▦<span class="tip">04 · COMA</span></button>
+          <button class="lens done">◎<span class="tip">05 · Theme &amp; aim</span></button>
+          <button class="lens active">▥<span class="tip">06 · Build</span></button>
+          <button class="lens">✓<span class="tip">07 · Check</span></button>
+        </nav>
+        <div class="grow"></div>
+        <button class="hbtn">Aa Text ▾</button>
+        <a class="hlink" href="#/about">About</a>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="work">
+        <div class="center">
+          <div class="leaf">
+            <h1>Luke 1:5–25</h1>
+            <span class="meta">WEBBE · public domain</span>
+            <div class="scripture" id="scripture">
+              <span class="v" data-v="7"><sup>7</sup>But they had no child, because Elizabeth was barren, and they both were well advanced in years. </span>
+              <span class="v amber" data-v="8"><sup>8</sup>Now while he executed the priest's office before God in the order of his division, </span>
+              <span class="v amber" data-v="9"><sup>9</sup>his lot was to enter into the temple of the Lord and burn incense. </span>
+              <span class="v amber" data-v="10"><sup>10</sup>The whole multitude of the people were praying outside at the hour of incense. </span>
+              <span class="v rubric" data-v="11"><sup>11</sup>An angel of the Lord appeared to him, standing on the right side of the altar of incense. </span>
+              <span class="v" data-v="12"><sup>12</sup>Zacharias was troubled when he saw him, and fear fell upon him. </span>
+              <span class="v multi" data-v="13"><sup>13</sup>But the angel said to him, “Don't be afraid, Zacharias, because your request has been heard…” </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="filters">
+            <div class="row1">
+              <span class="t">Show from step</span>
+              <span class="count" id="count">4 shown</span>
+            </div>
+            <div class="chips" id="chips">
+              <button class="chip on" data-step="all">All</button>
+              <button class="chip on" data-step="map">Map</button>
+              <button class="chip on" data-step="coma">COMA</button>
+              <button class="chip on" data-step="theme">Theme</button>
+              <button class="chip on" data-step="build">Build</button>
+            </div>
+            <div class="opts">
+              <label class="opt"><button class="sw" id="swHover"></button> Reveal only on hover</label>
+              <label class="opt"><button class="sw on" id="swHide"></button> Hide filtered-out</label>
+            </div>
+          </div>
+
+          <div class="cards" id="cards">
+            <div class="card rubric" data-step="map" data-anchor="11">
+              <div class="card-top"><span class="anchor">Luke 1:11</span><span class="tag">Unclear</span></div>
+              <div class="q">Why does an angel appear here specifically?</div>
+              <div class="src">▸ step 03 · Map</div>
+            </div>
+            <div class="card" data-step="coma" data-anchor="8 9 10">
+              <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag">COMA · Observation</span></div>
+              <div class="q">Ordinary temple duty and a praying crowd — faithfulness interrupted.</div>
+              <div class="src">▸ step 04 · COMA</div>
+            </div>
+            <div class="card amber" data-step="build" data-anchor="8 9 10">
+              <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag amber">Question · Observation</span></div>
+              <div class="q">What is Zechariah doing, and where are the people?</div>
+              <div class="src">▸ step 06 · Build</div>
+            </div>
+            <div class="card" data-step="map" data-anchor="13">
+              <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag">Note</span></div>
+              <div class="q">“Your request has been heard” — cf. <span style="font-family:var(--font-mono);font-size:11px;color:var(--lapis-ink)">↗ Mal 4:5–6</span></div>
+              <div class="src">▸ step 03 · Map</div>
+            </div>
+            <div class="card amber" data-step="build" data-anchor="13">
+              <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag amber">Question · Meaning</span></div>
+              <div class="q">Why does the angel say “your prayer has been heard”?</div>
+              <div class="src">▸ step 06 · Build</div>
+            </div>
+            <div class="card" data-step="theme" data-anchor="">
+              <div class="card-top"><span class="tag">Theme · study-level</span></div>
+              <div class="q">God keeps his covenant promise, answering long prayer in his own timing.</div>
+              <div class="src">▸ step 05 · Theme &amp; aim</div>
+            </div>
+            <div class="empty" id="empty" style="display:none">Nothing from these steps touches the passage.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept" id="concept">
+      <button class="close" onclick="document.getElementById('concept').remove()">✕</button>
+      <b>Alternative to Focus/+Reference — one panel, filtered.</b> No left panel: everything lives in the right panel, filtered by <b>step</b> (toggle the chips). Two switches: <b>Reveal only on hover</b> (cards hide until you hover their verse — try hovering v8 or v13) and <b>Hide filtered-out</b> (off = dim them instead of hiding). Also: <b>muted dark mode</b> (try ☾).
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+
+      const cards = [...document.querySelectorAll('.card')];
+      const chips = [...document.querySelectorAll('.chip')];
+      const swHover = document.getElementById('swHover');
+      const swHide = document.getElementById('swHide');
+      let hoverVerse = null;
+
+      function activeSteps() {
+        if (document.querySelector('.chip[data-step="all"]').classList.contains('on')) return 'all';
+        return new Set(chips.filter((c) => c.classList.contains('on') && c.dataset.step !== 'all').map((c) => c.dataset.step));
+      }
+      function apply() {
+        const steps = activeSteps();
+        const hideOut = swHide.classList.contains('on');
+        const onlyHover = swHover.classList.contains('on');
+        let shown = 0;
+        for (const card of cards) {
+          const stepOk = steps === 'all' || steps.has(card.dataset.step);
+          const anchors = (card.dataset.anchor || '').split(' ').filter(Boolean);
+          const hoverOk = !onlyHover || (hoverVerse && anchors.includes(hoverVerse));
+          const visible = stepOk && hoverOk;
+          card.classList.toggle('gone', hideOut ? !visible : (onlyHover && !hoverOk ? true : !stepOk ? false : false));
+          card.classList.toggle('dim', !hideOut && !visible);
+          card.classList.toggle('hot', !!hoverVerse && anchors.includes(hoverVerse));
+          if (visible) shown++;
+        }
+        document.getElementById('count').textContent = shown + ' shown';
+        document.getElementById('empty').style.display = shown === 0 ? 'block' : 'none';
+      }
+      chips.forEach((c) => c.addEventListener('click', () => {
+        if (c.dataset.step === 'all') { const on = !c.classList.contains('on'); chips.forEach((x) => x.classList.toggle('on', on)); }
+        else { c.classList.toggle('on'); document.querySelector('.chip[data-step="all"]').classList.toggle('on', chips.filter((x)=>x.dataset.step!=='all').every((x)=>x.classList.contains('on'))); }
+        apply();
+      }));
+      [swHover, swHide].forEach((s) => s.addEventListener('click', () => { s.classList.toggle('on'); apply(); }));
+
+      document.querySelectorAll('.v[data-v]').forEach((v) => {
+        v.addEventListener('mouseenter', () => { hoverVerse = v.dataset.v; v.classList.add('hot'); apply(); });
+        v.addEventListener('mouseleave', () => { hoverVerse = null; v.classList.remove('hot'); apply(); });
+      });
+      apply();
+    </script>
+  </body>
+</html>

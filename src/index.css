@@ -113,21 +113,22 @@
     --leaf-radius: 10px;
   }
 
+  /* Night: muted + warmer (owner feedback — the old palette read too deep/black). */
   .dark {
-    --desk: #131418;
-    --leaf: #1c1e24;
-    --panel: #20232b;
-    --ink: #e9e5db;
-    --ink-soft: #9a958a;
-    --ink-faint: #6b675d;
-    --line: #2b2e36;
-    --lapis: #86a6ea;
-    --lapis-ink: #bcd0f6;
-    --lapis-wash: rgba(124, 160, 230, 0.16);
-    --lapis-edge: rgba(124, 160, 230, 0.4);
-    --rubric: #e0785f;
-    --rubric-wash: rgba(224, 120, 95, 0.16);
-    --leaf-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -14px rgba(0, 0, 0, 0.6);
+    --desk: #23252c;
+    --leaf: #2b2e37;
+    --panel: #333743;
+    --ink: #e8e4da;
+    --ink-soft: #a49f94;
+    --ink-faint: #746f65;
+    --line: #3c414c;
+    --lapis: #90b0ef;
+    --lapis-ink: #c6d6f8;
+    --lapis-wash: rgba(144, 176, 239, 0.16);
+    --lapis-edge: rgba(144, 176, 239, 0.38);
+    --rubric: #e2805f;
+    --rubric-wash: rgba(226, 128, 95, 0.16);
+    --leaf-shadow: 0 1px 2px rgba(0, 0, 0, 0.32), 0 14px 30px -14px rgba(0, 0, 0, 0.5);
   }
 }
 

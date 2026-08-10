@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en" data-theme="day" data-focus="off">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — shell redesign v2 (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --pop-shadow: 0 2px 6px rgba(30,27,20,0.08), 0 20px 44px -14px rgba(30,27,20,0.34);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #131418; --leaf: #1c1e24; --panel: #20232b;
+        --ink: #e9e5db; --ink-soft: #9a958a; --ink-faint: #6b675d;
+        --line: #2b2e36;
+        --lapis: #86a6ea; --lapis-ink: #bcd0f6; --lapis-wash: rgba(124,160,230,0.18); --lapis-edge: rgba(124,160,230,0.4);
+        --amber-wash: rgba(217,182,91,0.18); --amber-ink: #e2c877; --amber-edge: rgba(217,182,91,0.4);
+        --rubric: #e0785f; --rubric-wash: rgba(224,120,95,0.18); --rubric-edge: rgba(224,120,95,0.4);
+        --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 14px 32px -14px rgba(0,0,0,0.6);
+        --pop-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 24px 50px -14px rgba(0,0,0,0.7);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+
+      /* header */
+      .topbar { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); position: relative; z-index: 30; }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; white-space: nowrap; }
+      .ref { font-family: var(--font-scripture); font-size: 19px; white-space: nowrap; }
+      .grow { flex: 1; }
+      .lenses { display: flex; align-items: center; gap: 3px; }
+      .lens { position: relative; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--ink-faint); font-size: 15px; }
+      .lens:hover { color: var(--ink); background: var(--panel); }
+      .lens.done { color: var(--ink-soft); }
+      .lens.active { color: #fff; background: var(--lapis); border-color: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #10131a; }
+      .lens .tip { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink); background: var(--leaf); border: 1px solid var(--line); border-radius: 6px; padding: 3px 7px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 40; }
+      .lens:hover .tip { opacity: 1; }
+      .hbtn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; }
+      .hbtn:hover, .hbtn.on { border-color: var(--lapis-edge); color: var(--ink); }
+      .hlink { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); text-decoration: none; }
+      .hlink:hover { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); width: 32px; height: 32px; border-radius: 8px; }
+      /* focus/reference segmented */
+      .seg2 { display: inline-flex; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 2px; }
+      .seg2 button { border: none; background: none; border-radius: 6px; padding: 4px 9px; font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
+      .seg2 button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg2 button.on { color: #10131a; }
+
+      /* Aa Text menu — unified translations */
+      .textwrap { position: relative; }
+      .textmenu { position: absolute; right: 0; top: 38px; width: 264px; background: var(--leaf); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--pop-shadow); padding: 11px; display: none; }
+      .textmenu.open { display: block; }
+      .tm-label { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-faint); margin: 0 0 6px; }
+      .tm-group { margin-bottom: 13px; }
+      .seg { display: flex; gap: 2px; border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 2px; }
+      .seg button { flex: 1; border: none; background: none; border-radius: 5px; padding: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+      .seg button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg button.on { color: #10131a; }
+      .tr { display: flex; align-items: center; gap: 9px; padding: 5px 4px; border-radius: 7px; font-size: 13px; }
+      .tr:hover { background: var(--lapis-wash); }
+      .tr .box { width: 15px; height: 15px; border: 1.5px solid var(--lapis-edge); border-radius: 4px; display: grid; place-items: center; font-size: 10px; color: #fff; }
+      .tr.view .box { background: var(--lapis); border-color: var(--lapis); }
+      :root[data-theme='night'] .tr.view .box { color: #10131a; }
+      .tr .name { flex: 1; }
+      .tr .star { font-size: 14px; color: var(--ink-faint); background: none; border: none; padding: 0 2px; }
+      .tr.primary .star { color: var(--amber-ink); }
+      .tr .sn { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .tm-hint { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); margin-top: 4px; line-height: 1.45; }
+      .tm-add { font-family: var(--font-mono); font-size: 11px; color: var(--lapis-ink); padding: 5px 4px; }
+
+      /* workspace */
+      .work { display: grid; grid-template-columns: 340px minmax(0,1fr) 340px; overflow: hidden; }
+      :root[data-focus='on'] .work { grid-template-columns: 340px minmax(0,1fr); }
+      :root[data-focus='on'] .col-right { display: none; }
+      @media (max-width: 1180px) { .work { grid-template-columns: 300px minmax(0,1fr) !important; } .col-right { display: none !important; } }
+      .col { overflow-y: auto; padding: 18px 15px 40px; }
+      .col-left { border-right: 1px solid var(--line); }
+      .col-right { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); }
+      .col-center { display: flex; justify-content: center; padding: 24px 22px 60px; }
+      .col-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .col-head .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .col-head .badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .col-sub { font-size: 12px; color: var(--ink-soft); margin: 0 0 14px; }
+
+      .leaf { width: 100%; max-width: 40rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 28px clamp(22px,3vw,40px) 44px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 26px; margin: 0 0 3px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+      .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 14px; }
+      .cols2 .h { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--lapis-ink); margin-bottom: 4px; }
+      .scripture { font-family: var(--font-scripture); font-size: 1.18rem; line-height: 1.65; color: var(--ink); }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.6em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v { border-radius: 4px; padding: 1px 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+      .v.amber { background: var(--amber-wash); }
+      .v.rubric { background: var(--rubric-wash); }
+      .v.lapis { background: var(--lapis-wash); }
+      /* the multi-tone verse: alternating diagonal stripes of its two tones */
+      .v.multi { background: repeating-linear-gradient(45deg, var(--amber-wash) 0 7px, var(--lapis-wash) 7px 14px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--amber-edge) 60%, var(--lapis-edge)); }
+
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow); margin-bottom: 11px; }
+      .card.amber { border-left-color: var(--amber-edge); }
+      .card.rubric { border-left-color: var(--rubric-edge); }
+      .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+      .anchor { font-family: var(--font-mono); font-size: 10.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; cursor: pointer; }
+      .tag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+      .tag.amber { color: var(--amber-ink); }
+      .grip { margin-left: auto; color: var(--ink-faint); cursor: grab; }
+      .card .q { font-size: 13.5px; color: var(--ink); }
+      .card .ea { margin-top: 7px; font-size: 12px; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 6px; }
+      .card .ea b { color: var(--ink); font-weight: 600; }
+      .card .src { margin-top: 6px; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); }
+      .newcard { border: 1px dashed var(--line); border-radius: var(--radius); padding: 9px 12px; font-size: 12.5px; color: var(--ink-faint); text-align: center; }
+      .pill { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--lapis-ink); background: var(--lapis-wash); border: 1px solid var(--lapis-edge); border-radius: 6px; padding: 2px 6px; }
+
+      /* floating "reference" pull-tab, shown only in focus mode */
+      .reftab { position: fixed; right: 0; top: 96px; z-index: 20; display: none; align-items: center; gap: 7px; border: 1px solid var(--line); border-right: none; border-radius: 9px 0 0 9px; background: var(--leaf); box-shadow: var(--shadow); padding: 8px 12px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); }
+      :root[data-focus='on'] .reftab { display: inline-flex; }
+      @media (max-width: 1180px) { .reftab { display: none !important; } }
+
+      .concept { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 50; max-width: 940px; width: calc(100% - 24px); background: var(--leaf); border: 1px solid var(--lapis-edge); border-radius: 12px; box-shadow: var(--pop-shadow); padding: 10px 14px; font-size: 12px; color: var(--ink-soft); display: flex; gap: 12px; }
+      .concept b { color: var(--ink); }
+      .concept .close { margin-left: auto; border: none; background: none; color: var(--ink-faint); font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <div class="grow"></div>
+        <nav class="lenses" id="lenses" aria-label="Study phases">
+          <button class="lens done" data-name="01 · Set up">⚙<span class="tip">01 · Set up</span></button>
+          <button class="lens done" data-name="02 · Read">◉<span class="tip">02 · Read</span></button>
+          <button class="lens done" data-name="03 · Map">▤<span class="tip">03 · Map</span></button>
+          <button class="lens done" data-name="04 · COMA">▦<span class="tip">04 · COMA</span></button>
+          <button class="lens done" data-name="05 · Theme &amp; aim">◎<span class="tip">05 · Theme &amp; aim</span></button>
+          <button class="lens active" data-name="06 · Build">▥<span class="tip">06 · Build</span></button>
+          <button class="lens" data-name="07 · Check">✓<span class="tip">07 · Check</span></button>
+        </nav>
+        <div class="grow"></div>
+        <div class="seg2" title="Focus hides your carried-forward material; Reference shows it">
+          <button id="fFocus" class="on">Focus</button>
+          <button id="fRef">+ Reference</button>
+        </div>
+        <div class="textwrap">
+          <button class="hbtn" id="textBtn">Aa Text <span style="font-size:9px;opacity:.7">▾</span></button>
+          <div class="textmenu open" id="textMenu">
+            <div class="tm-group">
+              <div class="tm-label">Reading mode</div>
+              <div class="seg"><button class="on">Formatted</button><button>Manuscript</button></div>
+            </div>
+            <div class="tm-group" style="margin-bottom:6px">
+              <div class="tm-label">Translations — ✓ view · ★ main</div>
+              <div class="tr view primary"><span class="box">✓</span><span class="name">World English Bible</span><button class="star" title="Primary">★</button><span class="sn">WEBBE</span></div>
+              <div class="tr view"><span class="box">✓</span><span class="name">American Standard</span><button class="star" title="Make primary">☆</button><span class="sn">ASV</span></div>
+              <div class="tr"><span class="box"></span><span class="name">Berean Standard</span><button class="star" title="Make primary">☆</button><span class="sn">BSB</span></div>
+              <div class="tm-add">＋ Add a translation…</div>
+              <div class="tm-hint">Tick 2+ to read them in parallel; the ★ one is where notes anchor. No separate parallel switch.</div>
+            </div>
+          </div>
+        </div>
+        <a class="hlink" href="#/about">About</a>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="work">
+        <!-- LEFT -->
+        <div class="col col-left">
+          <div class="col-head"><span class="t" id="stepLabel">This step · Build</span><span class="badge">running order</span></div>
+          <div class="col-sub">Arrange the questions you're promoting. Every question is a card; drag to reorder.</div>
+          <div class="card amber">
+            <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag amber">Question · Observation · 1</span><span class="grip">⠿</span></div>
+            <div class="q">What is Zechariah doing when the angel appears, and where are the people?</div>
+            <div class="ea"><b>Expected:</b> Serving as priest, burning incense; the people pray outside.</div>
+          </div>
+          <div class="card amber">
+            <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag amber">Question · Meaning · 2</span><span class="grip">⠿</span></div>
+            <div class="q">Why does the angel say “your prayer has been heard”?</div>
+            <div class="ea"><b>Expected:</b> God is answering a long-held prayer in his own timing.</div>
+          </div>
+          <div class="newcard">＋ New question</div>
+        </div>
+
+        <!-- CENTER -->
+        <div class="col col-center">
+          <div class="leaf">
+            <h1>Luke 1:5–25</h1>
+            <span class="meta" id="leafMeta">WEBBE ‖ ASV · parallel</span>
+            <div class="cols2" id="parallel">
+              <div>
+                <div class="h">WEBBE</div>
+                <div class="scripture">
+                  <span class="v"><sup>7</sup>But they had no child, because Elizabeth was barren… </span>
+                  <span class="v amber"><sup>8</sup>Now while he executed the priest's office before God… </span>
+                  <span class="v amber"><sup>9</sup>his lot was to enter the temple and burn incense. </span>
+                  <span class="v amber"><sup>10</sup>The whole multitude prayed outside… </span>
+                  <span class="v rubric"><sup>11</sup>An angel of the Lord appeared to him… </span>
+                  <span class="v"><sup>12</sup>Zacharias was troubled… </span>
+                  <span class="v multi" title="A Question (amber) AND a Note (blue) both sit on this verse"><sup>13</sup>But the angel said, “Don't be afraid… your request has been heard…” </span>
+                </div>
+              </div>
+              <div>
+                <div class="h">ASV</div>
+                <div class="scripture">
+                  <span class="v"><sup>7</sup>And they had no child, because that Elisabeth was barren… </span>
+                  <span class="v amber"><sup>8</sup>Now it came to pass, while he executed the priest's office… </span>
+                  <span class="v amber"><sup>9</sup>his lot was to enter the temple of the Lord and burn incense. </span>
+                  <span class="v amber"><sup>10</sup>And the whole multitude were praying without… </span>
+                  <span class="v rubric"><sup>11</sup>And there appeared unto him an angel… </span>
+                  <span class="v"><sup>12</sup>And Zacharias was troubled… </span>
+                  <span class="v multi"><sup>13</sup>But the angel said, “Fear not… thy supplication is heard…” </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col col-right">
+          <div class="col-head"><span class="t">Carried forward</span><span class="badge">3 relevant</span></div>
+          <div class="col-sub">Only what touches the verses in view — notes, marks, COMA answers. Drag one left to build on it.</div>
+          <div class="card rubric">
+            <div class="card-top"><span class="anchor">Luke 1:11</span><span class="tag">Unclear</span></div>
+            <div class="q">Why does an angel appear here specifically?</div>
+            <div class="src">▸ step 03 · Map</div>
+          </div>
+          <div class="card">
+            <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag">COMA · Observation</span></div>
+            <div class="q">Ordinary temple duty and a praying crowd — faithfulness interrupted.</div>
+            <div class="src">▸ step 04 · COMA</div>
+          </div>
+          <div class="card">
+            <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag">Note</span></div>
+            <div class="q">“Your request has been heard” — <span class="pill">↗ Mal 4:5–6</span></div>
+            <div class="src">▸ step 03 · Map</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reftab" id="refTab">◂ 3 carried forward</div>
+
+    <div class="concept" id="concept">
+      <div>
+        <b>Try these (this is more clickable):</b> the header <b>Focus / + Reference</b> toggle shows/hides your carried-forward column — start Focused, pull it in when you want it; a <b>3 carried forward</b> tab hangs on the right in Focus mode. The <b>Aa Text</b> menu now has one translation list — <b>✓ = view, ★ = main</b> (tick two = parallel, no separate switch). Verse <b>13</b> carries two tones, shown as <b>diagonal stripes</b>. Click a lens icon to move the step.
+      </div>
+      <button class="close" onclick="document.getElementById('concept').remove()">✕</button>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+      const tBtn = document.getElementById('textBtn'), tMenu = document.getElementById('textMenu');
+      tBtn.addEventListener('click', (e) => { e.stopPropagation(); tMenu.classList.toggle('open'); });
+      tMenu.addEventListener('click', (e) => e.stopPropagation());
+      document.addEventListener('click', () => tMenu.classList.remove('open'));
+
+      // focus / reference
+      const setFocus = (on) => {
+        root.setAttribute('data-focus', on ? 'on' : 'off');
+        document.getElementById('fFocus').classList.toggle('on', on);
+        document.getElementById('fRef').classList.toggle('on', !on);
+      };
+      document.getElementById('fFocus').addEventListener('click', () => setFocus(true));
+      document.getElementById('fRef').addEventListener('click', () => setFocus(false));
+      document.getElementById('refTab').addEventListener('click', () => setFocus(false));
+      setFocus(true); // start focused (uncluttered)
+
+      // lens switching (label only, illustrative)
+      document.querySelectorAll('#lenses .lens').forEach((b) => b.addEventListener('click', () => {
+        document.querySelectorAll('#lenses .lens').forEach((x) => x.classList.remove('active'));
+        b.classList.add('active');
+        document.getElementById('stepLabel').textContent = 'This step · ' + b.dataset.name.replace(/^\d+ · /, '');
+      }));
+
+      // translation checkboxes (toggle view; star sets primary)
+      document.querySelectorAll('.tr .box').forEach((box) => box.parentElement.addEventListener('click', (e) => {
+        if (e.target.classList.contains('star')) return;
+        const row = box.parentElement; row.classList.toggle('view');
+        box.textContent = row.classList.contains('view') ? '✓' : '';
+      }));
+      document.querySelectorAll('.tr .star').forEach((star) => star.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.tr').forEach((r) => { r.classList.remove('primary'); r.querySelector('.star').textContent = '☆'; });
+        const row = star.closest('.tr'); row.classList.add('primary', 'view'); star.textContent = '★';
+        row.querySelector('.box').textContent = '✓';
+      }));
+    </script>
+  </body>
+</html>
