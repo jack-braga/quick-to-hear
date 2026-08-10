@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — COMA answer-cards + inline anchor gesture (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.16); --lapis-edge: rgba(144,176,239,0.38);
+        --amber-wash: rgba(221,187,97,0.17); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.42);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.16); --rubric-edge: rgba(226,128,95,0.4);
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto auto 1fr; }
+
+      .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 9px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+      .grp { display: flex; align-items: center; gap: 6px; }
+      .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .13em; color: var(--ink-faint); }
+      .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .seg button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 12px; padding: 5px 10px; }
+      .seg button + button { border-left: 1px solid var(--line); }
+      .seg button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg button.on { color: #16181d; }
+      .desc { flex: 1 1 300px; min-width: 220px; font-size: 11.5px; color: var(--ink-soft); }
+      .desc b { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; }
+
+      .topbar { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .ref { font-family: var(--font-scripture); font-size: 17px; }
+      .grow { flex: 1; }
+      .pill { font-family: var(--font-mono); font-size: 10px; color: var(--lapis-ink); background: var(--lapis-wash); border: 1px solid var(--lapis-edge); border-radius: 999px; padding: 2px 8px; }
+
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 388px; overflow: hidden; }
+      .center { position: relative; overflow-y: auto; padding: 20px 22px 50px; display: flex; justify-content: center; }
+      .leaf { width: 100%; max-width: 39rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 22px clamp(20px,3vw,40px) 34px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 23px; margin: 0 0 2px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.17rem; line-height: 1.72; margin-top: 16px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.58em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v { border-radius: 4px; padding: 1px 2px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+      .v:hover { background: var(--lapis-wash); }
+      .v.sel { background: var(--lapis-wash); box-shadow: inset 0 0 0 2px var(--lapis-edge); }
+      .v.dropok { outline: 2px dashed var(--lapis-edge); outline-offset: 1px; }
+      .capturing .v { cursor: crosshair; }
+
+      /* capture hint banner over the passage */
+      .hint { position: sticky; top: 0; z-index: 5; margin: -6px 0 12px; display: none; align-items: center; gap: 10px; background: var(--lapis); color: #fff; border-radius: 9px; padding: 8px 12px; font-size: 12.5px; box-shadow: var(--shadow); }
+      :root[data-theme='night'] .hint { color: #14161c; }
+      .capturing .hint { display: flex; }
+      .hint b { font-weight: 700; }
+      .hint .done { margin-left: auto; background: rgba(255,255,255,.22); border: none; color: inherit; border-radius: 7px; padding: 4px 10px; font-size: 12px; }
+
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); overflow: hidden; display: grid; grid-template-rows: 1fr; }
+      .pbody { overflow-y: auto; padding: 13px; }
+      .phead { display: flex; align-items: center; gap: 8px; margin: 0 2px 10px; }
+      .phead .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .heading { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .13em; color: var(--lapis-ink); margin: 12px 2px 6px; }
+
+      /* compact prompt row (models 1 & 3-reference) */
+      .prow { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border: 1px solid transparent; border-radius: 8px; font-size: 12.5px; color: var(--ink-soft); }
+      .prow:hover { background: var(--leaf); border-color: var(--line); }
+      .prow .dot { color: var(--ink-faint); }
+      .prow .txt { flex: 1; line-height: 1.4; }
+      .prow .ans { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 7px; padding: 2px 8px; font-family: var(--font-mono); font-size: 10.5px; white-space: nowrap; }
+      .prow .ans:hover { border-color: var(--lapis-edge); color: var(--ink); }
+
+      /* answer card */
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 9px 11px; box-shadow: var(--shadow); margin-bottom: 9px; }
+      .card.cap { box-shadow: 0 0 0 2px var(--lapis-edge), var(--shadow); }
+      .card[draggable='true'] { cursor: grab; }
+      .card .ctop { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+      .card .htag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--lapis-ink); }
+      .card .prompt { font-size: 12px; color: var(--ink); line-height: 1.4; margin-bottom: 6px; }
+      .card select { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 6px; padding: 1px 4px; }
+      .card textarea { width: 100%; resize: none; border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 6px 8px; font-family: var(--font-ui); font-size: 12.5px; color: var(--ink); outline: none; }
+      .card textarea:focus { border-color: var(--lapis-edge); }
+      .card .foot { display: flex; align-items: center; gap: 6px; margin-top: 7px; }
+      .chip { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; color: var(--lapis-ink); background: var(--lapis-wash); }
+      .chip.empty { color: var(--ink-faint); background: transparent; border-style: dashed; }
+      .chip:hover { border-color: var(--lapis-edge); }
+      .setbtn { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 6px; padding: 2px 7px; }
+      .setbtn:hover { border-color: var(--lapis-edge); color: var(--ink); }
+      .grab { margin-left: auto; color: var(--ink-faint); font-size: 12px; }
+      .x { border: none; background: none; color: var(--ink-faint); font-size: 13px; }
+      .x:hover { color: var(--rubric); }
+      .addbtn { width: 100%; border: 1px dashed var(--line); background: transparent; color: var(--ink-soft); border-radius: 9px; padding: 8px; font-size: 12.5px; margin: 4px 0 12px; }
+      .addbtn:hover { border-color: var(--lapis-edge); color: var(--ink); }
+      .att { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 9.5px; font-style: italic; color: var(--ink-faint); }
+      .refhead { display: flex; align-items: center; justify-content: space-between; }
+      .refhead button { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 7px; font-size: 11px; padding: 2px 8px; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="controls">
+        <div class="grp"><span class="lbl">COMA model</span>
+          <div class="seg" id="modelSeg">
+            <button data-m="demand" class="on">Answer-on-demand</button>
+            <button data-m="every">Every prompt a card</button>
+            <button data-m="top">Prompts up top</button>
+          </div>
+        </div>
+        <div class="grp"><span class="lbl">Anchor gesture</span>
+          <div class="seg" id="gestureSeg">
+            <button data-g="chip" class="on">Click chip</button>
+            <button data-g="button">⌖ button</button>
+            <button data-g="drag">Drag</button>
+          </div>
+        </div>
+        <p class="desc" id="desc"></p>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <span class="pill">▦ COMA lens</span>
+        <div class="grow"></div>
+        <span class="pill" style="color:var(--ink-faint);background:none;border-color:var(--line)">genre · gospels-acts</span>
+      </div>
+
+      <div class="work" id="work">
+        <div class="center" id="center">
+          <div class="leaf">
+            <div class="hint" id="hint"><span>⌖ <b>Anchoring a card.</b> Click verse(s) below to set its anchor · Esc to cancel</span><button class="done" id="hintDone">Done</button></div>
+            <h1>Luke 1:5–25</h1>
+            <span class="meta">WEBBE · public domain</span>
+            <div class="scripture" id="scripture"></div>
+          </div>
+        </div>
+        <div class="panel"><div class="pbody" id="pbody"></div></div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+
+      const VERSES = [
+        [7, 'But they had no child, because Elizabeth was barren, and they both were well advanced in years.'],
+        [8, 'Now while he executed the priest’s office before God in the order of his division,'],
+        [9, 'his lot was to enter into the temple of the Lord and burn incense.'],
+        [10, 'The whole multitude of the people were praying outside at the hour of incense.'],
+        [11, 'An angel of the Lord appeared to him, standing on the right side of the altar of incense.'],
+        [12, 'Zacharias was troubled when he saw him, and fear fell upon him.'],
+        [13, 'But the angel said to him, “Don’t be afraid, Zacharias, because your request has been heard…”'],
+      ];
+      // abbreviated gospels-acts Helm prompts (verbatim-style, trimmed for the mock)
+      const PROMPTS = [
+        ['Context', 'What has happened just prior to the section you are reading?'],
+        ['Context', 'What has happened so far in the narrative — major events, characters or themes?'],
+        ['Observation', 'What do you learn about the main characters? How does the author describe them?'],
+        ['Observation', 'Is there a conflict or high point in the passage?'],
+        ['Meaning', 'What does the passage reveal about who Jesus is, and what he came to do?'],
+        ['Meaning', 'How could you sum up the meaning of this passage in your own words?'],
+        ['Application', 'Is there some attitude you need to change?'],
+      ].map((p, i) => ({ id: 'p' + i, heading: p[0], prompt: p[1] }));
+      const HEADINGS = ['Context', 'Observation', 'Meaning', 'Application'];
+      const ATTR = 'COMA questions from David Helm, One-to-One Bible Reading (Matthias Media & Holy Trinity Church, 2011), used by permission.';
+
+      // per-prompt answer state (models demand/every); free cards (model top)
+      const answers = {};              // promptId -> { answer, anchors:[] }
+      let freeCards = [];              // { id, heading, answer, anchors:[] }
+      let seq = 0;
+      // seed one answered example so the anchor gesture is visible immediately
+      answers['p2'] = { answer: 'Ordinary temple duty — faithfulness interrupted by God.', anchors: [8, 9] };
+
+      let model = 'demand', gesture = 'chip', capId = null;
+
+      function anchorLabel(anchors) {
+        if (!anchors.length) return null;
+        const s = [...anchors].sort((a, b) => a - b);
+        let out = [], i = 0;
+        while (i < s.length) { let j = i; while (j + 1 < s.length && s[j + 1] === s[j] + 1) j++; out.push(i === j ? `${s[i]}` : `${s[i]}–${s[j]}`); i = j + 1; }
+        return 'Luke 1:' + out.join(', ');
+      }
+      function cardObj(id) { return id.startsWith('free') ? freeCards.find((c) => c.id === id) : answers[id]; }
+
+      // ---------- passage ----------
+      function renderPassage() {
+        const capAnchors = capId ? (cardObj(capId)?.anchors || []) : [];
+        document.getElementById('scripture').innerHTML = VERSES.map(([n, t]) =>
+          `<span class="v ${capId && capAnchors.includes(n) ? 'sel' : ''}" data-v="${n}"><sup>${n}</sup>${t} </span>`
+        ).join('');
+        document.querySelectorAll('.v').forEach((el) => {
+          const n = +el.dataset.v;
+          el.addEventListener('click', () => { if (!capId) return; toggleAnchor(capId, n); });
+          // drag drop target
+          el.addEventListener('dragover', (e) => { if (gesture === 'drag') { e.preventDefault(); el.classList.add('dropok'); } });
+          el.addEventListener('dragleave', () => el.classList.remove('dropok'));
+          el.addEventListener('drop', (e) => { e.preventDefault(); el.classList.remove('dropok'); const id = e.dataTransfer.getData('text/card'); if (id) { const c = cardObj(id); c.anchors = [n]; renderAll(); } });
+        });
+        document.getElementById('center').parentElement; // noop
+        document.getElementById('work').classList.toggle('capturing', !!capId);
+        // move the class onto center so .capturing .v + .hint work
+        document.getElementById('center').classList.toggle('capturing', !!capId);
+      }
+      function toggleAnchor(id, n) { const c = cardObj(id); const i = c.anchors.indexOf(n); if (i >= 0) c.anchors.splice(i, 1); else c.anchors.push(n); renderAll(); }
+      function startCapture(id) { capId = id; renderAll(); }
+      function endCapture() { capId = null; renderAll(); }
+      document.getElementById('hintDone').addEventListener('click', endCapture);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') endCapture(); });
+
+      // ---------- a single answer card ----------
+      function cardHTML(id, heading, prompt, obj, opts = {}) {
+        const label = anchorLabel(obj.anchors);
+        const chip = label
+          ? `<button class="chip" data-anchor="${id}">${label}</button>`
+          : `<button class="chip empty" data-anchor="${id}">⌖ anchor</button>`;
+        const setBtn = gesture === 'button' ? `<button class="setbtn" data-anchor="${id}">⌖ set anchor</button>` : '';
+        const grab = gesture === 'drag' ? `<span class="grab" title="Drag onto the passage to anchor">⠿ drag</span>` : '';
+        const headSel = opts.selectable
+          ? `<select data-head="${id}">${HEADINGS.map((h) => `<option ${h === heading ? 'selected' : ''}>${h}</option>`).join('')}</select>`
+          : `<span class="htag">${heading}${prompt ? '' : ' · free'}</span>`;
+        return `<div class="card ${capId === id ? 'cap' : ''}" data-card="${id}" ${gesture === 'drag' ? 'draggable="true"' : ''}>
+          <div class="ctop">${headSel}<span class="grow"></span>${opts.removable ? `<button class="x" data-del="${id}">✕</button>` : ''}</div>
+          ${prompt ? `<div class="prompt">${prompt}</div>` : ''}
+          <textarea rows="2" data-ans="${id}" placeholder="Write what the text gives…">${obj.answer || ''}</textarea>
+          <div class="foot">${gesture === 'chip' ? chip : (label ? chip : '')}${setBtn}${grab}</div>
+        </div>`;
+      }
+
+      // ---------- models ----------
+      function renderPanel() {
+        const b = document.getElementById('pbody');
+        let html = `<div class="phead"><span class="t">COMA — work the text</span></div>`;
+
+        if (model === 'demand') {
+          for (const h of HEADINGS) {
+            const ps = PROMPTS.filter((p) => p.heading === h);
+            if (!ps.length) continue;
+            html += `<div class="heading">${h}</div>`;
+            for (const p of ps) {
+              if (answers[p.id]) html += cardHTML(p.id, p.heading, p.prompt, answers[p.id], { removable: true });
+              else html += `<div class="prow"><span class="dot">·</span><span class="txt">${p.prompt}</span><button class="ans" data-answer="${p.id}">✎ Answer</button></div>`;
+            }
+          }
+        } else if (model === 'every') {
+          for (const h of HEADINGS) {
+            const ps = PROMPTS.filter((p) => p.heading === h);
+            if (!ps.length) continue;
+            html += `<div class="heading">${h}</div>`;
+            for (const p of ps) { answers[p.id] = answers[p.id] || { answer: '', anchors: [] }; html += cardHTML(p.id, p.heading, p.prompt, answers[p.id]); }
+          }
+        } else { // top: prompts as reference, free answer cards
+          html += `<div class="card" style="border-left-color:var(--line)"><div class="refhead"><span class="htag">Helm prompts · reference</span></div>
+            <div style="margin-top:6px">${PROMPTS.map((p) => `<div style="font-size:11.5px;color:var(--ink-soft);line-height:1.5"><b style="font-family:var(--font-mono);font-size:9px;color:var(--lapis-ink)">${p.heading}</b> — ${p.prompt}</div>`).join('')}</div></div>`;
+          html += `<button class="addbtn" id="addFree">＋ Add COMA answer</button>`;
+          for (const c of freeCards) html += cardHTML(c.id, c.heading, null, c, { selectable: true, removable: true });
+        }
+        html += `<div class="att">${ATTR}</div>`;
+        b.innerHTML = html;
+
+        // wire
+        b.querySelectorAll('[data-answer]').forEach((el) => el.addEventListener('click', () => { const id = el.dataset.answer; answers[id] = { answer: '', anchors: [] }; startCapture(id); }));
+        b.querySelectorAll('[data-anchor]').forEach((el) => el.addEventListener('click', () => startCapture(el.dataset.anchor)));
+        b.querySelectorAll('[data-ans]').forEach((el) => el.addEventListener('input', () => { cardObj(el.dataset.ans).answer = el.value; }));
+        b.querySelectorAll('[data-head]').forEach((el) => el.addEventListener('change', () => { cardObj(el.dataset.head).heading = el.value; }));
+        b.querySelectorAll('[data-del]').forEach((el) => el.addEventListener('click', () => { const id = el.dataset.del; if (id.startsWith('free')) freeCards = freeCards.filter((c) => c.id !== id); else delete answers[id]; if (capId === id) capId = null; renderAll(); }));
+        const add = document.getElementById('addFree');
+        if (add) add.addEventListener('click', () => { const id = 'free' + seq++; freeCards.push({ id, heading: 'Observation', answer: '', anchors: [] }); startCapture(id); });
+        b.querySelectorAll('.card[draggable="true"]').forEach((el) => el.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/card', el.dataset.card)));
+      }
+
+      const DESC = {
+        demand: '<b>Answer-on-demand.</b> Prompts sit as quiet rows; click <b>✎ Answer</b> to spawn a card (it starts anchoring). Calm panel — try answering an Observation prompt.',
+        every: '<b>Every prompt a card.</b> All prompts are answer-cards up front. Comprehensive but long — scroll the panel.',
+        top: '<b>Prompts up top.</b> Prompts are a reference block; <b>＋ Add COMA answer</b> makes a free card with a heading dropdown. Freest, closest to today.',
+      };
+      const GDESC = {
+        chip: ' Anchor by clicking the card’s <b>chip</b> (or ⌖ anchor).',
+        button: ' Anchor via a dedicated <b>⌖ set anchor</b> button.',
+        drag: ' Anchor by <b>dragging</b> a card onto a verse.',
+      };
+
+      function renderAll() {
+        document.getElementById('desc').innerHTML = DESC[model] + GDESC[gesture];
+        for (const el of document.querySelectorAll('#modelSeg button')) el.classList.toggle('on', el.dataset.m === model);
+        for (const el of document.querySelectorAll('#gestureSeg button')) el.classList.toggle('on', el.dataset.g === gesture);
+        renderPanel();
+        renderPassage();
+      }
+
+      document.querySelectorAll('#modelSeg button').forEach((b) => b.addEventListener('click', () => { model = b.dataset.m; capId = null; renderAll(); }));
+      document.querySelectorAll('#gestureSeg button').forEach((b) => b.addEventListener('click', () => { gesture = b.dataset.g; capId = null; renderAll(); }));
+      renderAll();
+    </script>
+  </body>
+</html>
