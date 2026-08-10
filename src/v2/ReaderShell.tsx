@@ -9,7 +9,7 @@ import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Annotation, AnnotationKind, AnnotationOrigin, NoteFlag, Section, Study } from '@/types/study';
+import type { Annotation, AnnotationKind, AnnotationOrigin, NoteFlag, QuestionType, Section, Study } from '@/types/study';
 import { annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
@@ -128,9 +128,9 @@ export function ReaderShell({ study }: { study: Study }) {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  // Anchor capture lives in the card-panel lenses (Map + Questions); leaving them ends it.
+  // Anchor capture lives in the lenses that anchor cards (Map, Questions, COMA); leaving ends it.
   useEffect(() => {
-    if (lens !== 'map' && lens !== 'questions') setCapturingId(null);
+    if (lens !== 'map' && lens !== 'questions' && lens !== 'coma') setCapturingId(null);
   }, [lens]);
 
   // While capturing, the live selection *is* the card's anchor — mirror it (present verses only)
@@ -212,6 +212,15 @@ export function ReaderShell({ study }: { study: Study }) {
   // verses only — never the content). The user writes the question + its expected answer.
   const onMakeQuestion = (source: Annotation) =>
     addAnnotation(makeAnnotation(newId(), { kind: 'question', verseIds: [...source.verseIds], origin: 'questions' }));
+
+  // COMA answer-on-demand (#4b): ✎ Answer spawns an empty answer-card (origin 'coma') tagged with
+  // its heading + the prompt it answers; the user writes the answer, then anchors it via capture.
+  const onAddComaAnswer = (comaType: QuestionType, prompt: string) =>
+    addAnnotation({
+      ...makeAnnotation(newId(), { kind: 'note', verseIds: [], origin: 'coma' }),
+      comaType,
+      comaPrompt: prompt,
+    });
 
   // Promote an inline @-mention (inside a note) to a cross-ref annotation anchored to the host's
   // verses — this is what `projectForExport` turns into a printed Support passage. De-duped by OSIS.
@@ -430,8 +439,9 @@ export function ReaderShell({ study }: { study: Study }) {
       <MarginPlaceholder text="Produce the two documents here. The running order (Build) is what they contain." />
     );
   } else {
-    // Map + Questions are the interactive, card-panel lenses; Read + COMA read the same text.
-    const interactive = lens === 'map' || lens === 'questions';
+    // Map + Questions are always interactive; COMA becomes interactive only while anchor-capturing
+    // an answer-card (it has no action bar — you create via ✎ Answer, not select-to-create).
+    const interactive = lens === 'map' || lens === 'questions' || (lens === 'coma' && capturingId != null);
     const actionKinds: ActionKind[] = lens === 'questions' ? ['ask', 'note', 'mark'] : ['mark', 'note'];
     center = parallelActive ? (
       <ParallelCanvas
@@ -504,7 +514,18 @@ export function ReaderShell({ study }: { study: Study }) {
       ) : lens === 'read' ? (
         <ReadPanel study={study} />
       ) : lens === 'coma' ? (
-        <ComaPanel study={study} />
+        <ComaPanel
+          study={study}
+          annotations={annotations}
+          focusAnnotationId={focusAnnotationId}
+          capturingId={capturingId}
+          onAddComaAnswer={onAddComaAnswer}
+          onEdit={onEditAnnotation}
+          onRemove={onRemoveAnnotation}
+          onStartCapture={startCapture}
+          onEndCapture={endCapture}
+          onFocusHandled={clearFocusAnnotation}
+        />
       ) : (
         <MarginPlaceholder text="The text stays put; the overlay changes with the lens." />
       );

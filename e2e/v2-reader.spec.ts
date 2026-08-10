@@ -66,6 +66,28 @@ test('v2 Read + COMA lenses: the read counter persists, and COMA shows genre pro
   await expect(page.getByText(/David Helm.*used by permission/i)).toBeVisible();
 });
 
+test('v2 COMA answer-cards: ✎ Answer spawns a card that flows into the Questions panel', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '04 COMA' }).click();
+
+  // Answer-on-demand: ✎ Answer a prompt → an answer-card (⌖ anchor) + the prompt keeps "answer again".
+  await page.getByRole('button', { name: /✎ Answer/ }).first().click();
+  await expect(page.getByRole('button', { name: /answer again/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /⌖ anchor/ })).toBeVisible();
+
+  // The answer-card is an origin-COMA annotation → it shows in the Questions panel with a
+  // COMA · Context tag and the recycle-forward "→ make a question".
+  await page.getByRole('button', { name: '06 Questions' }).click();
+  await expect(page.getByText(/COMA · Context/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /make a question/i })).toBeVisible();
+});
+
 test('v2 set-up: paste-and-clean lands a passage', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

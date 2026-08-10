@@ -172,6 +172,9 @@ export const AnnotationSchema = z.object({
   // note — a `flag` makes it a "mark confusing" / a comment; `comaType` optionally tags it.
   flag: NoteFlagSchema.optional(),
   comaType: QuestionTypeSchema.optional(),
+  // COMA answer-card (#4b): the Helm prompt this answer responds to — links the answer to its
+  // prompt (so "answer again" groups under it) + shows it as context. Additive-optional.
+  comaPrompt: z.string().optional(),
   // question — the one enforced discipline (SPEC 6e): no promotion without an expected answer.
   expectedAnswer: z.string().optional(),
   questionType: QuestionTypeSchema.optional(),

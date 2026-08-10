@@ -106,6 +106,10 @@ export function annotationMeta(a: Annotation): { tag: string; placeholder: strin
   if (a.flag === 'comment') {
     return { tag: 'Comment', placeholder: 'A note to yourself…' };
   }
+  if (a.comaType) {
+    const label = a.comaType[0]!.toUpperCase() + a.comaType.slice(1);
+    return { tag: `COMA · ${label}`, placeholder: 'Write what the text gives…' };
+  }
   return { tag: 'Note', placeholder: 'An observation, a meaning, an application…' };
 }
 
