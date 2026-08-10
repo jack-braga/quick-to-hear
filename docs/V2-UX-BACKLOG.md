@@ -90,9 +90,11 @@ proposed shape (seven lenses → **eight**):
   **→ Make a question** (seed a question at the same anchor), or you write fresh. Each question keeps
   its anchor + the **expected-answer hard block** (SPEC 6e). *(This resolves the recycle-forward
   question — it's the "panel + convert" model, living here rather than in Build.)*
-- **Build lens (now pure assembly)** — take the questions you made and **sequence** them (drag / ↑↓),
-  set timing, cut / reserve → the **running order that exports**. Only questions enter, **plus optional
-  filler** (a leader note / background box; **images deferred** per §6). No question *authoring* here.
+- **Build lens (now pure assembly)** — **[core shipped #4d `77c0103`]**: questions are **read-only**
+  (author in Questions; jump to refine), you **sequence** them (drag / ↑↓), keep the type-filter + the
+  assembly metadata (type/load-bearing/aim/gospel-plain) + drop. **Still deferred (owner: core scope):**
+  set timing, cut / reserve, and **optional filler** (a leader note / background box — needs
+  export-model work; images deferred per §6).
 - Consistency win: Map · COMA · Theme · Questions are all "work against the text, show everything"
   lenses; **Build is the single assembly step**. **CONFIRMED (owner, 2026-08-11): do the split — eight
   lenses.**

@@ -93,10 +93,12 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
 - ~~**#4e Read → strip tints/cards**~~ ✅ shipped `442ae48` — the Read lens paints no verse tones
   (ReaderShell passes `NO_TONES` to the canvas for `lens==='read'`); cards were already absent (Read's
   margin is the ReadPanel). Just the clean passage + the pray-and-read panel.
-- **#4d Build → pure assembly** — Build stopped authoring (done — #4c) and becomes sequence/timing/cut +
-  optional filler (leader note / background box); **images deferred**. Only questions + filler enter the
-  running order. See `v2-build-recycle.html`.
+- ~~**#4d Build → pure assembly**~~ ✅ shipped `77c0103` — questions read-only (author in Questions),
+  keep sequence + type-filter + assembly metadata (type/load-bearing/aim/gospel-plain) + jump + drop.
+  **Deferred (owner: core scope):** filler (leader note/background box — needs export-model work),
+  per-question timing, cut/reserve.
 - **Slice 3b — the two panel switches** (see above): hover-reveal + hide-vs-dim in `MarginAnnotations`.
+- **Deferred #4d extras** — filler / timing / cut-reserve, when the owner wants them.
 - Still-open parallel item (V2-UX-BACKLOG §4): **sectioning is disabled in parallel** — enable
   any-verse divide/merge on the primary column while parallel.
 
