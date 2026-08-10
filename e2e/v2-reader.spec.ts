@@ -165,6 +165,37 @@ test('v2 exports: handout excludes answers, leader includes them', async ({ page
   await expect(page.getByText('He served as priest.')).toBeVisible();
 });
 
+test('v2: theme & aim + set-up reach the documents, and the Check lens audits', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.fill('#v2-intro', 'A study on Gods timing.');
+
+  await page.getByRole('button', { name: /theme & aim/i }).click();
+  await page.fill('#v2-theme', 'God keeps his covenant promise.');
+
+  await page.getByRole('button', { name: /map/i }).first().click();
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').fill('What is Zechariah doing?');
+  await page.locator('input[placeholder^="Expected answer"]').fill('Serving as priest.');
+
+  // The Check lens runs the audit on the study.
+  await page.getByRole('button', { name: /check/i }).first().click();
+  await expect(page.getByText(/need a look/i)).toBeVisible();
+  await expect(page.getByText(/serves the theme & aim/i)).toBeVisible();
+
+  await page.waitForTimeout(1000);
+  const id = page.url().match(/study\/([^/]+)\//)![1];
+
+  // The leader carries the theme; the handout carries the intro.
+  await page.goto(`./#/print/${id}/leader`);
+  await expect(page.getByText('God keeps his covenant promise.')).toBeVisible();
+  await page.goto(`./#/print/${id}/handout`);
+  await expect(page.getByText('A study on Gods timing.')).toBeVisible();
+});
+
 test('v1 is archived under /v1/ and reachable', async ({ page }) => {
   await page.goto('./#/v1/');
   await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();

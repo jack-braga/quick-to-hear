@@ -17,6 +17,7 @@ import { LENSES, LIVE_LENSES, type LensId } from '@/v2/lenses';
 import { BuildLens } from '@/v2/lenses/BuildLens';
 import { CheckLens } from '@/v2/lenses/CheckLens';
 import { SetupLens } from '@/v2/lenses/SetupLens';
+import { ThemeAimLens } from '@/v2/lenses/ThemeAimLens';
 import { buildReaderModel } from '@/v2/reader/model';
 import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
 import { ReaderCanvas } from '@/v2/reader/ReaderCanvas';
@@ -256,6 +257,11 @@ export function ReaderShell({ study }: { study: Study }) {
     );
     margin = (
       <MarginPlaceholder text="The running order is the sequence that exports. Reorder it on the left; jump back to any question to refine it in Map." />
+    );
+  } else if (lens === 'theme') {
+    center = <ThemeAimLens study={study} />;
+    margin = (
+      <MarginPlaceholder text="The theme & aim are the study's spine — every question should serve them. They carry into the leader's notes." />
     );
   } else if (lens === 'check') {
     center = <CheckLens study={study} />;

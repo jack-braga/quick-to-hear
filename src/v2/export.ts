@@ -28,7 +28,9 @@ export function projectForExport(study: Study): Study {
     type: a.questionType ?? 'observation',
     expectedAnswer: a.expectedAnswer ?? '',
     weight: a.weight ?? 'medium',
-    loadBearing: false,
+    loadBearing: a.loadBearing ?? false,
+    ...(a.gospelPlain ? { gospelPlain: true } : {}),
+    ...(a.aimComponent ? { aimComponent: a.aimComponent } : {}),
   }));
 
   const crossRefs = study.annotations.filter(
@@ -49,7 +51,13 @@ export function projectForExport(study: Study): Study {
   return {
     ...study,
     setup: { ...study.setup, reference: study.setup.title.trim() || study.setup.reference },
-    build: { ...emptyStudyBuild(), questions, order: questions.map((q) => q.id), supportPassages },
+    build: {
+      ...emptyStudyBuild(),
+      questions,
+      order: questions.map((q) => q.id),
+      supportPassages,
+      prayerPoint: study.prayerPoint,
+    },
   };
 }
 

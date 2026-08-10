@@ -9,10 +9,11 @@ import {
   setPrimary,
   translationOrder,
 } from '@/lib/passage';
+import { DURATION_OPTIONS, GENRE_LABELS, GENRE_OPTIONS, GROUP_OPTIONS } from '@/lib/setup-options';
 import { BOOKS, inferGenreForBook, parseReference, type ParsedReference } from '@/lib/verse';
 import { allVerses } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Study } from '@/types/study';
+import type { Genre, GroupComposition, Study } from '@/types/study';
 import { PastePanel } from '@/v2/lenses/PastePanel';
 
 /**
@@ -297,6 +298,105 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
             onChange={(e) => updateSetup({ title: e.target.value })}
           />
         </div>
+
+        {/* 4 — the shape of the study (drives guidance, timing, and the handout) */}
+        {primary && (
+          <div className="space-y-4 border-t border-line pt-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="v2-genre" className={LABEL}>
+                  Genre <span className="normal-case tracking-normal text-ink-faint">(inferred)</span>
+                </label>
+                <select
+                  id="v2-genre"
+                  className={FIELD}
+                  value={study.setup.genre ?? ''}
+                  onChange={(e) => updateSetup({ genre: (e.target.value || null) as Genre | null })}
+                >
+                  <option value="">Choose a genre…</option>
+                  {GENRE_OPTIONS.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+                {study.setup.genre && (
+                  <p className="text-[12px] text-ink-faint">Shapes the COMA prompts: {GENRE_LABELS[study.setup.genre]}.</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="v2-duration" className={LABEL}>
+                  Duration
+                </label>
+                <select
+                  id="v2-duration"
+                  className={FIELD}
+                  value={study.setup.durationMinutes ?? ''}
+                  onChange={(e) => updateSetup({ durationMinutes: e.target.value ? Number(e.target.value) : null })}
+                >
+                  <option value="">Choose a length…</option>
+                  {DURATION_OPTIONS.map((d) => (
+                    <option key={d.value} value={d.value}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="v2-group" className={LABEL}>
+                Group composition
+              </label>
+              <select
+                id="v2-group"
+                className={FIELD}
+                value={study.setup.groupComposition ?? ''}
+                onChange={(e) =>
+                  updateSetup({ groupComposition: (e.target.value || null) as GroupComposition | null })
+                }
+              >
+                <option value="">Choose…</option>
+                {GROUP_OPTIONS.map((g) => (
+                  <option key={g.value} value={g.value}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[12px] text-ink-faint">
+                A mixed or not-yet-Christian group asks the study to make the gospel plain (the audit checks it).
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="v2-series" className={LABEL}>
+                Series note <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
+              </label>
+              <input
+                id="v2-series"
+                className={FIELD}
+                value={study.setup.seriesNote}
+                placeholder="e.g. Week 3 of 8 through Luke 1–2"
+                onChange={(e) => updateSetup({ seriesNote: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="v2-intro" className={LABEL}>
+                Introduction{' '}
+                <span className="normal-case tracking-normal text-ink-faint">(optional — printed on the handout)</span>
+              </label>
+              <textarea
+                id="v2-intro"
+                rows={2}
+                className={`${FIELD} h-auto min-h-[4rem] py-2`}
+                value={study.setup.introText}
+                placeholder="A sentence or two to set the scene for the group."
+                onChange={(e) => updateSetup({ introText: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
 
         {primary && (
           <div className="flex justify-end pt-2">

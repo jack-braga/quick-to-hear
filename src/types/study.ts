@@ -161,6 +161,10 @@ export const AnnotationSchema = z.object({
   expectedAnswer: z.string().optional(),
   questionType: QuestionTypeSchema.optional(),
   weight: WeightSchema.optional(),
+  // question metadata that feeds the leader's notes + the audit (SPEC 7). Additive-optional.
+  loadBearing: z.boolean().optional(),
+  gospelPlain: z.boolean().optional(),
+  aimComponent: AimComponentSchema.optional(),
   // cross-reference — the other passage + an optional bring-them-back question.
   reference: z.string().optional(),
   returnQuestion: z.string().optional(),
@@ -335,6 +339,8 @@ export const StudySchema = z.object({
   // v2.6 Build lens: the running order of question-annotation ids (the sequence that exports).
   // Additive; empty means "default to verse order" (see `@/v2/build`).
   runningOrder: z.array(z.string()).default([]),
+  // v2 prayer point (drawn from the passage) — printed on both documents. Additive.
+  prayerPoint: z.string().default(''),
   coma: ComaSchema.default({ context: [], observation: [], meaning: [], application: [] }),
   themeAim: ThemeAimSchema.default({}),
   build: BuildSchema.default(emptyStudyBuild()),

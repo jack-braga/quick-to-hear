@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import type { Annotation, QuestionType } from '@/types/study';
+import type { AimComponent, Annotation, QuestionType } from '@/types/study';
 import { isQuestionReady } from '@/v2/annotations';
 import { moveBefore, moveBy, orderedQuestions, QUESTION_TYPE_OPTIONS } from '@/v2/build';
 import { formatVerseIds } from '@/v2/reader/selection';
@@ -197,6 +197,48 @@ export function BuildLens({
                     placeholder="Expected answer (what the text gives)…"
                     onChange={(e) => onEdit(a.id, { expectedAnswer: e.target.value })}
                   />
+                  {/* leader/audit metadata */}
+                  <div className="flex flex-wrap items-center gap-2 text-[12px]">
+                    <button
+                      type="button"
+                      aria-pressed={a.loadBearing === true}
+                      onClick={() => onEdit(a.id, { loadBearing: !a.loadBearing })}
+                      title="A question you won't cut for time (the audit wants at least two)"
+                      className={cn(
+                        'rounded-full border px-2 py-0.5',
+                        a.loadBearing
+                          ? 'border-lapis bg-lapis-wash text-lapis-ink'
+                          : 'border-line text-ink-soft hover:border-lapis-edge',
+                      )}
+                    >
+                      ★ Load-bearing
+                    </button>
+                    <select
+                      aria-label="Aim served"
+                      className="h-7 rounded-md border border-line bg-leaf px-2 font-sans text-[12px] text-ink outline-none focus:border-lapis-edge"
+                      value={a.aimComponent ?? ''}
+                      onChange={(e) => onEdit(a.id, { aimComponent: (e.target.value || undefined) as AimComponent | undefined })}
+                    >
+                      <option value="">Aim: know/feel/do…</option>
+                      <option value="know">Know</option>
+                      <option value="feel">Feel</option>
+                      <option value="do">Do</option>
+                    </select>
+                    <button
+                      type="button"
+                      aria-pressed={a.gospelPlain === true}
+                      onClick={() => onEdit(a.id, { gospelPlain: !a.gospelPlain })}
+                      title="This question makes the gospel plain"
+                      className={cn(
+                        'rounded-full border px-2 py-0.5',
+                        a.gospelPlain
+                          ? 'border-lapis bg-lapis-wash text-lapis-ink'
+                          : 'border-line text-ink-soft hover:border-lapis-edge',
+                      )}
+                    >
+                      ✝ Gospel-plain
+                    </button>
+                  </div>
                 </div>
               </div>
             </li>

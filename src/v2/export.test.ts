@@ -55,6 +55,20 @@ describe('projectForExport', () => {
     });
   });
 
+  it('carries the prayer point and question metadata (load-bearing, aim, gospel-plain) into the build', () => {
+    const withMeta: Annotation[] = [
+      { id: 'q1', kind: 'question', verseIds: ['LUKE.1.8'], text: 'Q', expectedAnswer: 'A', loadBearing: true, gospelPlain: true, aimComponent: 'do' },
+    ];
+    const s = studyWith(withMeta);
+    const projected = projectForExport({ ...s, prayerPoint: 'Pray we would trust.' });
+    if (projected.build.format !== 'study') return;
+    expect(projected.build.prayerPoint).toBe('Pray we would trust.');
+    const q = projected.build.questions[0]!;
+    expect(q.loadBearing).toBe(true);
+    expect(q.gospelPlain).toBe(true);
+    expect(q.aimComponent).toBe('do');
+  });
+
   it('uses the study title as the document heading when set', () => {
     const s = studyWith(anns);
     const projected = projectForExport({ ...s, setup: { ...s.setup, title: 'The birth foretold' } });
