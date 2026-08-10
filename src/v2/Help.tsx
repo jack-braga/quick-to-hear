@@ -24,7 +24,30 @@ export function Help({ helpKey, label, className }: { helpKey: string; label?: s
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
   const panelId = useId();
+
+  // Position the popover in the viewport (fixed), clamped to the screen — it must escape the
+  // margin panel's overflow clipping and never run off the right edge (owner bug).
+  useEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const b = btnRef.current;
+      if (!b) return;
+      const r = b.getBoundingClientRect();
+      const width = Math.min(300, window.innerWidth - 24);
+      const left = Math.min(Math.max(r.left - 6, 12), window.innerWidth - width - 12);
+      setPos({ top: r.bottom + 6, left, width });
+    };
+    place();
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -50,6 +73,7 @@ export function Help({ helpKey, label, className }: { helpKey: string; label?: s
   return (
     <span ref={rootRef} className={cn('relative inline-flex align-middle', className)}>
       <button
+        ref={btnRef}
         type="button"
         aria-label={label ? `Guidance: ${label}` : 'Guidance'}
         aria-expanded={open}
@@ -58,17 +82,18 @@ export function Help({ helpKey, label, className }: { helpKey: string; label?: s
           setOpen((o) => !o);
           setMore(false);
         }}
-        className="grid size-[15px] place-items-center rounded-full border border-lapis-edge bg-leaf font-mono text-[9.5px] leading-none text-lapis-ink hover:bg-lapis-wash"
+        className="grid size-[15px] place-items-center rounded-full border border-lapis-edge bg-leaf font-mono text-[9.5px] normal-case leading-none tracking-normal text-lapis-ink hover:bg-lapis-wash"
       >
         i
       </button>
 
-      {open && (
+      {open && pos && (
         <div
           id={panelId}
           role="note"
           data-help={helpKey}
-          className="absolute left-[-6px] top-[22px] z-50 w-[290px] rounded-lg border border-line bg-leaf p-3 text-left shadow-[0_2px_6px_rgba(30,27,20,0.08),0_20px_44px_-14px_rgba(30,27,20,0.34)]"
+          style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width }}
+          className="z-[60] rounded-lg border border-line bg-leaf p-3 text-left font-sans normal-case tracking-normal shadow-[0_2px_6px_rgba(30,27,20,0.08),0_20px_44px_-14px_rgba(30,27,20,0.34)]"
         >
           <div className={cn(PROSE, 'text-ink')}>
             <ReactMarkdown>{entry.inline}</ReactMarkdown>
