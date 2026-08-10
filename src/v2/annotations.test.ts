@@ -3,13 +3,17 @@ import { describe, expect, it } from 'vitest';
 import {
   anchorToneByVerse,
   anchoredAnnotations,
+  annotationOrigin,
+  filterByOrigins,
   floatingAnnotations,
   isQuestionReady,
   makeAnnotation,
+  presentOrigins,
   sortAnchored,
   toneFor,
+  verseTones,
 } from '@/v2/annotations';
-import type { Annotation } from '@/types/study';
+import type { Annotation, AnnotationOrigin } from '@/types/study';
 
 const note = (over: Partial<Annotation> = {}): Annotation => ({
   id: 'n',
@@ -70,7 +74,50 @@ describe('isQuestionReady', () => {
   });
 });
 
+describe('annotationOrigin', () => {
+  it('uses the stored origin, else derives from kind', () => {
+    expect(annotationOrigin(note({ origin: 'theme' }))).toBe('theme'); // stored wins
+    expect(annotationOrigin(note({ kind: 'question' }))).toBe('questions'); // derived
+    expect(annotationOrigin(note({ comaType: 'meaning' }))).toBe('coma'); // a COMA-typed note
+    expect(annotationOrigin(note())).toBe('map'); // plain note falls back to Map
+  });
+});
+
+describe('presentOrigins + filterByOrigins', () => {
+  const anns = [
+    note({ id: 'm', origin: 'map' }),
+    note({ id: 'c', origin: 'coma' }),
+    note({ id: 'q', kind: 'question' }), // derived → questions
+  ];
+  it('lists present origins in flow order', () => {
+    expect(presentOrigins(anns)).toEqual(['map', 'coma', 'questions']);
+  });
+  it('filters to the active origins; empty set shows all', () => {
+    expect(filterByOrigins(anns, new Set<AnnotationOrigin>(['coma'])).map((a) => a.id)).toEqual(['c']);
+    expect(filterByOrigins(anns, new Set<AnnotationOrigin>()).map((a) => a.id)).toEqual(['m', 'c', 'q']);
+  });
+});
+
+describe('verseTones', () => {
+  it('collects the distinct tones per verse, highest-priority first', () => {
+    const anns: Annotation[] = [
+      note({ id: 'a', verseIds: ['LUKE.1.5'] }), // lapis
+      note({ id: 'b', kind: 'question', verseIds: ['LUKE.1.5'] }), // amber
+      note({ id: 'c', flag: 'confusing', verseIds: ['LUKE.1.5'] }), // rubric
+      note({ id: 'd', verseIds: ['LUKE.1.6'] }), // lapis only
+    ];
+    expect(verseTones(anns).get('LUKE.1.5')).toEqual(['rubric', 'amber', 'lapis']); // 3-tone stripe
+    expect(verseTones(anns).get('LUKE.1.6')).toEqual(['lapis']); // single tone → flat
+  });
+});
+
 describe('makeAnnotation', () => {
+  it('carries an explicit origin when given', () => {
+    expect(makeAnnotation('o', { kind: 'note', verseIds: [], origin: 'coma' })).toMatchObject({
+      origin: 'coma',
+    });
+    expect(makeAnnotation('o', { kind: 'note', verseIds: [] }).origin).toBeUndefined();
+  });
   it('seeds per-kind fields', () => {
     expect(makeAnnotation('1', { kind: 'note', verseIds: ['LUKE.1.5'], flag: 'confusing' })).toEqual({
       id: '1',

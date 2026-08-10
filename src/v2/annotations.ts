@@ -1,5 +1,11 @@
 import { compareVerseIds } from '@/lib/verse/ids';
-import type { Annotation, AnnotationKind, NoteFlag } from '@/types/study';
+import {
+  ANNOTATION_ORIGINS,
+  type Annotation,
+  type AnnotationKind,
+  type AnnotationOrigin,
+  type NoteFlag,
+} from '@/types/study';
 
 /**
  * Pure helpers for the v2 annotation layer (ROADMAP-v2 §2) — the load-bearing logic the reader
@@ -19,6 +25,60 @@ export function toneFor(a: Annotation): AnnotationTone {
 
 /** Priority when a verse carries several annotations: the resting tint shows the most notable. */
 const TONE_PRIORITY: Record<AnnotationTone, number> = { rubric: 3, amber: 2, lapis: 1 };
+
+/** Tones highest-priority first — the stable order the diagonal multi-tone stripe cycles through. */
+const TONES_BY_PRIORITY: AnnotationTone[] = ['rubric', 'amber', 'lapis'];
+
+// --- Origin (which lens a card was made in) — v2 Layout-B "everything is a card" ---------------
+
+/** The card's origin lens. Uses the stored `origin`, else derives it from the kind: a question →
+ *  the Questions lens, a COMA-typed note → COMA, anything else → Map. */
+export function annotationOrigin(a: Annotation): AnnotationOrigin {
+  if (a.origin) return a.origin;
+  if (a.kind === 'question') return 'questions';
+  if (a.comaType) return 'coma';
+  return 'map';
+}
+
+/** Human label for an origin (the panel chip + the source line). */
+export const ORIGIN_LABEL: Record<AnnotationOrigin, string> = {
+  map: 'Map',
+  coma: 'COMA',
+  theme: 'Theme & aim',
+  questions: 'Questions',
+};
+
+/** The origins actually present among these cards, in canonical (flow) order — the chip set. */
+export function presentOrigins(annotations: Annotation[]): AnnotationOrigin[] {
+  const seen = new Set(annotations.map(annotationOrigin));
+  return ANNOTATION_ORIGINS.filter((o) => seen.has(o));
+}
+
+/** Keep only cards whose origin is in `origins` (empty set = show all). */
+export function filterByOrigins(annotations: Annotation[], origins: Set<AnnotationOrigin>): Annotation[] {
+  if (origins.size === 0) return annotations;
+  return annotations.filter((a) => origins.has(annotationOrigin(a)));
+}
+
+/**
+ * The set of **distinct tones** each verse carries, highest-priority first. A verse with two or
+ * more tones renders the diagonal multi-tone stripe; one tone stays a flat wash. (Supersedes the
+ * single-tone `anchorToneByVerse` for the canvas — that only kept the top tone.)
+ */
+export function verseTones(annotations: Annotation[]): Map<string, AnnotationTone[]> {
+  const acc = new Map<string, Set<AnnotationTone>>();
+  for (const a of annotations) {
+    const tone = toneFor(a);
+    for (const id of a.verseIds) {
+      let set = acc.get(id);
+      if (!set) acc.set(id, (set = new Set()));
+      set.add(tone);
+    }
+  }
+  const out = new Map<string, AnnotationTone[]>();
+  for (const [id, set] of acc) out.set(id, TONES_BY_PRIORITY.filter((t) => set.has(t)));
+  return out;
+}
 
 /** UI copy per annotation kind/flag (tag shown on the card + the editor placeholder). */
 export function annotationMeta(a: Annotation): { tag: string; placeholder: string } {
@@ -82,11 +142,14 @@ export interface MakeAnnotationInput {
   kind: AnnotationKind;
   verseIds: string[];
   flag?: NoteFlag;
+  /** The lens creating the card; omit to let `annotationOrigin` derive it from the kind. */
+  origin?: AnnotationOrigin;
 }
 
 /** Build a fresh annotation with sensible per-kind defaults (id supplied by the caller). */
 export function makeAnnotation(id: string, input: MakeAnnotationInput): Annotation {
   const base: Annotation = { id, kind: input.kind, verseIds: input.verseIds, text: '' };
+  if (input.origin) base.origin = input.origin;
   if (input.kind === 'note') return { ...base, flag: input.flag };
   if (input.kind === 'question') return { ...base, expectedAnswer: '' };
   return { ...base, reference: '', returnQuestion: '' }; // cross-ref

@@ -143,6 +143,13 @@ export type AnnotationKind = z.infer<typeof AnnotationKindSchema>;
 export const NoteFlagSchema = z.enum(['confusing', 'comment']);
 export type NoteFlag = z.infer<typeof NoteFlagSchema>;
 
+/** Which lens a card was made in — its **origin** (v2 Layout-B: everything is a card with an
+ *  origin + optional anchors). Drives the panel's chip filter + the source-step line. Optional +
+ *  additive; when absent it is derived from the card's kind (`annotationOrigin`). */
+export const ANNOTATION_ORIGINS = ['map', 'coma', 'theme', 'questions'] as const;
+export const AnnotationOriginSchema = z.enum(ANNOTATION_ORIGINS);
+export type AnnotationOrigin = z.infer<typeof AnnotationOriginSchema>;
+
 /**
  * A v2 annotation. It anchors to **main-passage verses** by canonical id (translation-
  * independent — no reconcile needed); an empty `verseIds` is a **floating / study-level** note
@@ -152,6 +159,10 @@ export type NoteFlag = z.infer<typeof NoteFlagSchema>;
 export const AnnotationSchema = z.object({
   id: z.string(),
   kind: AnnotationKindSchema,
+  // the lens this card was made in (v2 Layout-B). Optional + additive — derived from `kind` when
+  // absent (see `annotationOrigin`). Anchor (`verseIds`) is independent: 0 = unanchored, not a
+  // separate "study-level" category.
+  origin: AnnotationOriginSchema.optional(),
   verseIds: z.array(z.string()).default([]),
   text: z.string().default(''),
   // note — a `flag` makes it a "mark confusing" / a comment; `comaType` optionally tags it.
