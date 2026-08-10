@@ -51,12 +51,35 @@ chip-again confirms. **This exact capability applies to every card kind — note
 answer alike** (owner-confirmed 2026-08-11). Capture should reuse the existing drag-range / ⌘-disjoint
 selection primitive (not just single-click). *(The §6 "edit anchor verses" item is promoted to active.)*
 
-**COMA answer-cards model decided (owner, 2026-08-11): "answer-on-demand."** In the COMA lens the
-genre's Helm prompts sit as quiet rows grouped by heading (Context/Observation/Meaning/Application);
-each has a **✎ Answer** affordance. Clicking it spawns an **answer-card** (answer field + an editable
-anchor via the click-chip gesture above) for that prompt; unanswered prompts stay as quiet one-liners.
-The Helm attribution renders at the foot (inviolable rule 8). Chosen over "every prompt a card" (too
-many empty boxes) and "prompts up top / free answers." *(See open questions below — still to confirm.)*
+**COMA answer-cards model decided (owner, 2026-08-11): "answer-on-demand," multiple allowed.** In the
+COMA lens the genre's Helm prompts sit as quiet rows grouped by heading (Context/Observation/Meaning/
+Application); each has a **✎ Answer** affordance. Clicking it spawns an **answer-card** (answer field +
+an editable anchor via the click-chip gesture above), focusing the answer field first (**write-first**,
+owner-confirmed); an answered prompt keeps a quiet **✎ answer again** so **one prompt can hold several
+answer-cards** (owner-confirmed — each observation gets its own anchor + downstream seed). Unanswered
+prompts stay as quiet one-liners. Helm attribution renders at the foot (inviolable rule 8). Chosen over
+"every prompt a card" and "prompts up top / free answers."
+
+**Batch-2 owner input (2026-08-11) — still to resolve (clarifications in flight):**
+- **Anchor is optional + editable on EVERY card (generalise).** Any card — COMA answer, note, question —
+  may sit with **0, 1, or many** anchor verses, and you can **add / remove / change** them after the
+  fact via the click-chip capture. Proposed unifying rule: **0 anchors = a floating / study-level card**
+  (shows under a "study-level" filter / in the Study-notes area); anchoring a floating note later just
+  moves it. *Owner to confirm that "unanchored = study-level" is the right semantics.*
+- **Multiple text-types (genres) in Set-up → multi-set COMA (promote from §7 deferred).** Set-up should
+  let you pick **more than one** genre (e.g. Gospel narrative **+** Hebrew poetry for the Magnificat).
+  Then COMA shows **each selected genre's** prompt set, and **every prompt is labelled with the
+  text-type it comes from**. Model change: `setup.genre` → `setup.genres` (additive; clean break, no
+  migration). Affects: `comaSetForGenre` → iterate genres; the Read-lens reading tip (which genre's?);
+  whether one genre is "primary." *Owner to confirm the COMA layout (group by genre vs by heading) + is
+  there a primary genre.*
+- **Selection mechanics — reaffirmed + section-range question.** Locked (ROADMAP §2, built in
+  `selection.ts`): **drag = range**, **⇧ = extend from last anchor**, **⌘/Ctrl = add a disjoint range /
+  toggle a single verse**, plain click on the sole selected verse **deselects**. The **anchor-capture**
+  gesture reuses exactly these. Open: selecting a **verse range for a section** — today sections are
+  made by a hover "＋ divide here" + merge; clicking a section band selects its range (locked shorthand).
+  *Owner to confirm whether to also add a "select a range → make it a section" action, or keep
+  divide/merge only.*
 
 **Increment #4 is the point of Layout B**; 1–3 were the groundwork (reclaim width, unify menus). The
 `v2-panel-filters.html` mockup specifies it exactly: a 380px right panel, chips `All · Map · COMA ·
