@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — increment #4 panel-scope options (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.16); --lapis-edge: rgba(144,176,239,0.38);
+        --amber-wash: rgba(221,187,97,0.17); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.42);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.16); --rubric-edge: rgba(226,128,95,0.4);
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto auto 1fr; }
+
+      /* control strip to drive the comparison */
+      .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 9px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+      .controls .grp { display: flex; align-items: center; gap: 6px; }
+      .controls .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); }
+      .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .seg button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 12.5px; padding: 5px 11px; }
+      .seg button + button { border-left: 1px solid var(--line); }
+      .seg button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg button.on { color: #16181d; }
+      .desc { flex: 1 1 320px; min-width: 240px; font-size: 12px; color: var(--ink-soft); }
+      .desc b { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; }
+
+      .topbar { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .ref { font-family: var(--font-scripture); font-size: 18px; }
+      .grow { flex: 1; }
+      .lenses { display: flex; gap: 3px; }
+      .lens { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 7px; background: none; color: var(--ink-faint); font-size: 14px; }
+      .lens.active { color: #fff; background: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #16181d; }
+      .hbtn { height: 28px; padding: 0 9px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 11.5px; }
+
+      .work { display: grid; overflow: hidden; }
+      .work.single { grid-template-columns: minmax(0,1fr); }
+      .work.paneled { grid-template-columns: minmax(0,1fr) 360px; }
+      .center { overflow-y: auto; padding: 20px 22px 50px; display: flex; flex-direction: column; align-items: center; }
+      .leaf { width: 100%; max-width: 40rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 22px clamp(20px,3vw,40px) 34px; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 24px; margin: 0 0 2px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.18rem; line-height: 1.7; margin-top: 16px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.58em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v { border-radius: 4px; padding: 1px 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+      .v.amber { background: var(--amber-wash); }
+      .v.rubric { background: var(--rubric-wash); }
+      .v.lapis { background: var(--lapis-wash); }
+      .v.multi { background: repeating-linear-gradient(45deg, var(--amber-wash) 0 7px, var(--rubric-wash) 7px 14px, var(--lapis-wash) 14px 21px); }
+
+      /* the compact strip above the passage (Read counter / COMA prompts) used in options B/C */
+      .strip { width: 100%; max-width: 40rem; margin-bottom: 12px; background: var(--leaf); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 9px 13px; }
+      .strip .sh { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); margin-bottom: 6px; }
+      .strip.read { display: flex; align-items: center; gap: 12px; }
+      .strip.read .big { font-family: var(--font-scripture); font-size: 22px; line-height: 1; }
+      .strip.read .tip { font-size: 12px; color: var(--ink-soft); flex: 1; }
+      .strip.read .btn { background: var(--lapis); color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+      :root[data-theme='night'] .strip.read .btn { color: #16181d; }
+      .strip.coma .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .strip.coma .col .ch { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: var(--lapis-ink); margin-bottom: 3px; }
+      .strip.coma .col .p { font-size: 11px; color: var(--ink-soft); line-height: 1.35; }
+      .strip.coma .att { margin-top: 7px; font-size: 9.5px; font-style: italic; color: var(--ink-faint); border-top: 1px solid var(--line); padding-top: 5px; }
+
+      /* bespoke Read / COMA margin panels (options A / C) */
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+      .paneltitle { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); padding: 12px 14px 0; }
+      .pbody { overflow-y: auto; padding: 12px 14px; }
+      .readcard { border: 1px solid var(--line); background: var(--leaf); border-radius: 10px; padding: 14px; text-align: center; }
+      .readcard .big { font-family: var(--font-scripture); font-size: 30px; line-height: 1; }
+      .readcard .u { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; color: var(--ink-faint); margin-top: 3px; }
+      .readcard .btn { margin-top: 10px; width: 100%; background: var(--lapis); color: #fff; border: none; border-radius: 8px; padding: 7px; font-size: 12.5px; }
+      :root[data-theme='night'] .readcard .btn { color: #16181d; }
+      .tipbox { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 12px; color: var(--ink-soft); }
+      .comaG { margin-bottom: 12px; }
+      .comaG .ch { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--lapis-ink); margin-bottom: 4px; }
+      .comaG .p { border: 1px solid var(--line); background: var(--leaf); border-radius: 7px; padding: 5px 8px; font-size: 11.5px; margin-bottom: 5px; }
+
+      /* filtered card panel (the increment-#4 surface) */
+      .filters { border-bottom: 1px solid var(--line); padding: 11px 13px; }
+      .filters .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+      .chip { font-family: var(--font-mono); font-size: 10.5px; border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); border-radius: 999px; padding: 3px 9px; }
+      .chip.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .opts { display: flex; gap: 12px; margin-top: 10px; font-size: 11.5px; color: var(--ink-soft); }
+      .opt { display: inline-flex; align-items: center; gap: 6px; }
+      .sw { width: 28px; height: 16px; border-radius: 999px; background: var(--line); position: relative; border: none; }
+      .sw.on { background: var(--lapis); }
+      .sw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: left .15s; }
+      .sw.on::after { left: 14px; }
+      .cards { overflow-y: auto; padding: 12px 13px; }
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 9px 11px; box-shadow: var(--shadow); margin-bottom: 9px; }
+      .card.amber { border-left-color: var(--amber-edge); }
+      .card.rubric { border-left-color: var(--rubric-edge); }
+      .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+      .anchor { font-family: var(--font-mono); font-size: 10px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; }
+      .tag { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+      .tag.amber { color: var(--amber-ink); }
+      .q { font-size: 13px; }
+      .src { margin-top: 5px; font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="controls">
+        <div class="grp"><span class="lbl">Option</span>
+          <div class="seg" id="optSeg">
+            <button data-opt="A" class="on">A · Map only</button>
+            <button data-opt="B">B · Map+Read+COMA</button>
+            <button data-opt="C">C · Map+COMA</button>
+          </div>
+        </div>
+        <div class="grp"><span class="lbl">Viewing lens</span>
+          <div class="seg" id="lensSeg">
+            <button data-lens="map" class="on">▤ Map</button>
+            <button data-lens="read">◉ Read</button>
+            <button data-lens="coma">▦ COMA</button>
+          </div>
+        </div>
+        <p class="desc" id="desc"></p>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <div class="grow"></div>
+        <nav class="lenses" id="lensIcons">
+          <button class="lens" data-lens="setup">⚙</button>
+          <button class="lens" data-lens="read">◉</button>
+          <button class="lens" data-lens="map">▤</button>
+          <button class="lens" data-lens="coma">▦</button>
+          <button class="lens" data-lens="theme">◎</button>
+          <button class="lens" data-lens="build">▥</button>
+          <button class="lens" data-lens="check">✓</button>
+        </nav>
+        <div class="grow"></div>
+        <button class="hbtn">Aa Text ▾</button>
+      </div>
+
+      <div class="work" id="work">
+        <div class="center" id="center"></div>
+        <div class="panel" id="rightpanel" style="display:none"></div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+
+      let opt = 'A', lens = 'map';
+
+      const PASSAGE = `
+        <span class="v" data-v="7"><sup>7</sup>But they had no child, because Elizabeth was barren, and they both were well advanced in years. </span>
+        <span class="v amber" data-v="8"><sup>8</sup>Now while he executed the priest's office before God in the order of his division, </span>
+        <span class="v amber" data-v="9"><sup>9</sup>his lot was to enter into the temple of the Lord and burn incense. </span>
+        <span class="v rubric" data-v="11"><sup>11</sup>An angel of the Lord appeared to him, standing on the right side of the altar of incense. </span>
+        <span class="v" data-v="12"><sup>12</sup>Zacharias was troubled when he saw him, and fear fell upon him. </span>
+        <span class="v multi" data-v="13"><sup>13</sup>But the angel said to him, “Don't be afraid, Zacharias, your request has been heard…” </span>`;
+
+      const READ_STRIP = `<div class="strip read"><div><div class="sh">Pray &amp; read</div><div class="big">2</div></div>
+        <div class="tip">Read for the story: who does what, and what has changed by the end.</div>
+        <button class="btn">＋ I've read it</button></div>`;
+      const COMA_STRIP = `<div class="strip coma"><div class="sh">COMA — work the text</div>
+        <div class="grid">
+          <div class="col"><div class="ch">Context</div><div class="p">What has happened just prior?</div></div>
+          <div class="col"><div class="ch">Observation</div><div class="p">What do you learn about the characters?</div></div>
+          <div class="col"><div class="ch">Meaning</div><div class="p">What does this reveal about Jesus?</div></div>
+          <div class="col"><div class="ch">Application</div><div class="p">Is there an attitude to change?</div></div>
+        </div><div class="att">COMA questions from David Helm, One-to-One Bible Reading (used by permission).</div></div>`;
+
+      const READ_PANEL = `<div class="paneltitle">Pray &amp; read</div><div class="pbody">
+        <div class="readcard"><div class="big">2</div><div class="u">times read</div><button class="btn">＋ I've read it</button></div>
+        <div class="tipbox"><b>Reading this genre:</b> read for the story — who does what, and what has changed by the end.</div></div>`;
+      const COMA_PANEL = `<div class="paneltitle">COMA — work the text</div><div class="pbody">
+        <div class="comaG"><div class="ch">Context</div><div class="p">What has happened just prior to this section?</div></div>
+        <div class="comaG"><div class="ch">Observation</div><div class="p">What do you learn about the characters?</div><div class="p">Is there a conflict or high point?</div></div>
+        <div class="comaG"><div class="ch">Meaning</div><div class="p">What does this reveal about who Jesus is?</div></div>
+        <div class="comaG"><div class="ch">Application</div><div class="p">Is there an attitude you need to change?</div></div></div>`;
+
+      function filteredPanel() {
+        // chips reflect steps that actually have cards today (approach i): Map, Build, Study
+        return `<div class="filters"><span class="t">Show from step</span>
+          <div class="chips"><button class="chip on">All</button><button class="chip on">Map</button><button class="chip on">Build</button><button class="chip on">Study</button></div>
+          <div class="opts"><span class="opt"><button class="sw"></button>Reveal only on hover</span><span class="opt"><button class="sw on"></button>Hide filtered-out</span></div>
+        </div>
+        <div class="cards">
+          <div class="card rubric"><div class="card-top"><span class="anchor">Luke 1:11</span><span class="tag">Mark · unclear</span></div><div class="q">Why an angel here specifically?</div><div class="src">▸ 03 · Map</div></div>
+          <div class="card"><div class="card-top"><span class="anchor">Luke 1:8–9</span><span class="tag">Note</span></div><div class="q">Ordinary temple duty — faithfulness interrupted.</div><div class="src">▸ 03 · Map</div></div>
+          <div class="card amber"><div class="card-top"><span class="anchor">Luke 1:8–9</span><span class="tag amber">Question · Observation</span></div><div class="q">What is Zechariah doing, and where are the people?</div><div class="src">▸ 06 · Build</div></div>
+          <div class="card amber"><div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag amber">Question · Meaning</span></div><div class="q">Why “your prayer has been heard”?</div><div class="src">▸ 06 · Build</div></div>
+          <div class="card"><div class="card-top"><span class="tag">Study note</span></div><div class="q">Theme: God keeps covenant, answering long prayer in his timing.</div><div class="src">▸ study-level</div></div>
+        </div>`;
+      }
+
+      // for a given (opt, lens): does the right panel show, and is it filtered or bespoke? is there a strip?
+      function layoutFor(o, l) {
+        if (l === 'map') return { panel: 'filtered', strip: null };
+        if (l === 'read') {
+          if (o === 'B') return { panel: 'filtered', strip: READ_STRIP };
+          return { panel: 'read', strip: null };            // A, C
+        }
+        if (l === 'coma') {
+          if (o === 'A') return { panel: 'coma', strip: null };
+          return { panel: 'filtered', strip: COMA_STRIP };  // B, C
+        }
+        return { panel: 'filtered', strip: null };
+      }
+
+      const DESC = {
+        A: '<b>A · Map only.</b> Filtered card panel lives on Map. Read keeps its counter panel, COMA keeps its prompts panel. Smallest slice — least rework, but you only see prior cards while in Map.',
+        B: '<b>B · Map+Read+COMA.</b> All three annotation lenses get the filtered panel on the right; Read\'s counter and COMA\'s prompts become a compact strip above the passage. Most consistent, closest to full Layout B — biggest rework.',
+        C: '<b>C · Map+COMA.</b> Filtered panel on Map and COMA (so you see prior cards while doing COMA); Read stays the simple counter panel. Middle ground.',
+      };
+
+      function render() {
+        document.getElementById('desc').innerHTML = DESC[opt];
+        for (const b of document.querySelectorAll('#optSeg button')) b.classList.toggle('on', b.dataset.opt === opt);
+        for (const b of document.querySelectorAll('#lensSeg button')) b.classList.toggle('on', b.dataset.lens === lens);
+        for (const b of document.querySelectorAll('#lensIcons .lens')) b.classList.toggle('active', b.dataset.lens === lens);
+
+        const { panel, strip } = layoutFor(opt, lens);
+        const center = document.getElementById('center');
+        center.innerHTML = (strip || '') +
+          `<div class="leaf"><h1>Luke 1:5–25</h1><span class="meta">WEBBE · public domain</span><div class="scripture">${PASSAGE}</div></div>`;
+
+        const work = document.getElementById('work');
+        const rp = document.getElementById('rightpanel');
+        if (!panel) { work.className = 'work single'; rp.style.display = 'none'; return; }
+        work.className = 'work paneled'; rp.style.display = '';
+        rp.innerHTML = panel === 'filtered' ? filteredPanel() : panel === 'read' ? READ_PANEL : COMA_PANEL;
+        // wire the mock switches/chips so they feel alive
+        rp.querySelectorAll('.sw, .chip').forEach((el) => el.addEventListener('click', () => el.classList.toggle('on')));
+      }
+
+      document.querySelectorAll('#optSeg button').forEach((b) => b.addEventListener('click', () => { opt = b.dataset.opt; render(); }));
+      document.querySelectorAll('#lensSeg button').forEach((b) => b.addEventListener('click', () => { lens = b.dataset.lens; render(); }));
+      document.querySelectorAll('#lensIcons .lens').forEach((b) => b.addEventListener('click', () => { if (['map','read','coma'].includes(b.dataset.lens)) { lens = b.dataset.lens; render(); } }));
+      render();
+    </script>
+  </body>
+</html>
