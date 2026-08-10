@@ -33,9 +33,8 @@ now and card-ify them later.
 | **4** | **The single filtered card panel** — step-filter chips + "reveal only on hover" + "hide vs dim" filtered-out cards; every note/question/COMA-answer is a card with an anchor + tag + source-step line; **diagonal multi-colour highlight** for a verse shared by several tones (`.v.multi`) | ❌ **not built — "the big one"** |
 
 **Per-lens scope decided (owner, 2026-08-11), after the `v2-panel-scope-options.html` mockup:**
-- **Read** = **pure reading**. Hide *everything* overlaid — verse tones/highlights **and** cards.
-  Just the clean passage + the pray-and-read counter panel. (Currently Read still paints annotation
-  tones on the verses; those must be suppressed in the Read lens.)
+- ~~**Read** = **pure reading**.~~ **[shipped #4e `442ae48`]** — Read paints no verse tones (cards were
+  already absent — its margin is the ReadPanel). Just the clean passage + the pray-and-read counter.
 - **Map** = the filtered card panel as mocked (`v2-panel-filters.html`). Confirmed.
 - **COMA** = the genre's Helm prompts become **answer-cards** in the right panel (see §2 — this is the
   COMA-answer-cards feature, now in active design). Not merely a prompts-strip.

@@ -90,13 +90,13 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   answer-cards). `setup.genres[]`, Set-up chip multi-select, ComaPanel answer-on-demand with
   ✎ Answer / answer again + click-chip anchor, prompts tagged by genre + chip-filter, `origin:'coma'`
   answer-cards that recycle-forward.
-- **Slice 3b — the two panel switches** (see above): hover-reveal + hide-vs-dim in `MarginAnnotations`.
-- **#4d Build → pure assembly** — Build stops authoring (done — #4c) and becomes sequence/timing/cut +
+- ~~**#4e Read → strip tints/cards**~~ ✅ shipped `442ae48` — the Read lens paints no verse tones
+  (ReaderShell passes `NO_TONES` to the canvas for `lens==='read'`); cards were already absent (Read's
+  margin is the ReadPanel). Just the clean passage + the pray-and-read panel.
+- **#4d Build → pure assembly** — Build stopped authoring (done — #4c) and becomes sequence/timing/cut +
   optional filler (leader note / background box); **images deferred**. Only questions + filler enter the
-  running order.
-- **#4e Read → strip tints/cards** — the Read lens should suppress *all* overlays (verse tones **and**
-  cards): just the clean passage + the pray-and-read panel (V2-UX-BACKLOG §1). Currently Read still
-  paints the annotation tones.
+  running order. See `v2-build-recycle.html`.
+- **Slice 3b — the two panel switches** (see above): hover-reveal + hide-vs-dim in `MarginAnnotations`.
 - Still-open parallel item (V2-UX-BACKLOG §4): **sectioning is disabled in parallel** — enable
   any-verse divide/merge on the primary column while parallel.
 
