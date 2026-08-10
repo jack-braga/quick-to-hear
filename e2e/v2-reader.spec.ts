@@ -107,6 +107,38 @@ test('v2 command palette: insert a cross-reference and switch translation', asyn
   await expect(page.getByText('ASV · public domain')).toBeVisible();
 });
 
+test('v2 Build lens: questions order by verse, reorder, and persist', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+
+  const addQuestion = async (v: string) => {
+    await page.locator(`[data-v="${v}"]`).click();
+    await page.getByRole('button', { name: /question/i }).click();
+  };
+  // Created out of verse order (13 then 8).
+  await addQuestion('LUKE.1.13');
+  await addQuestion('LUKE.1.8');
+
+  const buildLens = () => page.getByRole('button', { name: /build/i }).click();
+  await buildLens();
+
+  // Default is verse order → v8 first.
+  await expect(page.locator('ol > li').first()).toContainText('Luke 1:8');
+
+  // Nudge the first (v8) down → v13 leads.
+  await page.locator('ol > li:nth-child(1) button[aria-label="Move down"]').click();
+  await expect(page.locator('ol > li').first()).toContainText('Luke 1:13');
+
+  // The running order survives a reload.
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await buildLens();
+  await expect(page.locator('ol > li').first()).toContainText('Luke 1:13');
+});
+
 test('v1 is archived under /v1/ and reachable', async ({ page }) => {
   await page.goto('./#/v1/');
   await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();

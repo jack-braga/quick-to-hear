@@ -112,7 +112,7 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.3 — The `/` command** ✅ | Slash palette over `bcv_parser` + the bundled book list: jump to verse/ref, insert a cross-reference, switch translation, create note/question/mark on the selection, go to a lens, book completion. | Pure `v2/reader/paletteItems.ts` (+tests); dialog with keyboard nav; `/` global + the command bar open it. The `@`-mention-in-content chips + promote-to-support are still open (need a richer text surface). |
 | **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Cross-reference (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`; the four action-bar kinds are wired. Recycle-forward / promote-to-support land with the Build lens (v2.6). |
 | **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
-| **v2.6 — Phases as lenses** | Flesh out the remaining lenses (full Set up, Read, COMA, Theme & aim, Build, Check) onto the canvas; keep every discipline (budget, the expected-answer hard block, coverage, audit, exports). Question ordering (Q5). | The shell + lens rail already exist (Set up is minimal, Map is real). Migrate lens-by-lens. |
+| **v2.6 — Phases as lenses** *(Set up ✅, Build ✅; Read/COMA/Theme/Check pending)* | Flesh out the remaining lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | Set up (with paste) + **Build** (running order) are done. Read/COMA are largely subsumed by the annotation surface; Theme & aim + Check remain. |
 | **v2.7 — Exports refresh** | Handout + leader restyled to the new language; carry the Stage-10 wins (coverage pips, support placement, pastoral). | |
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
@@ -231,11 +231,21 @@ to** a lens; and **book-name completion**. Pure `v2/reader/paletteItems.ts` (+ t
 parsing; a thin dialog with `↑ ↓ / ↵ / esc` renders it. Verified live (all actions, global `/`,
 0 console errors) + a new e2e.
 
-**Next up.** (a) **Cross-reference, richer** — the `@`-mention *inside* a note's content (chip +
-hover-peek + open) and **promote → Support passage** (needs a richer text surface than a
-`<textarea>`; pairs with the Build/export work). (b) **v2.5** — the Manuscript/flatten reading
-toggle + pre-suggested section breaks. (c) **v2.6** — flesh out the remaining lenses (Read, COMA,
-Theme & aim, Build with the running order + promotion, Check) onto the canvas.
+**Build lens (v2.6, done).** The question annotations as the **running order** — the sequence that
+exports. `study.runningOrder` (question-annotation ids) is the source of truth once touched;
+anything unordered appends in verse order, so the default is pure verse order. Reorder by
+drag-and-drop or ↑/↓; filter by COMA type; set each question's type + expected answer inline (the
+SPEC 6e readiness — *needs answer → ready*); jump back to a question's verses (→ Map); delete.
+Pure `v2/build.ts` (+ tests). Verified live (verse-order default, reorder + persist, type, ready
+flip, jump) + a new e2e.
+
+**Next up — the deliverable.** (a) **v2.7 Exports** — turn the study into the two printable
+documents (handout + leader). The running order + typed questions + expected answers now exist; a
+pure adapter can project the v2 annotations onto v1's tested export models
+(`handoutModel`/`leaderModel` → markdown/print) — this is the tool's reason to exist. (b)
+**Cross-reference, richer** — the `@`-mention inside a note's content + **promote → Support
+passage** (needs a richer text surface; feeds the handout). (c) **v2.5** — Manuscript/flatten
+reading toggle + pre-suggested section breaks. (d) The remaining lenses (Theme & aim, Check).
 
 ---
 

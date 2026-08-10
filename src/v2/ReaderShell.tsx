@@ -14,6 +14,7 @@ import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
 import { LENSES, LIVE_LENSES, type LensId } from '@/v2/lenses';
+import { BuildLens } from '@/v2/lenses/BuildLens';
 import { SetupLens } from '@/v2/lenses/SetupLens';
 import { buildReaderModel } from '@/v2/reader/model';
 import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
@@ -144,6 +145,8 @@ export function ReaderShell({ study }: { study: Study }) {
   const onRemoveAnnotation = (id: string) =>
     applyToCurrent((s) => ({ ...s, annotations: s.annotations.filter((a) => a.id !== id) }));
 
+  const onReorder = (ids: string[]) => applyToCurrent((s) => ({ ...s, runningOrder: ids }));
+
   const onJump = (verseId: string) => {
     const el = document.querySelector(`[data-v="${CSS.escape(verseId)}"]`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -152,6 +155,12 @@ export function ReaderShell({ study }: { study: Study }) {
       setFlashVerse(verseId);
       window.setTimeout(() => setFlashVerse((cur) => (cur === verseId ? null : cur)), 2000);
     }, 450);
+  };
+
+  // From the Build lens, jump to a question's verses: switch to Map, then scroll once it mounts.
+  const jumpFromBuild = (verseId: string) => {
+    setLens('map');
+    window.setTimeout(() => onJump(verseId), 60);
   };
 
   // ---- the "/" command palette ------------------------------------------------------------
@@ -233,6 +242,20 @@ export function ReaderShell({ study }: { study: Study }) {
   } else if (!passage || !model) {
     center = <EmptyLeaf onSetup={() => setLens('setup')} />;
     margin = <MarginPlaceholder text="No passage yet." />;
+  } else if (lens === 'build') {
+    center = (
+      <BuildLens
+        annotations={annotations}
+        runningOrder={study.runningOrder}
+        onReorder={onReorder}
+        onEdit={onEditAnnotation}
+        onRemove={onRemoveAnnotation}
+        onJump={jumpFromBuild}
+      />
+    );
+    margin = (
+      <MarginPlaceholder text="The running order is the sequence that exports. Reorder it on the left; jump back to any question to refine it in Map." />
+    );
   } else {
     const interactive = lens === 'map';
     center = (

@@ -332,6 +332,9 @@ export const StudySchema = z.object({
   // v2.4 unified annotation surface (Note / Question / Cross-ref + floating). Additive —
   // v1/old docs default to []; v2's reader reads this, not `map.marks`.
   annotations: z.array(AnnotationSchema).default([]),
+  // v2.6 Build lens: the running order of question-annotation ids (the sequence that exports).
+  // Additive; empty means "default to verse order" (see `@/v2/build`).
+  runningOrder: z.array(z.string()).default([]),
   coma: ComaSchema.default({ context: [], observation: [], meaning: [], application: [] }),
   themeAim: ThemeAimSchema.default({}),
   build: BuildSchema.default(emptyStudyBuild()),
