@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — Questions lens + collapsible origin-groups (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.16); --lapis-edge: rgba(144,176,239,0.38);
+        --amber-wash: rgba(221,187,97,0.17); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.42);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.16); --rubric-edge: rgba(226,128,95,0.4);
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto auto 1fr; }
+
+      .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 8px 18px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 12px; color: var(--ink-soft); }
+      .controls b { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; margin-left: auto; }
+
+      .topbar { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .ref { font-family: var(--font-scripture); font-size: 17px; }
+      .lenses { display: flex; gap: 3px; margin-left: 8px; }
+      .lens { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px; background: none; border: 1px solid transparent; color: var(--ink-faint); font-size: 13px; }
+      .lens.active { color: #fff; background: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #16181d; }
+      .grow { flex: 1; }
+      .pill { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 392px; overflow: hidden; }
+      .center { position: relative; overflow-y: auto; padding: 20px 22px 60px; display: flex; justify-content: center; }
+      .leaf { width: 100%; max-width: 39rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 22px clamp(20px,3vw,40px) 34px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 23px; margin: 0 0 2px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.17rem; line-height: 1.72; margin-top: 16px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.58em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v { border-radius: 4px; padding: 1px 2px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+      .v:hover { background: var(--lapis-wash); }
+      .v.sel { background: var(--lapis-wash); box-shadow: inset 0 0 0 2px var(--lapis-edge); }
+      .v.hot { box-shadow: inset 0 0 0 2px var(--amber-edge); }
+      .v.multi { background: repeating-linear-gradient(45deg, var(--amber-wash) 0 7px, var(--lapis-wash) 7px 14px); }
+
+      /* floating action bar on selection */
+      .actionbar { position: absolute; z-index: 8; display: none; gap: 4px; background: var(--leaf); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 5px; }
+      .actionbar.show { display: inline-flex; }
+      .actionbar button { border: 1px solid transparent; background: none; color: var(--ink-soft); border-radius: 7px; padding: 4px 8px; font-size: 12px; }
+      .actionbar button:hover { background: var(--panel); color: var(--ink); }
+      .actionbar button.primary { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .actionbar button.primary { color: #16181d; }
+
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+      .ptop { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); padding: 10px 13px; }
+      .ptop .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .ptop .ea { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-soft); background: var(--leaf); border: 1px solid var(--line); border-radius: 7px; padding: 2px 7px; }
+      .pbody { overflow-y: auto; padding: 10px 12px; }
+
+      .group { margin-bottom: 10px; }
+      .ghead { display: flex; align-items: center; gap: 7px; width: 100%; border: none; background: none; padding: 5px 4px; border-radius: 7px; color: var(--ink); }
+      .ghead:hover { background: var(--leaf); }
+      .caret { font-size: 10px; color: var(--ink-faint); transition: transform .12s; }
+      .group.collapsed .caret { transform: rotate(-90deg); }
+      .gname { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .13em; color: var(--lapis-ink); }
+      .gcount { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .gadd { margin-left: auto; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 6px; font-size: 12px; width: 20px; height: 20px; line-height: 1; }
+      .gadd:hover { border-color: var(--lapis-edge); color: var(--ink); }
+      .gbody { margin-top: 4px; }
+      /* collapsed = compact rows (with the → make-a-question button), NOT hidden. Fully-hidden is a
+         separate 'hide' toggle if we want it later. */
+
+      /* compact row (collapsed content preview lives elsewhere; here full body has cards) */
+      .crow { display: flex; align-items: center; gap: 7px; padding: 4px 6px; border-radius: 7px; font-size: 12px; color: var(--ink-soft); }
+      .crow:hover { background: var(--leaf); }
+      .crow .anc { font-family: var(--font-mono); font-size: 9.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 0 5px; white-space: nowrap; }
+      .crow .snip { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 9px 11px; box-shadow: var(--shadow); margin-bottom: 8px; }
+      .card.amber { border-left-color: var(--amber-edge); }
+      .card.rubric { border-left-color: var(--rubric-edge); }
+      .card.cap { box-shadow: 0 0 0 2px var(--lapis-edge), var(--shadow); }
+      .ctop { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+      .chip { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--lapis-ink); background: var(--lapis-wash); }
+      .chip.empty { color: var(--ink-faint); background: transparent; border-style: dashed; }
+      .tag { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); }
+      .tag.amber { color: var(--amber-ink); }
+      .body { font-size: 12.5px; }
+      .make { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); border-radius: 6px; padding: 2px 7px; white-space: nowrap; }
+      .make:hover { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .make:hover { color: #16181d; }
+      .need { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; color: #8a6a16; background: rgba(185,138,30,0.15); border-radius: 4px; padding: 1px 5px; }
+      .ready { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 4px; padding: 1px 5px; }
+      .qans { width: 100%; margin-top: 6px; border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 5px 8px; font-family: var(--font-ui); font-size: 12px; color: var(--ink); outline: none; }
+      .qans:focus { border-color: var(--lapis-edge); }
+      .hintline { font-size: 11px; color: var(--ink-faint); padding: 2px 6px 8px; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="controls" id="controls">
+        <span><b>Questions lens.</b> Right panel = every prior card, grouped by <b>origin</b>, each group collapse/expand for density. COMA collapsed → just <b>→ make a question</b> buttons. Select verses (drag) → the action bar defaults to <b>Question</b> but offers any type. No "study notes" — everything is a card; some have anchors, some don't.</span>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <nav class="lenses">
+          <button class="lens">⚙</button><button class="lens">◉</button><button class="lens">▤</button>
+          <button class="lens">▦</button><button class="lens">◎</button><button class="lens active" title="Questions">?</button>
+          <button class="lens">▥</button><button class="lens">✓</button>
+        </nav>
+        <div class="grow"></div>
+        <span class="pill">the questions you make export in Build</span>
+      </div>
+
+      <div class="work">
+        <div class="center" id="center">
+          <div class="leaf">
+            <h1>Luke 1:5–25</h1><span class="meta">WEBBE · public domain</span>
+            <div class="scripture" id="scripture"></div>
+            <div class="actionbar" id="actionbar">
+              <button class="primary" data-act="question">? Question</button>
+              <button data-act="coma">▦ COMA answer</button>
+              <button data-act="note">✎ Note</button>
+              <button data-act="mark">⚑ Mark confusing</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="ptop"><span class="t">Cards</span><button class="ea" id="expandAll">collapse all ▲</button></div>
+          <div class="pbody" id="pbody"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+
+      const VERSES = [
+        [6, 'They were both righteous before God, walking blamelessly in all the commandments of the Lord.'],
+        [8, 'Now while he executed the priest’s office before God in the order of his division,'],
+        [9, 'his lot was to enter into the temple of the Lord and burn incense.'],
+        [11, 'An angel of the Lord appeared to him, standing on the right side of the altar of incense.'],
+        [13, 'But the angel said to him, “Don’t be afraid, Zacharias, because your request has been heard…”'],
+        [18, 'Zacharias said to the angel, “How can I be sure of this? For I am an old man…”'],
+      ];
+      // every annotation is a card: origin + optional anchors[]
+      const GROUPS = [
+        { id: 'coma', name: 'COMA', collapsed: true, tone: 'lapis', convertible: true, cards: [
+          { anchor: [6], tag: 'Observation', body: 'They are righteous yet childless — faithfulness without the reward.' },
+          { anchor: [8, 9], tag: 'Observation', body: 'Ordinary temple duty — the interruption comes mid-routine.' },
+          { anchor: [13], tag: 'Meaning', body: 'The angel names the child + mission before birth — God’s initiative.' },
+        ] },
+        { id: 'map', name: 'Map', collapsed: true, tone: 'rubric', convertible: true, cards: [
+          { anchor: [11], tag: 'Mark · unclear', tone: 'rubric', body: 'Why an angel here specifically?' },
+          { anchor: [13], tag: 'Note', body: '“Your request has been heard” — cf. ↗ Mal 4:5–6.' },
+        ] },
+        { id: 'theme', name: 'Theme & aim', collapsed: true, tone: 'lapis', convertible: false, cards: [
+          { anchor: [], tag: 'Theme · no anchor', body: 'God keeps his covenant, answering long prayer in his own timing.' },
+        ] },
+        { id: 'questions', name: 'Questions', collapsed: false, tone: 'amber', isQuestions: true, cards: [
+          { anchor: [8, 9], tag: 'Observation', body: 'What is Zechariah doing, and where are the people?', ready: true },
+          { anchor: [13], tag: 'Meaning', body: 'Why does the angel say “your prayer has been heard”?', ready: false },
+        ] },
+      ];
+
+      function label(a) { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); let o = [], i = 0; while (i < s.length) { let j = i; while (j + 1 < s.length && s[j + 1] === s[j] + 1) j++; o.push(i === j ? `${s[i]}` : `${s[i]}–${s[j]}`); i = j + 1; } return 'Luke 1:' + o.join(','); }
+
+      function renderPassage() {
+        document.getElementById('scripture').innerHTML = VERSES.map(([n, t]) => `<span class="v" data-v="${n}"><sup>${n}</sup>${t} </span>`).join('');
+        document.querySelectorAll('.v').forEach((el) => el.addEventListener('click', () => { el.classList.toggle('sel'); positionBar(); }));
+      }
+      function positionBar() {
+        const sel = document.querySelectorAll('.v.sel');
+        const bar = document.getElementById('actionbar');
+        if (!sel.length) { bar.classList.remove('show'); return; }
+        const last = sel[sel.length - 1].getBoundingClientRect();
+        const host = document.getElementById('center').getBoundingClientRect();
+        bar.style.left = Math.max(12, last.left - host.left) + 'px';
+        bar.style.top = (last.bottom - host.top + document.getElementById('center').scrollTop + 6) + 'px';
+        bar.classList.add('show');
+      }
+      document.querySelectorAll('#actionbar button').forEach((b) => b.addEventListener('click', () => {
+        const anchors = [...document.querySelectorAll('.v.sel')].map((e) => +e.dataset.v);
+        const g = GROUPS.find((x) => x.id === (b.dataset.act === 'coma' ? 'coma' : b.dataset.act === 'question' ? 'questions' : 'map'));
+        g.cards.push({ anchor: anchors, tag: b.dataset.act === 'question' ? 'Observation' : b.dataset.act === 'mark' ? 'Mark · unclear' : b.dataset.act === 'coma' ? 'Observation' : 'Note', body: '(new — type here)', ready: false, fresh: true });
+        g.collapsed = false;
+        document.querySelectorAll('.v.sel').forEach((e) => e.classList.remove('sel'));
+        document.getElementById('actionbar').classList.remove('show');
+        render();
+      }));
+
+      function makeQuestion(card) {
+        const q = GROUPS.find((g) => g.id === 'questions');
+        q.cards.push({ anchor: [...card.anchor], tag: card.tag.replace(' · unclear', ''), body: card.body, ready: false, fresh: true, seed: true });
+        q.collapsed = false;
+        render();
+      }
+
+      function cardHTML(card, group) {
+        const l = label(card.anchor);
+        const chip = l ? `<span class="chip">${l}</span>` : `<span class="chip empty">⌖ anchor</span>`;
+        if (group.isQuestions) {
+          return `<div class="card amber ${card.fresh ? 'cap' : ''}"><div class="ctop">${chip}<span class="tag amber">${card.tag}</span><span class="grow"></span>${card.ready ? '<span class="ready">ready</span>' : '<span class="need">needs answer</span>'}</div>
+            <div class="body">${card.body}</div>
+            <input class="qans" placeholder="Expected answer (what the text gives)…" value="${card.ready ? 'Serving faithfully in the temple; the people wait outside.' : ''}"></div>`;
+        }
+        const conv = group.convertible ? `<button class="make">→ make a question</button>` : '';
+        return `<div class="card ${group.tone === 'rubric' && card.tone === 'rubric' ? 'rubric' : ''}"><div class="ctop">${chip}<span class="tag">${card.tag}</span><span class="grow"></span>${conv}</div>
+          <div class="body">${card.body}</div></div>`;
+      }
+      function collapsedRow(card, group) {
+        const l = label(card.anchor);
+        const conv = group.convertible ? `<button class="make">→ make a question</button>` : '';
+        return `<div class="crow">${l ? `<span class="anc">${l}</span>` : '<span class="anc" style="background:none;border:1px dashed var(--line);color:var(--ink-faint)">—</span>'}<span class="snip">${card.body}</span>${conv}</div>`;
+      }
+
+      function render() {
+        const b = document.getElementById('pbody');
+        b.innerHTML = GROUPS.map((g) => `<div class="group ${g.collapsed ? 'collapsed' : ''}" data-g="${g.id}">
+          <button class="ghead"><span class="caret">▾</span><span class="gname">${g.name}</span><span class="gcount">${g.cards.length}</span>${g.isQuestions ? '' : `<button class="gadd" title="Add a ${g.name} card">＋</button>`}</button>
+          <div class="gbody">${g.cards.map((c) => (g.collapsed ? collapsedRow(c, g) : cardHTML(c, g))).join('')}</div>
+        </div>`).join('') + `<div class="hintline">Everything is a card. “Theme &amp; aim” shows a card with <b>no anchor</b> — that’s fine; it just doesn’t pin to a verse.</div>`;
+
+        b.querySelectorAll('.group').forEach((el) => {
+          const g = GROUPS.find((x) => x.id === el.dataset.g);
+          el.querySelector('.ghead').addEventListener('click', (e) => { if (e.target.classList.contains('gadd')) return; g.collapsed = !g.collapsed; render(); });
+        });
+        b.querySelectorAll('.make').forEach((el, i) => {
+          // map each make button to its card
+          el.addEventListener('click', () => {
+            const groupEl = el.closest('.group'); const g = GROUPS.find((x) => x.id === groupEl.dataset.g);
+            const idx = [...groupEl.querySelectorAll('.make')].indexOf(el);
+            makeQuestion(g.cards[idx]);
+          });
+        });
+        // clear fresh flags
+        setTimeout(() => GROUPS.forEach((g) => g.cards.forEach((c) => (c.fresh = false))), 1200);
+      }
+      document.getElementById('expandAll').addEventListener('click', () => {
+        const anyOpen = GROUPS.some((g) => !g.collapsed); GROUPS.forEach((g) => (g.collapsed = anyOpen));
+        document.getElementById('expandAll').textContent = anyOpen ? 'expand all ▾' : 'collapse all ▲';
+        render();
+      });
+
+      renderPassage();
+      render();
+    </script>
+  </body>
+</html>
