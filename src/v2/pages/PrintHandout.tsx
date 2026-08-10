@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { HandoutDocument } from '@/components/print/HandoutDocument';
-import { PrintShell } from '@/components/print/PrintShell';
 import { useOpenStudy } from '@/hooks/useOpenStudy';
 import { exportOptions, handoutModel, resolveSupportTexts } from '@/lib/export';
 import type { ParsedText } from '@/types/passage';
 import { projectForExport } from '@/v2/export';
+import { HandoutDoc } from '@/v2/print/HandoutDoc';
+import { PrintShell } from '@/v2/print/PrintShell';
 
 /** `#/print/:id/handout` (v2) — the participant handout, projected from the v2 annotations onto
  *  the v1 export model. Defined by exclusion: passage + numbered questions + support, no answers. */
@@ -38,7 +38,7 @@ export default function PrintHandout() {
       backTo={`/study/${study.id}/reader`}
       toolbarNote="This is the clean copy for the group — no answers."
     >
-      <HandoutDocument model={model} />
+      <HandoutDoc model={model} />
     </PrintShell>
   );
 }

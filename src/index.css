@@ -215,6 +215,132 @@
 }
 
 /* ---------------------------------------------------------------------------
+   v2 printable documents (v2.7). Always a WHITE background with dark ink (ink-safe +
+   theme-independent), carrying the v2 typography — Scripture in the humanist serif,
+   labels/anchors in mono, hairline rules, and NO filled boxes. Colour is a single lapis
+   accent, and it is toggleable: `.qth-doc.ink-saver` flips the accent to ink so the
+   whole document prints monochrome (the user chooses, per print). Both preview and print
+   honour the toggle. Self-contained colours (not app tokens), so it never depends on the
+   day/night theme.
+--------------------------------------------------------------------------- */
+.qth-doc {
+  --doc-ink: #1b1b1a;
+  --doc-soft: #5c5952;
+  --doc-faint: #8a867e;
+  --doc-rule: #d9d5cc;
+  --doc-accent: #28468a; /* lapis — colour mode */
+  background: #ffffff;
+  color: var(--doc-ink);
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  line-height: 1.55;
+}
+.qth-doc.ink-saver {
+  --doc-accent: var(--doc-ink); /* monochrome: the accent becomes ink */
+}
+.qth-doc .doc-title {
+  font-size: 1.85rem;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+.qth-doc .doc-sub {
+  font: 500 0.72rem/1.2 'SF Mono', 'JetBrains Mono', Menlo, Consolas, ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--doc-faint);
+}
+.qth-doc .overline {
+  font: 600 0.68rem/1.2 'SF Mono', 'JetBrains Mono', Menlo, Consolas, ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--doc-accent);
+}
+.qth-doc .rule {
+  border: 0;
+  border-top: 1px solid var(--doc-rule);
+}
+.qth-doc .anchor {
+  font: 500 0.72rem/1.2 'SF Mono', 'JetBrains Mono', Menlo, Consolas, ui-monospace, monospace;
+  color: var(--doc-soft);
+}
+.qth-doc .qnum {
+  font-weight: 700;
+  color: var(--doc-accent);
+  margin-right: 0.4em;
+}
+.qth-doc .soft {
+  color: var(--doc-soft);
+}
+.qth-doc .box {
+  border: 1px solid var(--doc-rule);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  background: #ffffff;
+}
+.qth-doc .writing {
+  border: 1px dashed var(--doc-rule);
+  border-radius: 6px;
+  height: 4rem;
+}
+/* Scripture (main passage + support quotes) */
+.qth-doc .scripture {
+  font-size: 1.02rem;
+  line-height: 1.62;
+}
+.qth-doc .scripture p {
+  margin: 0 0 0.7em;
+}
+.qth-doc .scripture .vn {
+  font: 500 0.62em/1 'SF Mono', 'JetBrains Mono', Menlo, Consolas, ui-monospace, monospace;
+  vertical-align: super;
+  color: var(--doc-accent);
+  margin-right: 0.2em;
+}
+.qth-doc .scripture .q1 {
+  padding-left: 1.1rem;
+}
+.qth-doc .scripture .q2 {
+  padding-left: 2.2rem;
+}
+.qth-doc .scripture .heading {
+  font: 600 0.72rem/1.3 'SF Mono', 'JetBrains Mono', Menlo, Consolas, ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--doc-faint);
+  margin: 0.9em 0 0.3em;
+}
+.qth-doc .scripture .super {
+  text-align: center;
+  font-style: italic;
+  color: var(--doc-soft);
+  margin: 0 0 0.4em;
+}
+.qth-doc .q-item,
+.qth-doc .box {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+@media screen {
+  .qth-doc {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 4rem;
+    border: 1px solid var(--doc-rule);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 32px -12px rgba(0, 0, 0, 0.14);
+    margin-top: 1.25rem;
+    margin-bottom: 3rem;
+  }
+}
+@media print {
+  .qth-doc {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Print & export (Stage 7, PLAN §4.8). The `#/print/:id/{handout,leader}` routes
    render inside `.qth-print`, which forces the LIGHT, ink-safe palette regardless
    of the current theme: it re-declares every colour token to its light value, so

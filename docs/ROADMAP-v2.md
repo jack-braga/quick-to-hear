@@ -113,7 +113,7 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Cross-reference (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`; the four action-bar kinds are wired. Recycle-forward / promote-to-support land with the Build lens (v2.6). |
 | **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
 | **v2.6 — Phases as lenses** *(Set up ✅, Theme & aim ✅, Build ✅, Check ✅; Read/COMA pending)* | Flesh out the lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | Set up (full: genre/group/duration/series/intro + paste), Theme & aim (theme/aim/know-feel-do/Christ route/prayer), Build (running order + per-question load-bearing/aim/gospel-plain), and Check (the audit + coverage) are done. Read/COMA remain (largely subsumed by the annotation surface). |
-| **v2.7 — Exports** ✅ | The two printable documents (participant handout + leader's notes) + markdown downloads, produced from the v2 study. A **Check lens** is the export hub. | Pure `projectForExport` maps v2 annotations + running order → the v1 export model, reusing `handoutModel`/`leaderModel` + markdown + the print components unchanged. Restyle to the leaf/lapis language is a later polish. |
+| **v2.7 — Exports** ✅ | The two printable documents (handout + leader) + markdown downloads, from a **Check lens** hub; documents restyled to the v2 language with a per-print **Ink-saver / Colour** toggle. | Pure `projectForExport` maps v2 annotations + running order → the v1 export model (`handoutModel`/`leaderModel` reused unchanged); new `src/v2/print/*` render them white-bg + Scripture serif + mono labels + hairline rules, monochrome by default, one lapis accent when the toggle is off (preview + print match; choice persisted). |
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
 ## 5. Progress log
@@ -264,11 +264,18 @@ Verified live: theme/aim + know-feel-do + Christ route + prayer in the leader; i
 duration → the timing estimate; group=mixed → the gospel-plain check; the audit reading "6 met · 4
 need a look" from real study state.
 
+**Print restyle (done).** The documents render in the v2 language — **white page always** (ink-safe,
+theme-independent), Scripture serif, mono labels/anchors, hairline rules, no filled boxes. A per-print
+**Ink-saver / Colour** toggle (persisted; default ink-saver) flips one lapis accent (verse numbers,
+overlines, question numbers) to ink, so the user decides colour-vs-economy; preview and print match.
+`src/v2/print/{PrintShell,PrintPassage,HandoutDoc,LeaderDoc}` + the `.qth-doc` CSS scope; v1's print
+components stay frozen and are removed with the rest of v1.
+
 **Next up.** (a) **Read + COMA lenses** — the pray-and-read counter + the guided genre-specific COMA
-prompts (both largely subsumed by the annotation surface today). (b) **Print restyle** to the
-leaf/lapis language. (c) **Cross-reference, richer** — `@`-mention inside a note + promote → Support
-passage. (d) **v2.5** — Manuscript/flatten reading toggle + pre-suggested breaks. (e) **v2.8** —
-teaching/help text + the attribution "verbatim only for COMA" sweep. (f) Remove the v1 crib.
+prompts (both largely subsumed by the annotation surface today). (b) **Cross-reference, richer** —
+`@`-mention inside a note + promote → Support passage. (c) **v2.5** — Manuscript/flatten reading
+toggle + pre-suggested breaks. (d) **v2.8** — teaching/help text + the attribution "verbatim only for
+COMA" sweep. (e) Remove the v1 crib.
 
 ---
 

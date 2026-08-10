@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { LeaderDocument } from '@/components/print/LeaderDocument';
-import { PrintShell } from '@/components/print/PrintShell';
 import { useOpenStudy } from '@/hooks/useOpenStudy';
 import { exportOptions, leaderModel, resolveSupportTexts } from '@/lib/export';
 import type { ParsedText } from '@/types/passage';
 import { projectForExport } from '@/v2/export';
+import { LeaderDoc } from '@/v2/print/LeaderDoc';
+import { PrintShell } from '@/v2/print/PrintShell';
 
 /** `#/print/:id/leader` (v2) — the leader's notes, projected from the v2 annotations onto the v1
  *  export model. Carries everything: the running order with types, expected answers, anchors,
@@ -36,7 +36,7 @@ export default function PrintLeader() {
   const model = leaderModel(projected, exportOptions(projected, supportTexts));
   return (
     <PrintShell backTo={`/study/${study.id}/reader`} toolbarNote="Everything — including the expected answers.">
-      <LeaderDocument model={model} />
+      <LeaderDoc model={model} />
     </PrintShell>
   );
 }
