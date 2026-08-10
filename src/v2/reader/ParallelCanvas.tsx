@@ -2,7 +2,7 @@ import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { parseVerseId } from '@/lib/verse/ids';
-import { allVerses, verseIds, verseText, type ParsedText, type VerseSpan } from '@/types/passage';
+import { allVerses, verseIds, verseText, type ParsedText } from '@/types/passage';
 import type { AnnotationTone } from '@/v2/annotations';
 import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
 import { formatVerseIds } from '@/v2/reader/selection';
@@ -37,6 +37,9 @@ export interface ParallelCanvasProps {
 export function ParallelCanvas(props: ParallelCanvasProps) {
   const { translations, interactive, selected } = props;
   const containerRef = useRef<HTMLDivElement>(null);
+  // The cell the user last pressed — so the action bar appears over *that* column, not always the
+  // leftmost/primary one (owner: clicking the far-right column popped the bar on the far left).
+  const anchorCellRef = useRef<HTMLElement | null>(null);
   const selectedSet = new Set(selected);
 
   const primary = translations[0]!;
@@ -73,12 +76,17 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
     const place = () => {
       const el = containerRef.current;
       if (!el) return;
-      const first = el.querySelector(`[data-v="${CSS.escape(selected[0]!)}"]`) as HTMLElement | null;
-      if (!first) {
+      // Prefer the pressed cell (its column); fall back to the first cell of the anchor verse.
+      const pressed = anchorCellRef.current;
+      const cell =
+        pressed && el.contains(pressed)
+          ? pressed
+          : (el.querySelector(`[data-v="${CSS.escape(selected[0]!)}"]`) as HTMLElement | null);
+      if (!cell) {
         setBarPos(null);
         return;
       }
-      const r = first.getBoundingClientRect();
+      const r = cell.getBoundingClientRect();
       setBarPos({ left: Math.min(Math.max(r.left + 90, 140), window.innerWidth - 140), top: r.top });
     };
     place();
@@ -123,19 +131,6 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
     columnGap: 'clamp(18px,2.5vw,34px)',
   };
 
-  const Cell = ({ id, span }: { id: string; span: VerseSpan | undefined }) => {
-    const present = span?.present ?? false;
-    const num = String(parseVerseId(id)?.verse ?? '');
-    return (
-      <div data-v={id} className={cellClass(id, present)} onMouseEnter={() => enter(id)} onMouseLeave={() => leave(id)}>
-        <sup className={cn('mr-1 select-none align-super font-mono text-[0.6em] font-medium', selectedSet.has(id) ? 'text-lapis' : 'text-ink-faint')}>
-          {num}
-        </sup>
-        {present ? verseText(span!) : <span className="italic">—</span>}
-      </div>
-    );
-  };
-
   return (
     <>
       <article className="mx-auto w-full max-w-[72rem] rounded-leaf border border-line bg-leaf px-[clamp(24px,3vw,52px)] pb-[64px] pt-[44px] shadow-leaf">
@@ -158,13 +153,34 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
           className="grid select-none items-start gap-y-1.5 font-scripture text-[1.14rem] leading-[1.6] text-ink"
           style={gridStyle}
         >
-          {rows.map((id) => (
-            <Fragment key={id}>
-              {translations.map((_, i) => (
-                <Cell key={i} id={id} span={byId[i]!.get(id)} />
-              ))}
-            </Fragment>
-          ))}
+          {rows.map((id) => {
+            const num = String(parseVerseId(id)?.verse ?? '');
+            return (
+              <Fragment key={id}>
+                {translations.map((_, i) => {
+                  const span = byId[i]!.get(id);
+                  const present = span?.present ?? false;
+                  return (
+                    <div
+                      key={i}
+                      data-v={id}
+                      className={cellClass(id, present)}
+                      onPointerDownCapture={(e) => {
+                        anchorCellRef.current = e.currentTarget;
+                      }}
+                      onMouseEnter={() => enter(id)}
+                      onMouseLeave={() => leave(id)}
+                    >
+                      <sup className={cn('mr-1 select-none align-super font-mono text-[0.6em] font-medium', selectedSet.has(id) ? 'text-lapis' : 'text-ink-faint')}>
+                        {num}
+                      </sup>
+                      {present ? verseText(span!) : <span className="italic">—</span>}
+                    </div>
+                  );
+                })}
+              </Fragment>
+            );
+          })}
         </div>
       </article>
 
