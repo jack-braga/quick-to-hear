@@ -283,6 +283,33 @@ test('v2 parallel translations: tick a second to view side by side (every column
   await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveCount(2);
 });
 
+test('v2 parallel sectioning: divide the passage on the primary column while parallel', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
+
+  // Go parallel by adding ASV from the Aa Text menu.
+  await page.getByRole('button', { name: /Aa Text/ }).click();
+  await page.getByRole('button', { name: /Add American Standard/i }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveCount(2);
+
+  // One full-width band to start; hover the primary v11 cell → its "＋ divide here" splits above it.
+  await expect(page.getByRole('button', { name: 'Luke 1:5–25' })).toBeVisible();
+  const primaryV11 = page.locator('[data-v="LUKE.1.11"]').first();
+  await primaryV11.hover();
+  await primaryV11.getByRole('button', { name: /Divide into a new section/i }).click();
+
+  // Two bands now, split at v11 (sectioning works on the primary column in parallel).
+  await expect(page.getByRole('button', { name: 'Luke 1:5–10' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Luke 1:11–25' })).toBeVisible();
+});
+
 test('v2 command palette: switch the primary translation', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

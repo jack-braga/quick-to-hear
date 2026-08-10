@@ -455,6 +455,7 @@ export function ReaderShell({ study }: { study: Study }) {
         labels={viewedTranslations.map((t) => t.shortName)}
         leafTitle={leafTitle}
         interactive={interactive}
+        model={model}
         manuscript={readingMode === 'manuscript'}
         selected={selected}
         lastAnchor={lastAnchor}
@@ -466,6 +467,12 @@ export function ReaderShell({ study }: { study: Study }) {
         onVerseHover={setHoveredVerse}
         onAction={onAction}
         actionKinds={actionKinds}
+        onDivide={onDivide}
+        onMerge={onMerge}
+        onRename={onRename}
+        onSelectSectionRange={onSelectSectionRange}
+        focusSectionId={focusSectionId}
+        onSectionFocusHandled={clearFocusSection}
       />
     ) : (
       <ReaderCanvas

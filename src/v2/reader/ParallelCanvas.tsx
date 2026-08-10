@@ -1,11 +1,12 @@
-import { Fragment, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 
 import { cn } from '@/lib/utils';
+import { verseRefLabel } from '@/lib/map';
 import { parseVerseId } from '@/lib/verse/ids';
 import { allVerses, verseIds, verseText, type ParsedText, type VerseSpan } from '@/types/passage';
 import type { AnnotationTone } from '@/v2/annotations';
 import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
-import { verseToLines } from '@/v2/reader/model';
+import { verseToLines, type ReaderBand, type ReaderModel } from '@/v2/reader/model';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { useDragSelection } from '@/v2/reader/useDragSelection';
 import { TONE, multiToneGradient } from '@/v2/tones';
@@ -27,6 +28,9 @@ export interface ParallelCanvasProps {
   labels: string[];
   leafTitle: string;
   interactive: boolean;
+  /** The primary's reader model — drives the section bands + divide/merge (sectioning is on the
+   *  primary column; the same in formatted or manuscript). */
+  model: ReaderModel;
   /** Manuscript reading mode: flatten each cell's poetry to running prose (formatted keeps the
    *  poetry lines + indents). Without this the two modes look identical in parallel. */
   manuscript: boolean;
@@ -44,6 +48,13 @@ export interface ParallelCanvasProps {
   actionKinds?: ActionKind[];
   /** Anchor-capture mode: the selection re-anchors a card, so the action bar is suppressed. */
   capturing?: boolean;
+  // ---- sectioning on the primary column (mirrors ReaderCanvas) ----
+  onDivide: (sectionId: string, boundaryVerseId: string) => void;
+  onMerge: (sectionId: string) => void;
+  onRename: (sectionId: string, name: string) => void;
+  onSelectSectionRange: (startVerseId: string, endVerseId: string) => void;
+  focusSectionId: string | null;
+  onSectionFocusHandled: () => void;
 }
 
 export function ParallelCanvas(props: ParallelCanvasProps) {
@@ -66,6 +77,19 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
     () => order.filter((id) => byId.some((m) => m.get(id)?.present)),
     [order, byId],
   );
+
+  // Verse → its section band (from the primary model), for the full-width band headers + divide
+  // targets. Sectioning is the same in formatted/manuscript, so the base model is fine.
+  const bandForVerse = useMemo(() => {
+    const m = new Map<string, ReaderBand>();
+    for (const band of props.model.bands) {
+      for (const g of band.groups) {
+        if (g.kind === 'prose' || g.kind === 'poetry') for (const v of g.verses) m.set(v.verseId, band);
+      }
+    }
+    return m;
+  }, [props.model]);
+  const divideLabel = (boundary: string) => `Divide into a new section starting at ${verseRefLabel(boundary)}`;
 
   useDragSelection({
     containerRef,
@@ -179,8 +203,21 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
         >
           {rows.map((id) => {
             const num = String(parseVerseId(id)?.verse ?? '');
+            const band = bandForVerse.get(id);
+            const isBandStart = band != null && band.startVerseId === id;
             return (
               <Fragment key={id}>
+                {isBandStart && band && (
+                  <BandHeaderRow
+                    band={band}
+                    interactive={interactive}
+                    focusSectionId={props.focusSectionId}
+                    onRename={props.onRename}
+                    onMerge={props.onMerge}
+                    onSelectRange={props.onSelectSectionRange}
+                    onFocusHandled={props.onSectionFocusHandled}
+                  />
+                )}
                 {translations.map((_, i) => {
                   const span = byId[i]!.get(id);
                   const present = span?.present ?? false;
@@ -188,7 +225,7 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
                     <div
                       key={i}
                       data-v={id}
-                      className={cellClass(id, present)}
+                      className={cn(cellClass(id, present), i === 0 && 'relative')}
                       style={cellStyle(id)}
                       onPointerDownCapture={(e) => {
                         anchorCellRef.current = e.currentTarget;
@@ -196,6 +233,10 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
                       onMouseEnter={() => enter(id)}
                       onMouseLeave={() => leave(id)}
                     >
+                      {/* divide affordance on the primary column — reveal it while the verse is hovered */}
+                      {i === 0 && interactive && band && !isBandStart && hoverVerse === id && (
+                        <DivideHandle onClick={() => props.onDivide(band.sectionId, id)} label={divideLabel(id)} />
+                      )}
                       {present ? (
                         <CellText span={span!} num={num} selected={selectedSet.has(id)} manuscript={props.manuscript} />
                       ) : (
@@ -222,6 +263,93 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
         />
       )}
     </>
+  );
+}
+
+/** A full-width section band header across the parallel grid — the section name (editable when
+ *  interactive), a range chip that selects the band, and a merge-up. Mirrors ReaderCanvas's band. */
+function BandHeaderRow({
+  band,
+  interactive,
+  focusSectionId,
+  onRename,
+  onMerge,
+  onSelectRange,
+  onFocusHandled,
+}: {
+  band: ReaderBand;
+  interactive: boolean;
+  focusSectionId: string | null;
+  onRename: (sectionId: string, name: string) => void;
+  onMerge: (sectionId: string) => void;
+  onSelectRange: (startVerseId: string, endVerseId: string) => void;
+  onFocusHandled: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  // After a divide, focus the fresh section's name input so it can be named straight away.
+  useEffect(() => {
+    if (focusSectionId && focusSectionId === band.sectionId) {
+      inputRef.current?.focus();
+      onFocusHandled();
+    }
+  }, [focusSectionId, band.sectionId, onFocusHandled]);
+
+  return (
+    <div
+      style={{ gridColumn: '1 / -1' }}
+      className="mt-5 flex items-center gap-2.5 border-t border-line pt-3 font-sans first:mt-0 first:border-t-0 first:pt-0"
+    >
+      {interactive ? (
+        <input
+          ref={inputRef}
+          className="min-w-[12ch] flex-[0_1_auto] rounded-[5px] border-none bg-transparent px-1 py-0.5 text-[13px] font-semibold text-ink outline-none placeholder:font-medium placeholder:text-ink-faint hover:bg-sel-wash focus:bg-sel-wash"
+          value={band.name}
+          placeholder="Name this section"
+          aria-label="Section name"
+          onChange={(e) => onRename(band.sectionId, e.target.value)}
+        />
+      ) : (
+        band.name && <span className="px-1 py-0.5 text-[13px] font-semibold text-ink">{band.name}</span>
+      )}
+      <button
+        type="button"
+        className="cursor-pointer font-mono text-[11px] text-ink-faint hover:text-lapis"
+        title="Select these verses"
+        onClick={() => onSelectRange(band.startVerseId, band.endVerseId)}
+      >
+        {band.ref}
+      </button>
+      <span className="flex-1" />
+      {interactive && band.canMergeUp && (
+        <button
+          type="button"
+          className="grid size-[22px] place-items-center rounded-[5px] text-[13px] leading-none text-ink-faint hover:bg-rubric-wash hover:text-rubric"
+          title="Merge into the section above"
+          aria-label="Merge up"
+          onClick={() => onMerge(band.sectionId)}
+        >
+          ⌫
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** The "＋ divide here" pill on the primary cell — rendered only while the verse is hovered
+ *  (a DOM child positioned in the gap above), it splits the section at that verse. */
+function DivideHandle({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="absolute bottom-full left-1/2 z-10 -translate-x-1/2"
+    >
+      <span className="whitespace-nowrap rounded-full border border-lapis-edge bg-leaf px-2 py-[1px] font-mono text-[9px] leading-tight text-lapis-ink shadow-leaf">
+        ＋ divide here
+      </span>
+    </button>
   );
 }
 
