@@ -14,7 +14,7 @@ import { anchorToneByVerse, makeAnnotation, toneFor, type AnnotationTone } from 
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
-import { LENSES, type LensId } from '@/v2/lenses';
+import { LENSES, LENS_ICON, type LensId } from '@/v2/lenses';
 import { BuildLens } from '@/v2/lenses/BuildLens';
 import { CheckLens } from '@/v2/lenses/CheckLens';
 import { SetupLens } from '@/v2/lenses/SetupLens';
@@ -444,17 +444,20 @@ export function ReaderShell({ study }: { study: Study }) {
               type="button"
               onClick={() => setLens(l.id)}
               aria-current={l.id === lens ? 'step' : undefined}
-              title={l.name}
+              aria-label={`${l.num} ${l.name}`}
               className={cn(
-                'grid size-6 place-items-center rounded-md border border-transparent font-mono text-[11px]',
+                'group relative grid size-8 place-items-center rounded-lg border border-transparent text-[15px]',
                 l.id === lens
-                  ? 'border-lapis bg-lapis text-white dark:text-[#10131a]'
+                  ? 'border-lapis bg-lapis text-white dark:text-[#16181d]'
                   : i < activeIndex
-                    ? 'text-ink-soft'
-                    : 'text-ink-faint hover:text-ink',
+                    ? 'text-ink-soft hover:bg-panel hover:text-ink'
+                    : 'text-ink-faint hover:bg-panel hover:text-ink',
               )}
             >
-              {i + 1}
+              {LENS_ICON[l.id]}
+              <span className="pointer-events-none absolute left-1/2 top-9 z-40 -translate-x-1/2 whitespace-nowrap rounded-md border border-line bg-leaf px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-ink opacity-0 shadow-leaf transition-opacity group-hover:opacity-100">
+                {l.num} · {l.name}
+              </span>
             </button>
           ))}
         </nav>
@@ -468,37 +471,8 @@ export function ReaderShell({ study }: { study: Study }) {
         <DayNightToggle />
       </header>
 
-      {/* main 3-column */}
-      <div className="grid grid-cols-1 overflow-hidden md:grid-cols-[64px_minmax(0,1fr)_300px] lg:grid-cols-[176px_minmax(0,1fr)_320px]">
-        <aside
-          aria-label="Phase lenses"
-          className="hidden overflow-y-auto border-r border-line bg-[color-mix(in_srgb,var(--desk)_88%,var(--leaf))] px-3 py-4 md:block"
-        >
-          <div className="hidden px-2.5 pb-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint lg:block">
-            Lenses
-          </div>
-          {LENSES.map((l) => (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => setLens(l.id)}
-              aria-current={l.id === lens ? 'step' : undefined}
-              className={cn(
-                'flex w-full items-baseline gap-2.5 rounded-lg border-l-2 border-transparent px-2.5 py-2 text-left text-ink-soft hover:bg-lapis-wash hover:text-ink lg:justify-start',
-                'justify-center',
-                l.id === lens && 'border-l-lapis bg-lapis-wash text-lapis-ink',
-              )}
-            >
-              <span className={cn('font-mono text-[11px]', l.id === lens ? 'text-lapis' : 'text-ink-faint')}>
-                {l.num}
-              </span>
-              <span className={cn('hidden text-[13.5px] lg:inline', l.id === lens && 'font-semibold')}>
-                {l.name}
-              </span>
-            </button>
-          ))}
-        </aside>
-
+      {/* main — passage/lens + margin (the lens rail now lives in the header) */}
+      <div className="grid grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1fr)_300px] lg:grid-cols-[minmax(0,1fr)_320px]">
         <main className="flex items-start justify-center overflow-y-auto px-6 pb-[120px] pt-10">
           {center}
         </main>

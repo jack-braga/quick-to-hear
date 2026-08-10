@@ -17,6 +17,17 @@ export const LENSES = [
 
 export type LensId = (typeof LENSES)[number]['id'];
 
+/** Glyph per lens for the header step-tracker (v2 shell redesign — lens rail moved to the header). */
+export const LENS_ICON: Record<LensId, string> = {
+  setup: '⚙',
+  read: '◉',
+  map: '▤',
+  coma: '▦',
+  theme: '◎',
+  build: '▥',
+  check: '✓',
+};
+
 /** Lenses that are actually wired in v2.2 (the rest render the canvas + a "coming" note). */
 export const LIVE_LENSES = new Set<LensId>(['setup', 'read', 'map']);
 
