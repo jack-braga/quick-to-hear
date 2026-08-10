@@ -61,6 +61,17 @@ export function filterByOrigins(annotations: Annotation[], origins: Set<Annotati
 }
 
 /**
+ * Drop cards whose origin is `hidden` (a chip toggled off) — the blacklist companion to
+ * {@link filterByOrigins}. The panel models chip state as the **hidden** set (not a whitelist)
+ * so nothing-hidden shows all, a newly-present origin defaults visible, and hiding every chip
+ * empties the panel — none of which a whitelist's empty-means-all convention can express.
+ */
+export function rejectByOrigins(annotations: Annotation[], hidden: Set<AnnotationOrigin>): Annotation[] {
+  if (hidden.size === 0) return annotations;
+  return annotations.filter((a) => !hidden.has(annotationOrigin(a)));
+}
+
+/**
  * The set of **distinct tones** each verse carries, highest-priority first. A verse with two or
  * more tones renders the diagonal multi-tone stripe; one tone stays a flat wash. (Supersedes the
  * single-tone `anchorToneByVerse` for the canvas — that only kept the top tone.)

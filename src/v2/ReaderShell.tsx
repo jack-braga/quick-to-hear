@@ -172,14 +172,15 @@ export function ReaderShell({ study }: { study: Study }) {
     if (verseIdsSel.length === 0) return;
     const a =
       kind === 'mark'
-        ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, flag: 'confusing' })
+        ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, flag: 'confusing', origin: 'map' })
         : kind === 'ask'
-          ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel })
-          : makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel });
+          ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel, origin: 'map' })
+          : makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, origin: 'map' });
     addAnnotation(a);
   };
 
-  const onAddFloating = () => addAnnotation(makeAnnotation(newId(), { kind: 'note', verseIds: [] }));
+  const onAddFloating = () =>
+    addAnnotation(makeAnnotation(newId(), { kind: 'note', verseIds: [], origin: 'map' }));
 
   // Promote an inline @-mention (inside a note) to a cross-ref annotation anchored to the host's
   // verses — this is what `projectForExport` turns into a printed Support passage. De-duped by OSIS.

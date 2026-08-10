@@ -9,6 +9,7 @@ import {
   isQuestionReady,
   makeAnnotation,
   presentOrigins,
+  rejectByOrigins,
   sortAnchored,
   toneFor,
   verseTones,
@@ -95,6 +96,11 @@ describe('presentOrigins + filterByOrigins', () => {
   it('filters to the active origins; empty set shows all', () => {
     expect(filterByOrigins(anns, new Set<AnnotationOrigin>(['coma'])).map((a) => a.id)).toEqual(['c']);
     expect(filterByOrigins(anns, new Set<AnnotationOrigin>()).map((a) => a.id)).toEqual(['m', 'c', 'q']);
+  });
+  it('rejectByOrigins hides the toggled-off origins; empty hidden shows all; all hidden shows none', () => {
+    expect(rejectByOrigins(anns, new Set<AnnotationOrigin>()).map((a) => a.id)).toEqual(['m', 'c', 'q']);
+    expect(rejectByOrigins(anns, new Set<AnnotationOrigin>(['coma'])).map((a) => a.id)).toEqual(['m', 'q']);
+    expect(rejectByOrigins(anns, new Set<AnnotationOrigin>(['map', 'coma', 'questions']))).toEqual([]);
   });
 });
 

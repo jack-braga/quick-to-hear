@@ -1,20 +1,32 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { parseReference } from '@/lib/verse';
 import { cn } from '@/lib/utils';
 import { allVerses, verseText, type ParsedText } from '@/types/passage';
-import type { Annotation } from '@/types/study';
-import { annotationMeta, anchoredAnnotations, floatingAnnotations, isQuestionReady, sortAnchored, toneFor } from '@/v2/annotations';
+import { ANNOTATION_ORIGINS, type Annotation, type AnnotationOrigin } from '@/types/study';
+import {
+  ORIGIN_LABEL,
+  annotationMeta,
+  annotationOrigin,
+  floatingAnnotations,
+  isQuestionReady,
+  presentOrigins,
+  rejectByOrigins,
+  sortAnchored,
+  toneFor,
+} from '@/v2/annotations';
+import { LENSES } from '@/v2/lenses';
 import { MentionEditor } from '@/v2/reader/MentionEditor';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { TONE } from '@/v2/tones';
 
 /**
- * The right-margin annotation surface (v2.4). Anchored cards (Note / Question / Cross-reference)
- * sit in verse order, each in its kind's accent, editable in place, with a jump-to-verse anchor,
- * two-way hover, and delete. A Question keeps the **expected-answer** field + a promotable
- * indicator (the SPEC 6e hard block; promotion itself lands with the Build lens). Below, a
- * **Study notes** area holds floating (unanchored) notes — theme, aim, prayer, notes-to-self.
+ * The right-hand card panel (v2 Layout-B increment #4). **Everything is a card**: each note /
+ * question / cross-ref shows in its kind's accent with an **optional** anchor chip (a `—` when
+ * unanchored), a source-step line (`▸ step NN · Name`), two-way hover, and delete. A chip row at
+ * the top filters the flat list by **origin** (the step a card was made in); the hidden-chip set
+ * persists in `localStorage`. There is no separate "Study notes" area — an unanchored card is just
+ * a card with no anchor. (The two panel switches — hover-reveal, hide-vs-dim — land in Slice 3b.)
  */
 function autoGrow(el: HTMLTextAreaElement | null) {
   if (!el) return;
@@ -26,6 +38,32 @@ const NOTE_INPUT =
   'w-full resize-none border-none bg-transparent p-0 font-sans text-[13.5px] leading-[1.5] text-ink outline-none placeholder:text-ink-faint';
 const SUB_INPUT =
   'w-full rounded-md border border-line bg-panel px-2 py-1 font-sans text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-lapis-edge';
+
+/** The hidden-origin chip set (chips toggled off) — persisted so the filter survives a reload. */
+const HIDDEN_KEY = 'qth2/panel-hidden-origins';
+function loadHidden(): Set<AnnotationOrigin> {
+  try {
+    const raw = localStorage.getItem(HIDDEN_KEY);
+    if (!raw) return new Set();
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(
+      parsed.filter((o): o is AnnotationOrigin =>
+        (ANNOTATION_ORIGINS as readonly string[]).includes(o as string),
+      ),
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+/** The card's source-step line — `▸ step NN · Name` when the origin maps to a numbered lens,
+ *  else just `▸ Name` (the Questions lens has no number until the flow split lands). */
+function sourceLine(origin: AnnotationOrigin): string {
+  const lens = LENSES.find((l) => l.id === origin);
+  const label = ORIGIN_LABEL[origin];
+  return lens ? `▸ step ${lens.num} · ${label}` : `▸ ${label}`;
+}
 
 export interface MarginAnnotationsProps {
   passage: ParsedText;
@@ -48,9 +86,31 @@ export interface MarginAnnotationsProps {
 export function MarginAnnotations(props: MarginAnnotationsProps) {
   const { passage, annotations, litVerseId, focusAnnotationId } = props;
   const byId = useMemo(() => new Map(allVerses(passage).map((v) => [v.verseId, v])), [passage]);
-  const anchored = useMemo(() => sortAnchored(annotations), [annotations]);
-  const floating = useMemo(() => floatingAnnotations(annotations), [annotations]);
-  const anchoredCount = anchoredAnnotations(annotations).length;
+
+  const [hidden, setHidden] = useState<Set<AnnotationOrigin>>(loadHidden);
+  useEffect(() => {
+    try {
+      localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hidden]));
+    } catch {
+      /* storage unavailable — the filter still applies for this session */
+    }
+  }, [hidden]);
+
+  const present = useMemo(() => presentOrigins(annotations), [annotations]);
+  const filtered = useMemo(() => rejectByOrigins(annotations, hidden), [annotations, hidden]);
+  const anchored = useMemo(() => sortAnchored(filtered), [filtered]);
+  const floating = useMemo(() => floatingAnnotations(filtered), [filtered]);
+  const shownCount = anchored.length + floating.length;
+  const allOn = present.every((o) => !hidden.has(o));
+
+  const toggleAll = () => setHidden(allOn ? new Set(present) : new Set());
+  const toggleOrigin = (o: AnnotationOrigin) =>
+    setHidden((prev) => {
+      const next = new Set(prev);
+      if (next.has(o)) next.delete(o);
+      else next.add(o);
+      return next;
+    });
 
   // Focus a just-created card's primary field once, then clear the request.
   useEffect(() => {
@@ -94,7 +154,12 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
               {formatVerseIds(a.verseIds)}
             </button>
           ) : (
-            <span className="font-mono text-[11px] text-ink-faint">Study note</span>
+            <span
+              title="Unanchored — this card isn’t tied to any verse yet"
+              className="font-mono text-[13px] leading-none text-ink-faint"
+            >
+              —
+            </span>
           )}
           <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
             {meta.tag}
@@ -203,20 +268,41 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
             onChange={(e) => props.onEdit(a.id, { expectedAnswer: e.target.value })}
           />
         )}
+
+        {/* source-step line — which lens this card came from (drives the chip filter above) */}
+        <div className="mt-2 font-mono text-[9.5px] text-ink-faint">{sourceLine(annotationOrigin(a))}</div>
       </div>
     );
   };
 
   return (
     <div>
-      <div className="mx-1 mb-3.5 flex justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
-        <span>In the margin</span>
-        <span>{anchoredCount}</span>
+      {/* filter header — the chip row filters the flat card list by origin (its step) */}
+      <div className="mx-1 mb-2.5 flex items-center gap-2">
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+          Show from step
+        </span>
+        <span className="ml-auto font-mono text-[10px] text-ink-faint">{shownCount} shown</span>
+        <button
+          type="button"
+          onClick={props.onAddFloating}
+          title="Add a card (anchor it to verses later)"
+          className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
+        >
+          ＋ note
+        </button>
       </div>
 
-      {anchored.map(card)}
+      {present.length > 0 && (
+        <div className="mx-1 mb-3.5 flex flex-wrap gap-1.5">
+          <Chip label="All" on={allOn} onClick={toggleAll} />
+          {present.map((o) => (
+            <Chip key={o} label={ORIGIN_LABEL[o]} on={!hidden.has(o)} onClick={() => toggleOrigin(o)} />
+          ))}
+        </div>
+      )}
 
-      {anchored.length === 0 && (
+      {annotations.length === 0 ? (
         <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
           Select verses, then <b className="font-semibold text-ink">Note</b>,{' '}
           <b className="font-semibold text-ink">Question</b>, or{' '}
@@ -224,26 +310,35 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           divide the passage. Reference another passage by typing{' '}
           <b className="font-mono text-[12px] text-lapis-ink">@Malachi 4:5-6</b> inside a note.
         </div>
+      ) : shownCount === 0 ? (
+        <p className="mx-1 py-6 text-center text-[12.5px] text-ink-faint">
+          Nothing from these steps touches the passage. Turn a chip back on above.
+        </p>
+      ) : (
+        <>
+          {anchored.map(card)}
+          {floating.map(card)}
+        </>
       )}
-
-      {/* floating / study-level notes */}
-      <div className="mt-6 border-t border-line pt-4">
-        <div className="mx-1 mb-2 flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">Study notes</span>
-          <button
-            type="button"
-            onClick={props.onAddFloating}
-            title="Add a study-level note (theme, aim, prayer, notes-to-self)"
-            className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
-          >
-            ＋
-          </button>
-        </div>
-        {floating.map(card)}
-        {floating.length === 0 && (
-          <p className="mx-1 text-[12px] text-ink-faint">Theme, aim, prayer, notes-to-self.</p>
-        )}
-      </div>
     </div>
+  );
+}
+
+/** One origin filter chip — on = its cards show, off = hidden. */
+function Chip({ label, on, onClick }: { label: string; on: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={cn(
+        'rounded-full border px-2.5 py-0.5 font-mono text-[10.5px]',
+        on
+          ? 'border-lapis-edge bg-lapis-wash text-lapis-ink'
+          : 'border-line bg-panel text-ink-soft hover:text-ink',
+      )}
+    >
+      {label}
+    </button>
   );
 }
