@@ -430,7 +430,7 @@ export function ReaderShell({ study }: { study: Study }) {
       />
     );
     margin = (
-      <MarginPlaceholder text="The running order is the sequence that exports. Reorder it on the left; jump back to any question to refine it in Map." />
+      <MarginPlaceholder text="The running order is the sequence that exports. Reorder it on the left; jump back to any question to refine it in the Questions lens." />
     );
   } else if (lens === 'theme') {
     center = <ThemeAimLens study={study} />;

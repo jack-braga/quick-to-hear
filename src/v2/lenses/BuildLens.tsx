@@ -19,9 +19,6 @@ const FILTERS: { value: QuestionType | 'all'; label: string }[] = [
   ...QUESTION_TYPE_OPTIONS,
 ];
 
-const SUB_INPUT =
-  'w-full rounded-md border border-line bg-panel px-2 py-1 font-sans text-[13px] text-ink outline-none placeholder:text-ink-faint focus:border-lapis-edge';
-
 export function BuildLens({
   annotations,
   runningOrder,
@@ -59,8 +56,10 @@ export function BuildLens({
         </span>
       </div>
       <p className="mt-1 text-[14px] text-ink-soft">
-        The running order is what exports. Drag to reorder — observation before meaning, application
-        last. A question needs an expected answer before it’s ready.
+        Pure assembly: <b className="font-semibold text-ink">sequence</b> the running order that
+        exports (drag — observation before meaning, application last). Questions are read-only here —{' '}
+        <b className="font-semibold text-ink">author</b> them in the Questions lens (jump to one to
+        edit it). A question needs an expected answer before it’s ready.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-1.5">
@@ -125,13 +124,13 @@ export function BuildLens({
                   {pos}
                 </span>
                 <div className="min-w-0 flex-1 space-y-2">
-                  <textarea
-                    rows={2}
-                    className="w-full resize-none border-none bg-transparent p-0 font-sans text-[14px] leading-snug text-ink outline-none placeholder:text-ink-faint"
-                    value={a.text}
-                    placeholder="Draft the question…"
-                    onChange={(e) => onEdit(a.id, { text: e.target.value })}
-                  />
+                  {a.text.trim() ? (
+                    <p className="font-sans text-[14px] leading-snug text-ink">{a.text}</p>
+                  ) : (
+                    <p className="font-sans text-[13px] italic leading-snug text-ink-faint">
+                      No question text yet — author it in the Questions lens.
+                    </p>
+                  )}
                   <div className="flex flex-wrap items-center gap-2">
                     <select
                       aria-label="Question type"
@@ -196,12 +195,16 @@ export function BuildLens({
                       ✕
                     </button>
                   </div>
-                  <input
-                    className={SUB_INPUT}
-                    value={a.expectedAnswer ?? ''}
-                    placeholder="Expected answer (what the text gives)…"
-                    onChange={(e) => onEdit(a.id, { expectedAnswer: e.target.value })}
-                  />
+                  {a.expectedAnswer?.trim() ? (
+                    <p className="rounded-md border border-line bg-panel/40 px-2 py-1 text-[13px] leading-snug text-ink-soft">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-ink-faint">Expected · </span>
+                      {a.expectedAnswer}
+                    </p>
+                  ) : (
+                    <p className="text-[12px] italic text-ink-faint">
+                      No expected answer yet — set it in the Questions lens (a question can’t be ready without one).
+                    </p>
+                  )}
                   {/* leader/audit metadata */}
                   <div className="flex flex-wrap items-center gap-2 text-[12px]">
                     <button
