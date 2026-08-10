@@ -1,9 +1,8 @@
 import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-import { alignTranslations } from '@/lib/compare';
 import { cn } from '@/lib/utils';
 import { parseVerseId } from '@/lib/verse/ids';
-import { verseIds, type ParsedText } from '@/types/passage';
+import { allVerses, verseIds, verseText, type ParsedText, type VerseSpan } from '@/types/passage';
 import type { AnnotationTone } from '@/v2/annotations';
 import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
 import { formatVerseIds } from '@/v2/reader/selection';
@@ -11,19 +10,18 @@ import { useDragSelection } from '@/v2/reader/useDragSelection';
 import { TONE } from '@/v2/tones';
 
 /**
- * The parallel (side-by-side) canvas (v2.9) — two translations lined up **verse by verse** via the
- * tested `alignTranslations` engine. The **primary** column (left) is the source of truth: you
- * select and annotate there, so it carries `data-v` and the drag-selection; the **secondary**
- * column is read-only reference. Hovering a verse in either column lights it in **both** (and a
- * margin card's hover lights both too) — the correspondence made visible. Selection algebra, the
- * action bar, tones, and the flash are shared with the single-column {@link ReaderCanvas}.
+ * The parallel (side-by-side) canvas (v2.9) — **N** translations lined up **verse by verse** by
+ * verse-id equality (the first is the primary — the anchoring source of truth). **Every** column's
+ * verses are selectable: anchors are translation-independent verse ids, so clicking a verse in any
+ * column selects that verse. Hovering a verse (or a margin card) lights it in **every** column.
+ * Selection algebra, the action bar, tones, and the flash are shared with {@link ReaderCanvas}.
  */
 
 export interface ParallelCanvasProps {
-  primary: ParsedText;
-  secondary: ParsedText;
-  primaryLabel: string;
-  secondaryLabel: string;
+  /** Viewed translations, **primary first** then the secondaries, in display order. */
+  translations: ParsedText[];
+  /** Short label per translation (same order). */
+  labels: string[];
   leafTitle: string;
   interactive: boolean;
   selected: string[];
@@ -37,17 +35,22 @@ export interface ParallelCanvasProps {
 }
 
 export function ParallelCanvas(props: ParallelCanvasProps) {
-  const { primary, secondary, interactive, selected } = props;
+  const { translations, interactive, selected } = props;
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedSet = new Set(selected);
 
-  // Verse-aligned rows (drops `both-gap` rows — nothing to compare there).
-  const rows = useMemo(
-    () => alignTranslations(primary, secondary).rows.filter((r) => r.status !== 'both-gap'),
-    [primary, secondary],
-  );
+  const primary = translations[0]!;
   const order = useMemo(() => verseIds(primary), [primary]);
-  const orderSet = useMemo(() => new Set(order), [order]);
+  // Per-translation verse lookup (id → span), so any verse resolves across every column.
+  const byId = useMemo(
+    () => translations.map((t) => new Map(allVerses(t).map((v) => [v.verseId, v]))),
+    [translations],
+  );
+  // Rows: primary verse order, dropping ids no viewed translation carries.
+  const rows = useMemo(
+    () => order.filter((id) => byId.some((m) => m.get(id)?.present)),
+    [order, byId],
+  );
 
   useDragSelection({
     containerRef,
@@ -60,7 +63,7 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
 
   const [hoverVerse, setHoverVerse] = useState<string | null>(null);
 
-  // ---- action-bar position (over the first selected primary verse) ------------------------
+  // ---- action-bar position (over the first selected verse, in any column) -----------------
   const [barPos, setBarPos] = useState<{ left: number; top: number } | null>(null);
   useLayoutEffect(() => {
     if (!interactive || selected.length === 0) {
@@ -96,94 +99,72 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
     props.onVerseHover(null);
   };
 
-  const cardLit = (id: string) => props.lit != null && props.lit.ids.has(id);
-  const hoverLit = (id: string) => hoverVerse === id;
-
-  const primaryCellClass = (id: string, present: boolean, selectable: boolean): string => {
+  // One cell style for every column — the verse state (selected/lit/anchored/hover/flash) is keyed
+  // by verse id, so all columns of a verse share it.
+  const cellClass = (id: string, present: boolean): string => {
     const sel = selectedSet.has(id);
+    const cardLit = props.lit != null && props.lit.ids.has(id);
+    const hoverLit = hoverVerse === id;
     const tone = props.anchorTone.get(id);
     return cn(
       'rounded-[5px] px-2 py-1 transition-colors',
-      interactive && selectable && 'cursor-pointer hover:bg-lapis-wash',
+      interactive && present && 'cursor-pointer hover:bg-lapis-wash',
       !present && 'text-ink-faint',
       sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
-      !sel && cardLit(id) && props.lit && TONE[props.lit.tone].ring,
-      !sel && !cardLit(id) && hoverLit(id) && 'bg-lapis-wash',
-      !sel && !cardLit(id) && !hoverLit(id) && tone && TONE[tone].wash,
+      !sel && cardLit && props.lit && TONE[props.lit.tone].ring,
+      !sel && !cardLit && hoverLit && 'bg-lapis-wash',
+      !sel && !cardLit && !hoverLit && tone && TONE[tone].wash,
       props.flashVerseId === id && 'animate-verse-flash',
     );
   };
 
-  const secondaryCellClass = (id: string, present: boolean): string =>
-    cn(
-      'rounded-[5px] px-2 py-1 transition-colors',
-      !present && 'text-ink-faint',
-      cardLit(id) && props.lit ? TONE[props.lit.tone].ring : hoverLit(id) && 'bg-lapis-wash',
+  const gridStyle = {
+    gridTemplateColumns: `repeat(${translations.length}, minmax(0, 1fr))`,
+    columnGap: 'clamp(18px,2.5vw,34px)',
+  };
+
+  const Cell = ({ id, span }: { id: string; span: VerseSpan | undefined }) => {
+    const present = span?.present ?? false;
+    const num = String(parseVerseId(id)?.verse ?? '');
+    return (
+      <div data-v={id} className={cellClass(id, present)} onMouseEnter={() => enter(id)} onMouseLeave={() => leave(id)}>
+        <sup className={cn('mr-1 select-none align-super font-mono text-[0.6em] font-medium', selectedSet.has(id) ? 'text-lapis' : 'text-ink-faint')}>
+          {num}
+        </sup>
+        {present ? verseText(span!) : <span className="italic">—</span>}
+      </div>
     );
-
-  const VerseNo = ({ num, sel }: { num: string; sel: boolean }) => (
-    <sup className={cn('mr-1 select-none align-super font-mono text-[0.6em] font-medium', sel ? 'text-lapis' : 'text-ink-faint')}>
-      {num}
-    </sup>
-  );
-
-  const Dash = () => <span className="italic">—</span>;
-
-  // Shown only when the columns stack (narrow screens), so each cell is still identifiable.
-  const ColLabel = ({ label }: { label: string }) => (
-    <span className="mr-1.5 select-none align-middle font-mono text-[9px] uppercase tracking-[0.1em] text-lapis-ink sm:hidden">
-      {label}
-    </span>
-  );
+  };
 
   return (
     <>
-      <article className="mx-auto w-full max-w-[64rem] rounded-leaf border border-line bg-leaf px-[clamp(24px,4vw,56px)] pb-[64px] pt-[44px] shadow-leaf">
+      <article className="mx-auto w-full max-w-[72rem] rounded-leaf border border-line bg-leaf px-[clamp(24px,3vw,52px)] pb-[64px] pt-[44px] shadow-leaf">
         <header className="mb-4 flex items-baseline justify-between gap-4 border-b border-line pb-[16px]">
           <h1 className="font-scripture text-[30px] leading-tight text-ink">{props.leafTitle}</h1>
-          <span className="font-mono text-[11px] tracking-[0.03em] text-ink-faint">
-            Parallel · {props.primaryLabel} ‖ {props.secondaryLabel}
-          </span>
+          <span className="font-mono text-[11px] tracking-[0.03em] text-ink-faint">Parallel · {props.labels.join(' ‖ ')}</span>
         </header>
 
-        {/* Side-by-side column labels — only meaningful when the two columns sit side by side. */}
-        <div className="mb-1 hidden grid-cols-2 gap-x-[clamp(20px,3vw,38px)] sm:grid">
-          <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-lapis-ink">{props.primaryLabel}</div>
-          <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-lapis-ink">{props.secondaryLabel}</div>
+        {/* column labels */}
+        <div className="mb-1 grid" style={gridStyle}>
+          {props.labels.map((l, i) => (
+            <div key={i} className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-lapis-ink">
+              {l}
+            </div>
+          ))}
         </div>
 
         <div
           ref={containerRef}
-          className="grid select-none grid-cols-1 items-start gap-x-[clamp(20px,3vw,38px)] gap-y-1.5 font-scripture text-[1.16rem] leading-[1.62] text-ink sm:grid-cols-2"
+          className="grid select-none items-start gap-y-1.5 font-scripture text-[1.14rem] leading-[1.6] text-ink"
+          style={gridStyle}
         >
-          {rows.map((row) => {
-            const num = String(parseVerseId(row.verseId)?.verse ?? '');
-            const selectable = orderSet.has(row.verseId);
-            return (
-              <Fragment key={row.verseId}>
-                <div
-                  {...(selectable ? { 'data-v': row.verseId } : {})}
-                  className={primaryCellClass(row.verseId, row.primaryPresent, selectable)}
-                  onMouseEnter={() => enter(row.verseId)}
-                  onMouseLeave={() => leave(row.verseId)}
-                >
-                  <ColLabel label={props.primaryLabel} />
-                  <VerseNo num={num} sel={selectedSet.has(row.verseId)} />
-                  {row.primaryPresent ? row.primaryText : <Dash />}
-                </div>
-                <div
-                  data-vsec={row.verseId}
-                  className={cn(secondaryCellClass(row.verseId, row.secondaryPresent), 'mb-1 sm:mb-0')}
-                  onMouseEnter={() => enter(row.verseId)}
-                  onMouseLeave={() => leave(row.verseId)}
-                >
-                  <ColLabel label={props.secondaryLabel} />
-                  <VerseNo num={num} sel={false} />
-                  {row.secondaryPresent ? row.secondaryText : <Dash />}
-                </div>
-              </Fragment>
-            );
-          })}
+          {rows.map((id) => (
+            <Fragment key={id}>
+              {translations.map((_, i) => (
+                <Cell key={i} id={id} span={byId[i]!.get(id)} />
+              ))}
+            </Fragment>
+          ))}
         </div>
       </article>
 

@@ -104,10 +104,12 @@ manuscript that answers to a command line*. Full day/night.
    user's thinking — Inviolable rule 1). Any-verse sectioning already shipped in v2.2.
 2. **Annotation icons/labels — final polish.** The three kinds are decided; the exact glyphs and
    the COMA-type sub-tagging UI are for the annotation-layer phase (v2.4).
-3. **Translations UX — resolved (built 2026-08-10).** A **top-bar switcher menu** (change primary ·
-   ＋ add · remove) + a **⊕ Parallel toggle** (default single) that pops a second, verse-aligned
-   column. Hovering a verse lights it in **both** columns. On narrow screens the two columns
-   **stack** (per verse, each cell labelled), no horizontal scroll.
+3. **Translations UX — resolved (built 2026-08-10; unified 2026-08-11).** One header **Aa Text**
+   menu holds every text option: the reading **mode** (Formatted ↔ Manuscript) and the
+   **translations**, unified as **✓ = view · ★ = main** — tick two or more to read them in **parallel**
+   (any number of columns; no separate toggle). The primary (★) is where notes anchor, but **every**
+   column's verses are selectable (anchors are translation-independent verse ids); hovering a verse
+   lights it in every column. The header **lens rail** was also replaced by header icons.
 
 ---
 

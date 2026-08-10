@@ -125,7 +125,9 @@ test('v2.5 reading modes: the Manuscript toggle persists, and sections show in e
   await page.getByRole('button', { name: /start mapping/i }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
-  // Sections show in every reading mode now (owner call), so assert the mode toggle itself.
+  // Reading mode lives in the Aa Text menu now; sections show in every mode (owner call).
+  const openText = () => page.getByRole('button', { name: /Aa Text/ }).click();
+  await openText();
   await expect(page.getByRole('button', { name: 'Formatted' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('textbox', { name: 'Section name' })).toBeVisible();
 
@@ -138,6 +140,7 @@ test('v2.5 reading modes: the Manuscript toggle persists, and sections show in e
   // The choice persists across a reload (a global display preference).
   await page.waitForTimeout(1000); // let the study autosave before reloading
   await page.reload();
+  await openText();
   await expect(page.getByRole('button', { name: 'Manuscript' })).toHaveAttribute('aria-pressed', 'true');
 
   // Back to Formatted round-trips.
@@ -145,7 +148,7 @@ test('v2.5 reading modes: the Manuscript toggle persists, and sections show in e
   await expect(page.getByRole('button', { name: 'Formatted' })).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('v2 parallel translations: add ASV, compare side by side (cross-column hover), swap primary', async ({
+test('v2 parallel translations: tick a second to view side by side (every column clickable), swap the main', async ({
   page,
 }) => {
   await page.goto('./');
@@ -153,29 +156,31 @@ test('v2 parallel translations: add ASV, compare side by side (cross-column hove
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /start mapping/i }).click();
-  await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
-  // One translation loaded → no parallel toggle yet.
-  await expect(page.getByRole('button', { name: /⊕ Parallel/ })).toHaveCount(0);
+  // One translation → single view: exactly one cell per verse.
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveCount(1);
 
-  // Add ASV from the top-bar switcher.
-  await page.locator('button[aria-haspopup="menu"]').click();
+  // Add ASV from the Aa Text menu — it auto-views, so two columns appear (parallel, no switch).
+  const openText = () => page.getByRole('button', { name: /Aa Text/ }).click();
+  await openText();
   await page.getByRole('button', { name: /Add American Standard/i }).click();
-
-  // The parallel toggle now appears; turn it on → a second, verse-aligned column.
-  await page.getByRole('button', { name: /⊕ Parallel/ }).click();
-  await expect(page.locator('[data-vsec="LUKE.1.8"]')).toBeVisible();
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveCount(2);
   await expect(page.getByText(/course of Abijah/i)).toBeVisible(); // ASV's distinct wording (v5)
+  await page.keyboard.press('Escape'); // close the menu
 
-  // Cross-column hover: hovering a primary verse lights the same verse in the secondary column.
-  await page.locator('[data-v="LUKE.1.6"]').hover();
-  await expect(page.locator('[data-vsec="LUKE.1.6"]')).toHaveClass(/lapis-wash/);
+  // Cross-column hover: hovering a verse in one column lights that verse in both.
+  await page.locator('[data-v="LUKE.1.6"]').first().hover();
+  await expect(page.locator('[data-v="LUKE.1.6"]').nth(1)).toHaveClass(/lapis-wash/);
 
-  // Swap the primary (WEBBE → ASV): the columns swap, both are kept, and parallel stays on.
-  await page.locator('button[aria-haspopup="menu"]').click();
-  await page.getByRole('menuitemradio', { name: /American Standard/i }).click();
-  await expect(page.getByRole('button', { name: /⊕ Parallel: WEBBE/ })).toBeVisible();
-  await expect(page.locator('[data-vsec="LUKE.1.8"]')).toBeVisible(); // WEBBE now the secondary
+  // Every column is clickable now — click the ASV (second) column's verse → the action bar.
+  await page.locator('[data-v="LUKE.1.8"]').nth(1).click();
+  await expect(page.getByRole('toolbar', { name: /selected verses/i })).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // Swap the main (★) to ASV → columns swap, both stay in view (still two columns).
+  await openText();
+  await page.getByRole('button', { name: /Make ASV the main/i }).click();
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveCount(2);
 });
 
 test('v2 command palette: switch the primary translation', async ({ page }) => {

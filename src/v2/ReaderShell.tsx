@@ -58,9 +58,9 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const [lens, setLens] = useState<LensId>(passage ? 'map' : 'setup');
   const [readingMode, setReadingMode] = useState<ReadingMode>(loadReadingMode);
-  // Parallel (side-by-side) reading state (v2.9) — transient; the primary switch itself persists.
-  const [parallelOn, setParallelOn] = useState(false);
-  const [parallelSecondaryId, setParallelSecondaryId] = useState<string | null>(null);
+  // Which non-primary translations are ticked to view side-by-side (v2.9). Transient reading state;
+  // the primary itself is always shown, and the primary switch persists to the study.
+  const [viewedSet, setViewedSet] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string[]>([]);
   const [lastAnchor, setLastAnchor] = useState<string | null>(null);
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
@@ -244,33 +244,62 @@ export function ReaderShell({ study }: { study: Study }) {
     updateSetup({ primaryTranslationId: id });
   };
 
-  // ---- translations: the top-bar switcher + parallel (side-by-side) view ------------------
+  // ---- translations: the unified Aa Text menu (✓ view · ★ main) + N-column parallel ---------
+  const primaryId = study.passage.primaryId;
   const loadedTranslations = useMemo(
     () =>
       translationOrder(study.passage).map((id) => {
         const t = findTranslation(id);
-        return { id, name: t?.name ?? id, shortName: t?.shortName ?? id, isPrimary: id === study.passage.primaryId };
+        return {
+          id,
+          name: t?.name ?? id,
+          shortName: t?.shortName ?? id,
+          isPrimary: id === primaryId,
+          isViewed: id === primaryId || viewedSet.has(id),
+        };
       }),
-    [study.passage],
+    [study.passage, primaryId, viewedSet],
   );
   const availableTranslations = useMemo(
     () => BUNDLED_TRANSLATIONS.filter((t) => !study.passage.translations[t.id]).map((t) => ({ id: t.id, name: t.name, shortName: t.shortName })),
     [study.passage],
   );
-  // The effective secondary is a loaded non-primary id (falls back to the first when unset/stale).
-  const secondaryIds = loadedTranslations.filter((t) => !t.isPrimary).map((t) => t.id);
-  const effectiveSecondaryId =
-    parallelSecondaryId && secondaryIds.includes(parallelSecondaryId) ? parallelSecondaryId : (secondaryIds[0] ?? null);
-  const parallelActive = parallelOn && effectiveSecondaryId != null && passage != null;
+  // Viewed translations in display order (primary first). Two or more → the parallel view.
+  const viewedTranslations = loadedTranslations.filter((t) => t.isViewed);
+  const parallelActive = viewedTranslations.length >= 2 && passage != null;
 
+  // Set the primary (★). In **parallel**, keep the outgoing primary viewed so switching swaps
+  // columns rather than dropping one; in **single** view, switching just changes which translation
+  // you read (no forced parallel). Also routed from the `/` palette.
+  const onSetPrimary = (id: string) => {
+    const prevPrimary = study.passage.primaryId;
+    if (prevPrimary && prevPrimary !== id && viewedTranslations.length >= 2) {
+      setViewedSet((prev) => new Set(prev).add(prevPrimary));
+    }
+    void switchTranslation(id);
+  };
+  const onToggleView = (id: string) => {
+    if (id === primaryId) return; // the primary is always shown
+    setViewedSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
   const addTranslation = async (id: string) => {
     const ref = parseReference(study.setup.reference || passage?.reference || '');
     if (!ref) return;
     const text = await loadReading(id, ref);
     await setPassage(addSecondary(study.passage, text));
+    setViewedSet((prev) => new Set(prev).add(id)); // show it straight away
   };
   const removeSecondary = async (id: string) => {
-    if (parallelSecondaryId === id) setParallelSecondaryId(null);
+    setViewedSet((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     await setPassage(removeTranslation(study.passage, id));
   };
 
@@ -283,7 +312,7 @@ export function ReaderShell({ study }: { study: Study }) {
         onAction(action.kind);
         break;
       case 'switch-translation':
-        void switchTranslation(action.id);
+        onSetPrimary(action.id);
         break;
       case 'go-lens':
         setLens(action.lens);
@@ -342,10 +371,8 @@ export function ReaderShell({ study }: { study: Study }) {
     const interactive = lens === 'map';
     center = parallelActive ? (
       <ParallelCanvas
-        primary={passage}
-        secondary={study.passage.translations[effectiveSecondaryId!]!}
-        primaryLabel={findTranslation(passage.translationId)?.shortName ?? passage.translationId}
-        secondaryLabel={findTranslation(effectiveSecondaryId!)?.shortName ?? effectiveSecondaryId!}
+        translations={viewedTranslations.map((t) => study.passage.translations[t.id]!)}
+        labels={viewedTranslations.map((t) => t.shortName)}
         leafTitle={leafTitle}
         interactive={interactive}
         selected={selected}
@@ -364,8 +391,6 @@ export function ReaderShell({ study }: { study: Study }) {
       <ReaderCanvas
         model={renderModel ?? model}
         interactive={interactive}
-        mode={readingMode}
-        onModeChange={changeReadingMode}
         leafTitle={leafTitle}
         leafMeta={leafMeta}
         selected={selected}
@@ -425,15 +450,14 @@ export function ReaderShell({ study }: { study: Study }) {
         </div>
         {passage && (
           <TranslationControls
+            mode={readingMode}
+            onModeChange={changeReadingMode}
             translations={loadedTranslations}
             available={availableTranslations}
-            parallelOn={parallelActive}
-            secondaryId={effectiveSecondaryId}
-            onSwitchPrimary={(id) => void switchTranslation(id)}
-            onAddTranslation={(id) => void addTranslation(id)}
-            onRemoveTranslation={(id) => void removeSecondary(id)}
-            onToggleParallel={() => setParallelOn((on) => !on)}
-            onPickSecondary={setParallelSecondaryId}
+            onSetPrimary={onSetPrimary}
+            onToggleView={onToggleView}
+            onAdd={(id) => void addTranslation(id)}
+            onRemove={(id) => void removeSecondary(id)}
           />
         )}
         <div className="flex-1" />
