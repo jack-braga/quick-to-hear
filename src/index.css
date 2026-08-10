@@ -105,10 +105,15 @@
     --line: #e2ddd0;
     --lapis: #28468a;
     --lapis-ink: #17305f;
-    --lapis-wash: rgba(40, 70, 138, 0.1);
-    --lapis-edge: rgba(40, 70, 138, 0.32);
+    --lapis-wash: rgba(40, 70, 138, 0.17);
+    --lapis-edge: rgba(40, 70, 138, 0.34);
     --rubric: #a6321e;
-    --rubric-wash: rgba(166, 50, 30, 0.1);
+    --rubric-wash: rgba(166, 50, 30, 0.17);
+    --amber-wash: rgba(185, 138, 30, 0.2);
+    --amber-edge: rgba(185, 138, 30, 0.42);
+    /* neutral verse hover/selection — teal, distinct from every annotation tone */
+    --sel-wash: rgba(45, 106, 104, 0.16);
+    --sel-edge: rgba(45, 106, 104, 0.5);
     --leaf-shadow: 0 1px 2px rgba(30, 27, 20, 0.05), 0 12px 32px -12px rgba(30, 27, 20, 0.22);
     --leaf-radius: 10px;
   }
@@ -124,10 +129,15 @@
     --line: #3c414c;
     --lapis: #90b0ef;
     --lapis-ink: #c6d6f8;
-    --lapis-wash: rgba(144, 176, 239, 0.16);
-    --lapis-edge: rgba(144, 176, 239, 0.38);
+    --lapis-wash: rgba(144, 176, 239, 0.2);
+    --lapis-edge: rgba(144, 176, 239, 0.42);
     --rubric: #e2805f;
-    --rubric-wash: rgba(226, 128, 95, 0.16);
+    --rubric-wash: rgba(226, 128, 95, 0.2);
+    --amber-wash: rgba(221, 187, 97, 0.18);
+    --amber-edge: rgba(221, 187, 97, 0.44);
+    /* neutral verse hover/selection — teal, distinct from every annotation tone */
+    --sel-wash: rgba(125, 198, 192, 0.18);
+    --sel-edge: rgba(125, 198, 192, 0.5);
     --leaf-shadow: 0 1px 2px rgba(0, 0, 0, 0.32), 0 14px 30px -14px rgba(0, 0, 0, 0.5);
   }
 }

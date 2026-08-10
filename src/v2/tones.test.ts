@@ -11,7 +11,7 @@ describe('multiToneGradient', () => {
   it('builds a 45° repeating stripe cycling through every tone present', () => {
     const g = multiToneGradient(['rubric', 'amber', 'lapis'], 8);
     expect(g).toBe(
-      'repeating-linear-gradient(45deg, var(--rubric-wash) 0px 8px, rgba(185,138,30,0.13) 8px 16px, var(--lapis-wash) 16px 24px)',
+      'repeating-linear-gradient(45deg, var(--rubric-wash) 0px 8px, var(--amber-wash) 8px 16px, var(--lapis-wash) 16px 24px)',
     );
   });
 });

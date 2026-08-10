@@ -113,8 +113,8 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
     return cn(
       'rounded-[4px] transition-colors',
       block ? 'px-2 py-0.5' : 'px-[0.12em] py-[0.04em] [-webkit-box-decoration-break:clone] [box-decoration-break:clone]',
-      interactive && (props.capturing ? 'cursor-crosshair' : 'cursor-pointer hover:bg-lapis-wash'),
-      sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
+      interactive && (props.capturing ? 'cursor-crosshair' : 'cursor-pointer hover:bg-sel-wash'),
+      sel && 'bg-sel-wash shadow-[inset_0_0_0_1px_var(--sel-edge)]',
       isLit && props.lit && TONE[props.lit.tone].ring,
       // one tone → a flat wash class; two or more render a gradient via verseStyle instead.
       anchored && tones.length === 1 && TONE[tones[0]!].wash,

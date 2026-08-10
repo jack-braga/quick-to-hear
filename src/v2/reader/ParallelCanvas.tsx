@@ -128,11 +128,11 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
     const tones = props.verseTones.get(id) ?? [];
     return cn(
       'rounded-[5px] px-2 py-1 transition-colors',
-      interactive && present && 'cursor-pointer hover:bg-lapis-wash',
+      interactive && present && 'cursor-pointer hover:bg-sel-wash',
       !present && 'text-ink-faint',
-      sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
+      sel && 'bg-sel-wash shadow-[inset_0_0_0_1px_var(--sel-edge)]',
       !sel && cardLit && props.lit && TONE[props.lit.tone].ring,
-      !sel && !cardLit && hoverLit && 'bg-lapis-wash',
+      !sel && !cardLit && hoverLit && 'bg-sel-wash',
       // one tone → a flat wash; two or more render a gradient via cellStyle instead.
       !sel && !cardLit && !hoverLit && tones.length === 1 && TONE[tones[0]!].wash,
       props.flashVerseId === id && 'animate-verse-flash',

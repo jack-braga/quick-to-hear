@@ -226,9 +226,9 @@ test('v2 parallel translations: tick a second to view side by side (every column
   await expect(page.getByText(/course of Abijah/i)).toBeVisible(); // ASV's distinct wording (v5)
   await page.keyboard.press('Escape'); // close the menu
 
-  // Cross-column hover: hovering a verse in one column lights that verse in both.
+  // Cross-column hover: hovering a verse in one column lights that verse in both (neutral sel wash).
   await page.locator('[data-v="LUKE.1.6"]').first().hover();
-  await expect(page.locator('[data-v="LUKE.1.6"]').nth(1)).toHaveClass(/lapis-wash/);
+  await expect(page.locator('[data-v="LUKE.1.6"]').nth(1)).toHaveClass(/sel-wash/);
 
   // Every column is clickable now — click the ASV (second) column's verse → the action bar.
   await page.locator('[data-v="LUKE.1.8"]').nth(1).click();

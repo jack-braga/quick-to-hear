@@ -81,6 +81,16 @@ export default {
           DEFAULT: 'var(--rubric)',
           wash: 'var(--rubric-wash)',
         },
+        amber: {
+          wash: 'var(--amber-wash)',
+          edge: 'var(--amber-edge)',
+        },
+        // Neutral verse hover/selection — deliberately a non-tone hue (teal), so a selected or
+        // hovered verse never reads as a lapis/amber/rubric annotation tone.
+        sel: {
+          wash: 'var(--sel-wash)',
+          edge: 'var(--sel-edge)',
+        },
       },
       fontFamily: {
         // The passage is the subject: a humanist serif is reserved for Scripture

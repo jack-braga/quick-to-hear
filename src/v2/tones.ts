@@ -17,11 +17,11 @@ export const TONE: Record<
       '-translate-x-[3px] border-rubric bg-rubric-wash shadow-[0_0_0_2px_var(--rubric),0_8px_20px_-8px_rgba(166,50,30,0.4)]',
   },
   amber: {
-    wash: 'bg-[rgba(185,138,30,0.13)]',
-    ring: 'bg-[rgba(185,138,30,0.13)] shadow-[inset_0_0_0_2px_#b98a1e]',
+    wash: 'bg-amber-wash',
+    ring: 'bg-amber-wash shadow-[inset_0_0_0_2px_#b98a1e]',
     borderL: 'border-l-[#b98a1e]',
     cardLit:
-      '-translate-x-[3px] border-[#b98a1e] bg-[rgba(185,138,30,0.13)] shadow-[0_0_0_2px_#b98a1e,0_8px_20px_-8px_rgba(185,138,30,0.4)]',
+      '-translate-x-[3px] border-[#b98a1e] bg-amber-wash shadow-[0_0_0_2px_#b98a1e,0_8px_20px_-8px_rgba(185,138,30,0.4)]',
   },
   lapis: {
     wash: 'bg-lapis-wash',
@@ -33,11 +33,11 @@ export const TONE: Record<
 };
 
 /** The wash colour per tone as a raw CSS value — for the diagonal multi-tone stripe a verse gets
- *  when it carries two or more tones (built inline as a repeating-linear-gradient). rubric/lapis
- *  are theme-adaptive vars; amber has no var, so its fixed rgba mirrors `TONE.amber.wash`. */
+ *  when it carries two or more tones (built inline as a repeating-linear-gradient). All three are
+ *  theme-adaptive vars, so the stripe brightens/dims with light/dark like the flat washes. */
 export const TONE_WASH: Record<AnnotationTone, string> = {
   rubric: 'var(--rubric-wash)',
-  amber: 'rgba(185,138,30,0.13)',
+  amber: 'var(--amber-wash)',
   lapis: 'var(--lapis-wash)',
 };
 

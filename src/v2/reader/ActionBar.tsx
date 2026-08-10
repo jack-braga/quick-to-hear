@@ -35,7 +35,7 @@ export function ActionBar({
       role="toolbar"
       aria-label="Do something with the selected verses"
       style={style}
-      className="fixed z-40 flex -translate-x-1/2 -translate-y-3 items-center gap-0.5 rounded-[10px] bg-ink p-1 shadow-[0_10px_30px_-8px_rgba(0,0,0,0.5)] dark:border dark:border-[#2c2f36]"
+      className="fixed z-40 flex -translate-x-1/2 -translate-y-3 items-center gap-0.5 rounded-[10px] bg-[#221f1a] p-1 shadow-[0_10px_30px_-8px_rgba(0,0,0,0.5)] dark:border dark:border-[#3c414c]"
     >
       <span className="whitespace-nowrap px-2 pl-1.5 font-mono text-[11px] text-[#cfc9bd]">{label}</span>
       <span className="mx-0.5 h-[18px] w-px bg-white/15" />
