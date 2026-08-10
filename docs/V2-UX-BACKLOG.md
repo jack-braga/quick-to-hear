@@ -42,11 +42,21 @@ now and card-ify them later.
 - Net: this is **Option C** (Map + COMA get the right panel; Read stays bespoke + clean), with COMA's
   panel being *answer-cards* rather than a static prompts list.
 
-**General capability decided (owner, 2026-08-11): inline anchor editing on ANY card.** You can change
-a card's anchor verse(s) after creation, done **inline** in the UI (owner prefers this over a separate
-"edit-anchor mode"). Candidate gesture (in design): click a card's anchor chip → the card enters
-"capture" state → your next passage selection becomes its anchor. Applies to notes, questions, and
-COMA answer-cards alike. *(Related deferred item in §6 "edit anchor verses" is now promoted to active.)*
+**General capability decided (owner, 2026-08-11): inline anchor editing on ANY card, via click-chip
+capture.** You can change a card's anchor verse(s) after creation, done **inline** (owner prefers this
+over a separate "edit-anchor mode"). **Gesture chosen (owner, after `v2-coma-answer-cards.html`):
+click the card's anchor chip** (or the faint `⌖ anchor` when empty) → the card enters "capture" state
+(rings; a hint shows over the passage) → your next passage selection sets the anchor → Esc/Done/click-
+chip-again confirms. **This exact capability applies to every card kind — note, question, and COMA
+answer alike** (owner-confirmed 2026-08-11). Capture should reuse the existing drag-range / ⌘-disjoint
+selection primitive (not just single-click). *(The §6 "edit anchor verses" item is promoted to active.)*
+
+**COMA answer-cards model decided (owner, 2026-08-11): "answer-on-demand."** In the COMA lens the
+genre's Helm prompts sit as quiet rows grouped by heading (Context/Observation/Meaning/Application);
+each has a **✎ Answer** affordance. Clicking it spawns an **answer-card** (answer field + an editable
+anchor via the click-chip gesture above) for that prompt; unanswered prompts stay as quiet one-liners.
+The Helm attribution renders at the foot (inviolable rule 8). Chosen over "every prompt a card" (too
+many empty boxes) and "prompts up top / free answers." *(See open questions below — still to confirm.)*
 
 **Increment #4 is the point of Layout B**; 1–3 were the groundwork (reclaim width, unify menus). The
 `v2-panel-filters.html` mockup specifies it exactly: a 380px right panel, chips `All · Map · COMA ·
