@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStudyStore } from '@/store/study';
 import { studyLabel } from '@/types/study';
 import { DayNightToggle } from '@/v2/DayNightToggle';
+import { Help } from '@/v2/Help';
 
 /**
  * The v2 landing (ROADMAP-v2 §2) — the leaf-on-a-desk aesthetic applied to the study list.
@@ -46,11 +47,17 @@ export default function Home() {
         </span>
         <span className="font-scripture text-[18px]">a workbook for preparing a Bible study</span>
         <div className="flex-1" />
+        <a href="#/about" className="mr-1 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint hover:text-ink">
+          About
+        </a>
         <DayNightToggle />
       </header>
 
       <main className="mx-auto w-full max-w-3xl px-5 py-12">
-        <h1 className="font-scripture text-[34px] leading-tight">Prepare a Bible study</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="font-scripture text-[34px] leading-tight">Prepare a Bible study</h1>
+          <Help helpKey="home.intro" label="What this is" />
+        </div>
         <p className="mt-2 max-w-xl text-[15px] text-ink-soft">
           From a passage reference to a printable handout and leader’s notes — structured,
           prompted, and checked. It never writes your content; it recycles your work forward.

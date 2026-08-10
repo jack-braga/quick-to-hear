@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — help affordance options (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.1); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.13); --amber-ink: #8a6a16;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 12px 32px -12px rgba(30,27,20,0.22);
+        --pop-shadow: 0 2px 6px rgba(30,27,20,0.08), 0 20px 44px -14px rgba(30,27,20,0.34);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #131418; --leaf: #1c1e24; --panel: #20232b;
+        --ink: #e9e5db; --ink-soft: #9a958a; --ink-faint: #6b675d;
+        --line: #2b2e36;
+        --lapis: #86a6ea; --lapis-ink: #bcd0f6; --lapis-wash: rgba(124,160,230,0.16); --lapis-edge: rgba(124,160,230,0.4);
+        --amber-wash: rgba(217,182,91,0.14); --amber-ink: #e2c877;
+        --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 18px 40px -14px rgba(0,0,0,0.6);
+        --pop-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 24px 50px -14px rgba(0,0,0,0.7);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+
+      .topbar { display: flex; align-items: center; gap: 16px; height: 54px; padding: 0 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .grow { flex: 1; }
+      .toggle { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); width: 32px; height: 32px; border-radius: 8px; }
+
+      .wrap { max-width: 900px; margin: 0 auto; padding: 30px 22px 90px; }
+      h1 { font-family: var(--font-scripture); font-weight: 600; font-size: 26px; margin: 0 0 4px; }
+      .lead { color: var(--ink-soft); font-size: 14px; margin: 0 0 6px; max-width: 74ch; }
+      .lead b { color: var(--ink); }
+
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 26px; }
+      @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+      .opt { border: 1px solid var(--line); border-radius: 14px; background: color-mix(in srgb, var(--leaf) 55%, var(--desk)); padding: 18px; }
+      .opt-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 3px; }
+      .opt-head .n { font-family: var(--font-mono); font-size: 11px; color: #fff; background: var(--lapis); border-radius: 5px; padding: 2px 7px; }
+      :root[data-theme='night'] .opt-head .n { color: #10131a; }
+      .opt-head h2 { font-family: var(--font-scripture); font-weight: 600; font-size: 15.5px; margin: 0; }
+      .opt-desc { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 16px; min-height: 34px; }
+      .opt-try { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--lapis-ink); margin-bottom: 10px; }
+
+      /* the field */
+      .field-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+      .field-head label { font-size: 13px; font-weight: 600; color: var(--ink); }
+      .input { width: 100%; border: 1px solid var(--line); background: var(--leaf); border-radius: 8px; padding: 8px 10px; font-family: var(--font-scripture); font-size: 14px; color: var(--ink); box-shadow: var(--shadow); }
+      .input::placeholder { color: var(--ink-faint); font-style: italic; }
+      .help-i-inline { margin-top: 7px; font-size: 12px; line-height: 1.5; color: var(--ink-soft); }
+      .help-i-inline em { color: var(--ink); }
+
+      /* the (i) trigger + popover */
+      .help { position: relative; display: inline-flex; }
+      .i { width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--lapis-edge); color: var(--lapis-ink); font-size: 9.5px; font-family: var(--font-mono); display: grid; place-items: center; background: var(--leaf); padding: 0; line-height: 1; }
+      .i:hover { background: var(--lapis-wash); }
+      .lbl-trigger { border-bottom: 1px dotted var(--lapis-edge); cursor: help; }
+
+      .pop { position: absolute; top: 22px; left: -6px; z-index: 10; width: 290px; background: var(--leaf); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--pop-shadow); padding: 11px 12px; display: none; }
+      .help.show .pop { display: block; }
+      .pop::before { content: ''; position: absolute; top: -6px; left: 12px; width: 11px; height: 11px; background: var(--leaf); border-left: 1px solid var(--line); border-top: 1px solid var(--line); transform: rotate(45deg); }
+      .pop-i { font-size: 12.5px; line-height: 1.55; color: var(--ink); }
+      .pop-i em { font-style: italic; }
+      .pop-e { display: none; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+      .help.full .pop-e { display: block; }
+      .pop-foot { display: flex; align-items: center; gap: 8px; margin-top: 9px; }
+      .pop-more { border: none; background: none; padding: 0; font-family: var(--font-mono); font-size: 11px; color: var(--lapis-ink); }
+      .pop-hint { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .pop-close { margin-left: auto; border: none; background: none; color: var(--ink-faint); font-size: 12px; padding: 0; display: none; }
+      .help.pinned .pop-close { display: inline; }
+      /* per-mode footer visibility */
+      .help[data-mode='hoverclick'].show:not(.pinned) .pop-hint { display: inline; } .pop-hint { display: none; }
+      .help[data-mode='clickmore'].show:not(.full) .pop-more { display: inline; } .pop-more { display: none; }
+
+      .thoughts { margin-top: 34px; border-top: 1px solid var(--line); padding-top: 22px; }
+      .thoughts h3 { font-family: var(--font-scripture); font-weight: 600; font-size: 17px; margin: 0 0 10px; }
+      .tcols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+      @media (max-width: 760px) { .tcols { grid-template-columns: 1fr; } }
+      .tcols b { font-size: 13px; }
+      .tcols ul { margin: 6px 0 0; padding-left: 18px; }
+      .tcols li { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 4px; }
+      .rec { margin-top: 18px; border: 1px solid var(--lapis-edge); background: var(--lapis-wash); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; color: var(--ink); }
+      .rec b { color: var(--lapis-ink); }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+      <span class="grow"></span>
+      <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+    </div>
+
+    <div class="wrap">
+      <h1>Help affordance — four options</h1>
+      <p class="lead">Your model: <b>all teaching hidden behind an (i)</b> — <b>hover</b> for the short version, <b>click</b> for the full version. No Full/Brief mode. Below are four takes on it (A is your literal proposal). Hover and click each (i); the ✕ or a click-away closes a pinned one.</p>
+
+      <div class="grid">
+        <!-- A -->
+        <div class="opt">
+          <div class="opt-head"><span class="n">A</span><h2>Hover = short · Click = full</h2></div>
+          <p class="opt-desc">Your proposal. Hovering the (i) shows the [I] line; clicking it pins the popover open and reveals the fuller [E].</p>
+          <div class="opt-try">▸ hover the (i), then click it</div>
+          <div class="field-head">
+            <label>Theme</label>
+            <span class="help" data-mode="hoverclick">
+              <button class="i">i</button>
+              <span class="pop">
+                <span class="pop-i">The theme is what the passage says, in one sentence — not its topic (prayer, suffering) but its point. Fill in the frame: <em>In this passage, [author] shows that ___.</em></span>
+                <span class="pop-e">A topic is a word; a theme is a sentence. “Suffering” is a topic; “Suffering does not mean God has abandoned his people” is a theme, because it makes a claim you could agree or disagree with. Push it until it needs <em>this</em> text.</span>
+                <span class="pop-foot"><span class="pop-hint">click to read more →</span><button class="pop-close">✕</button></span>
+              </span>
+            </span>
+          </div>
+          <input class="input" placeholder="In this passage, Luke shows that…" />
+        </div>
+
+        <!-- B -->
+        <div class="opt">
+          <div class="opt-head"><span class="n">B</span><h2>Click only · “more” inside</h2></div>
+          <p class="opt-desc">No hover (works the same on touch). Clicking the (i) opens the [I]; a <b>▾ Tell me more</b> inside expands the [E].</p>
+          <div class="opt-try">▸ click the (i), then “Tell me more”</div>
+          <div class="field-head">
+            <label>Expected answer</label>
+            <span class="help" data-mode="clickmore">
+              <button class="i">i</button>
+              <span class="pop">
+                <span class="pop-i">Before this question can join the study, write the answer you expect. It's the one thing the tool requires — if you can't say what a good answer looks like, the question isn't ready.</span>
+                <span class="pop-e">This is the only hard rule; everything else is a warning you can override. Writing the expected answer forces three things at once: that the question really has an answer in the text, that it's worth the time, and that you'll know a good answer when you hear it. It never appears on the handout — it's for you.</span>
+                <span class="pop-foot"><button class="pop-more">▾ Tell me more</button><button class="pop-close">✕</button></span>
+              </span>
+            </span>
+          </div>
+          <input class="input" placeholder="Expected answer (what the text gives)…" />
+        </div>
+
+        <!-- C -->
+        <div class="opt">
+          <div class="opt-head"><span class="n">C</span><h2>The label is the trigger</h2></div>
+          <p class="opt-desc">No separate icon: the field <b>label</b> carries a dotted underline. Hover it for the short version, click it for the full — one fewer glyph on screen.</p>
+          <div class="opt-try">▸ hover the dotted label, then click it</div>
+          <div class="field-head">
+            <span class="help" data-mode="hoverclick">
+              <label class="lbl-trigger" tabindex="0">Theme</label>
+              <span class="pop" style="left:-4px">
+                <span class="pop-i">The theme is what the passage says, in one sentence — not its topic but its point. Fill in the frame: <em>In this passage, [author] shows that ___.</em></span>
+                <span class="pop-e">A topic is a word; a theme is a sentence. Push it until it would fit no other passage equally well.</span>
+                <span class="pop-foot"><span class="pop-hint">click to read more →</span><button class="pop-close">✕</button></span>
+              </span>
+            </span>
+          </div>
+          <input class="input" placeholder="In this passage, Luke shows that…" />
+        </div>
+
+        <!-- D -->
+        <div class="opt">
+          <div class="opt-head"><span class="n">D</span><h2>Hybrid — [I] shown, [E] on click</h2></div>
+          <p class="opt-desc">Answers the discoverability worry: the one-line [I] is always visible for a make-or-break field; the (i) opens only the fuller [E]. (Reserve this for the ★★ fields; tooltip-only elsewhere.)</p>
+          <div class="opt-try">▸ click the (i) for the deeper version</div>
+          <div class="field-head">
+            <label>Expected answer</label>
+            <span class="help" data-mode="clickext">
+              <button class="i">i</button>
+              <span class="pop">
+                <span class="pop-e" style="display:block;margin:0;padding:0;border:0;color:var(--ink)">This is the only hard rule; everything else is a warning you can override. Writing the expected answer forces three things at once: a real answer in the text, worth the time, and one you'll recognise. It never appears on the handout — it's for you.</span>
+                <span class="pop-foot"><button class="pop-close">✕</button></span>
+              </span>
+            </span>
+          </div>
+          <input class="input" placeholder="Expected answer (what the text gives)…" />
+          <div class="help-i-inline">The one thing the tool requires: write the answer you expect. If you can't say what a good answer looks like, the question isn't ready.</div>
+        </div>
+      </div>
+
+      <!-- thoughts -->
+      <div class="thoughts">
+        <h3>My thoughts / trade-offs</h3>
+        <div class="tcols">
+          <div>
+            <b>What's good about hiding it all (A–C)</b>
+            <ul>
+              <li>Cleanest — nothing competes with the passage or the field (rule 2).</li>
+              <li>Progressive: a glance (hover) vs. a read (click).</li>
+              <li>No Full/Brief mode to explain or maintain.</li>
+            </ul>
+          </div>
+          <div>
+            <b>Two things to weigh</b>
+            <ul>
+              <li><b>Discoverability:</b> the teaching is the tool's substance — hidden behind hover, some users never meet it, especially the make-or-break fields. → why D exists.</li>
+              <li><b>Touch:</b> phones/tablets have no hover, so tap must open it (A/C collapse to “tap = short, tap again = full”). B already works this way.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="rec">
+          <b>My lean:</b> ship <b>B's behaviour</b> (click-to-open, “more” inside) as the engine — it's identical on mouse and touch and needs no hover hacks — with the (i) also opening on hover for mouse users (so it feels like A). Then use <b>D</b> (always-on [I]) for just the two ★★ fields — faithfulness and expected-answer — where users quit. Everything else: (i)-only. Happy to go pure-tooltip (A) if you'd rather keep it uniform.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const night = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', night ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = night ? '☾' : '☀';
+      });
+
+      function closeAll(except) {
+        document.querySelectorAll('.help').forEach((h) => { if (h !== except) h.classList.remove('show', 'full', 'pinned'); });
+      }
+
+      document.querySelectorAll('.help').forEach((h) => {
+        const mode = h.dataset.mode;
+        const trigger = h.querySelector('.i, .lbl-trigger');
+        const pop = h.querySelector('.pop');
+        const more = h.querySelector('.pop-more');
+        const close = h.querySelector('.pop-close');
+
+        if (mode === 'hoverclick') {
+          const enter = () => { closeAll(h); h.classList.add('show'); };
+          const leave = () => { if (!h.classList.contains('pinned')) h.classList.remove('show'); };
+          trigger.addEventListener('mouseenter', enter);
+          trigger.addEventListener('mouseleave', leave);
+          pop.addEventListener('mouseenter', () => h.classList.add('show'));
+          pop.addEventListener('mouseleave', leave);
+          trigger.addEventListener('click', (e) => { e.stopPropagation(); const on = h.classList.toggle('pinned'); h.classList.toggle('full', on); h.classList.add('show'); });
+        } else if (mode === 'clickmore') {
+          trigger.addEventListener('click', (e) => { e.stopPropagation(); const on = !h.classList.contains('pinned'); closeAll(h); h.classList.toggle('pinned', on); h.classList.toggle('show', on); if (!on) h.classList.remove('full'); });
+          more && more.addEventListener('click', (e) => { e.stopPropagation(); h.classList.toggle('full'); });
+        } else { // clickext (D)
+          trigger.addEventListener('click', (e) => { e.stopPropagation(); const on = !h.classList.contains('pinned'); closeAll(h); h.classList.toggle('pinned', on); h.classList.toggle('show', on); });
+        }
+        close && close.addEventListener('click', (e) => { e.stopPropagation(); h.classList.remove('show', 'full', 'pinned'); });
+        pop.addEventListener('click', (e) => e.stopPropagation());
+      });
+
+      document.addEventListener('click', () => closeAll(null));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(null); });
+    </script>
+  </body>
+</html>

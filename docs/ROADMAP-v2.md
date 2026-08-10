@@ -122,9 +122,35 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.5 — Reading modes** ✅ | The global Manuscript/flatten toggle (Q4). | Pure `manuscriptModel` flattens the render to one continuous flow (verse numbers only); a segmented toggle in the leaf head, persisted like ink-saver. **Section pre-suggestion dropped (owner): making sections is exegetical work.** Any-boundary sectioning already shipped in v2.2. |
 | **v2.6 — Phases as lenses** ✅ | Flesh out the lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | All seven lenses live: Set up (full: genre/group/duration/series/intro + paste), **Read** (pray-and-read counter + genre reading tip), Map, **COMA** (verbatim Helm prompts per genre + on-screen attribution), Theme & aim (theme/aim/know-feel-do/Christ route/prayer), Build (running order + per-question load-bearing/aim/gospel-plain), and Check (the audit + coverage). |
 | **v2.7 — Exports** ✅ | The two printable documents (handout + leader) + markdown downloads, from a **Check lens** hub; documents restyled to the v2 language with a per-print **Ink-saver / Colour** toggle. | Pure `projectForExport` maps v2 annotations + running order → the v1 export model (`handoutModel`/`leaderModel` reused unchanged); new `src/v2/print/*` render them white-bg + Scripture serif + mono labels + hairline rules, monochrome by default, one lapis accent when the toggle is off (preview + print match; choice persisted). |
-| **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
+| **v2.8 — Teaching + attribution pass** ✅ | Surface the (already-written) `[I]`/`[E]` help in v2 + the attribution page. | A v2 `Help` component — an **(i)** that opens the inline `[I]`, with **▾ Tell me more** for `[E]` (owner: click-to-open, no Full/Brief mode; works the same on touch). Wired across Set-up / Read / COMA / Theme & aim / Build / Check / Home. A v2 **About** page (`#/about`) renders `attribution.page.md` with the "verbatim only for COMA" framing. **The `[X]` worked examples stay unwritten — owner's authorship; the disclosure appears automatically once a `<!-- example -->` block is added.** |
 
 ## 5. Progress log
+
+### 2026-08-10 — v2.8 teaching help + attribution (surfaced in v2)
+
+**Shipped.** The teaching prose was **already written** (69 files under `content/help/**`, nearly all
+with `[I]` + `[E]`); v2's shell just wasn't showing any of it. v2.8 surfaces it.
+
+- **`src/v2/Help.tsx`** — a small **(i)** beside a field. **Owner decision:** all teaching lives
+  behind the (i) — **click to open** the inline `[I]`, **▾ Tell me more** for the `[E]` (and the
+  `[X]` example once authored), ✕ / click-away / Esc to close. No Full/Brief mode; identical on
+  mouse and touch (chosen from a 4-option affordance gallery — Option B). Reuses the pure
+  `helpEntry` loader; renders **nothing** where no prose exists. (+ 3 unit tests.)
+- **Wired across the lenses** — Set-up (reference/genre/duration/group/series/translations), Read,
+  COMA, Theme & aim (theme/author-aim/group-aim/know-feel-do/christ-route/prayer + the ★★
+  *faithfulness* reassurance by the heading), Build (the ★★ *expected-answer* rule + sequence),
+  Check (the audit + coverage), and Home. Credits travel with the text (e.g. christ-route's
+  "— after Goldsworthy").
+- **v2 About page** (`#/about`, `src/v2/pages/About.tsx`) renders the authored `attribution.page`
+  content, linked from the reader top bar + Home. It frames credit exactly per the owner rule:
+  **only COMA is "verbatim, by permission"**; Goldsworthy is "paraphrased and cited, never quoted";
+  method + code are "the tool's own." The `[X]` worked examples remain the owner's to write.
+
+Verified live (Playwright MCP): the Theme (i) opens the real `[I]` prose, "Tell me more" reveals the
+`[E]`, ✕/Esc/click-away close it; the About page renders the credits + further-reading with the
+verbatim-only-for-COMA framing; 0 console errors bar the known Router warnings. Two new e2e. Design
+mockups: `docs/mockups/v2-teaching-help.html` + `v2-help-affordances.html`. Gate green:
+`typecheck && lint && test (298) && build && test:e2e (16)`.
 
 ### 2026-08-10 — Parallel translations (switcher + side-by-side)
 
@@ -395,10 +421,11 @@ overlines, question numbers) to ink, so the user decides colour-vs-economy; prev
 `src/v2/print/{PrintShell,PrintPassage,HandoutDoc,LeaderDoc}` + the `.qth-doc` CSS scope; v1's print
 components stay frozen and are removed with the rest of v1.
 
-**Next up.** *(Read + COMA, the inline `@`-mention cross-references, v2.5 reading modes, and parallel
-translations all landed 2026-08-10 — see the top of this log.)* (a) **v2.8** — teaching/help text +
-the attribution "verbatim only for COMA" sweep. (b) Remove the v1 crib. (c) Polish deferrals: BSB
-edition; a mobile-responsive shell (the lens rail + margin aren't phone-friendly yet).
+**Next up.** *(Read + COMA, the inline `@`-mention cross-references, v2.5 reading modes, parallel
+translations, and v2.8 teaching help + attribution all landed 2026-08-10 — see the top of this log.)*
+(a) **Remove the v1 crib** — v2 is at parity; delete the frozen v1 source + its superseded print
+components. (b) Owner authorship: the `[X]` worked examples (the disclosure is wired). (c) Polish
+deferrals: BSB edition; a mobile-responsive shell (the lens rail + margin aren't phone-friendly yet).
 
 ---
 

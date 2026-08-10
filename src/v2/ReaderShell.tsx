@@ -458,6 +458,13 @@ export function ReaderShell({ study }: { study: Study }) {
             </button>
           ))}
         </nav>
+        <a
+          href="#/about"
+          title="Attribution & further reading"
+          className="hidden font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint hover:text-ink sm:inline"
+        >
+          About
+        </a>
         <DayNightToggle />
       </header>
 

@@ -14,6 +14,7 @@ import { BOOKS, inferGenreForBook, parseReference, type ParsedReference } from '
 import { allVerses } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
 import type { Genre, GroupComposition, Study } from '@/types/study';
+import { Help } from '@/v2/Help';
 import { PastePanel } from '@/v2/lenses/PastePanel';
 
 /**
@@ -131,9 +132,12 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
         {/* 1 — reference + live validator (locked once translations are loaded) */}
         {!hasTranslations ? (
           <div className="space-y-2">
-            <label htmlFor="v2-reference" className={LABEL}>
-              Passage reference
-            </label>
+            <div className="flex items-center gap-1.5">
+              <label htmlFor="v2-reference" className={LABEL}>
+                Passage reference
+              </label>
+              <Help helpKey="p1.reference" label="Passage reference" />
+            </div>
             <div className="relative">
               <input
                 id="v2-reference"
@@ -199,7 +203,10 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
 
         {/* 2 — import translations */}
         <div className="space-y-2">
-          <span className={LABEL}>Translations</span>
+          <span className="flex items-center gap-1.5">
+            <span className={LABEL}>Translations</span>
+            <Help helpKey="p1.comparison" label="Translations" />
+          </span>
           {loadedIds.length > 0 && (
             <ul className="space-y-1.5">
               {loadedIds.map((id) => {
@@ -304,9 +311,12 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
           <div className="space-y-4 border-t border-line pt-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label htmlFor="v2-genre" className={LABEL}>
-                  Genre <span className="normal-case tracking-normal text-ink-faint">(inferred)</span>
-                </label>
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="v2-genre" className={LABEL}>
+                    Genre <span className="normal-case tracking-normal text-ink-faint">(inferred)</span>
+                  </label>
+                  <Help helpKey="p1.genre" label="Genre" />
+                </div>
                 <select
                   id="v2-genre"
                   className={FIELD}
@@ -325,9 +335,12 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                 )}
               </div>
               <div className="space-y-2">
-                <label htmlFor="v2-duration" className={LABEL}>
-                  Duration
-                </label>
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="v2-duration" className={LABEL}>
+                    Duration
+                  </label>
+                  <Help helpKey="p1.duration" label="Duration" />
+                </div>
                 <select
                   id="v2-duration"
                   className={FIELD}
@@ -345,9 +358,12 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="v2-group" className={LABEL}>
-                Group composition
-              </label>
+              <div className="flex items-center gap-1.5">
+                <label htmlFor="v2-group" className={LABEL}>
+                  Group composition
+                </label>
+                <Help helpKey="p1.group" label="Group composition" />
+              </div>
               <select
                 id="v2-group"
                 className={FIELD}
@@ -369,9 +385,12 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="v2-series" className={LABEL}>
-                Series note <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
-              </label>
+              <div className="flex items-center gap-1.5">
+                <label htmlFor="v2-series" className={LABEL}>
+                  Series note <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
+                </label>
+                <Help helpKey="p1.series" label="Series note" />
+              </div>
               <input
                 id="v2-series"
                 className={FIELD}

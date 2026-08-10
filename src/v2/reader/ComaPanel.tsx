@@ -1,5 +1,6 @@
 import { comaContent, comaSetForGenre } from '@/lib/content';
 import type { Study } from '@/types/study';
+import { Help } from '@/v2/Help';
 
 /**
  * The COMA lens margin (SPEC Phase 4) — the guided **Context · Observation · Meaning · Application**
@@ -27,8 +28,9 @@ export function ComaPanel({ study }: { study: Study }) {
 
   return (
     <div>
-      <div className="mx-1 mb-3.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
+      <div className="mx-1 mb-3.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
         COMA — work the text
+        <Help helpKey="p4.overview" label="COMA" />
       </div>
 
       {!study.setup.genre ? (

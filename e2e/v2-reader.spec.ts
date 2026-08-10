@@ -317,6 +317,37 @@ test('v2: theme & aim + set-up reach the documents, and the Check lens audits', 
   await expect(page.getByText('A study on Gods timing.')).toBeVisible();
 });
 
+test('v2.8 teaching help: the (i) opens the inline guidance, and "Tell me more" reveals the detail', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /theme & aim/i }).first().click();
+
+  // Closed by default; clicking the (i) opens the inline [I] guidance.
+  await expect(page.getByRole('note')).toHaveCount(0);
+  await page.getByRole('button', { name: /Guidance: Theme/i }).click();
+  await expect(page.getByText(/what the passage actually claims/i)).toBeVisible();
+  // The [E] detail is hidden until "Tell me more".
+  await expect(page.getByText(/A topic is a word/i)).toHaveCount(0);
+  await page.getByRole('button', { name: /tell me more/i }).click();
+  await expect(page.getByText(/A topic is a word/i)).toBeVisible();
+
+  // Escape closes it.
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('note')).toHaveCount(0);
+});
+
+test('v2.8 attribution page: only COMA is framed as verbatim', async ({ page }) => {
+  await page.goto('./#/about');
+  await expect(page.getByRole('heading', { name: /Attribution & further reading/i })).toBeVisible();
+  await expect(page.getByText(/Reproduced verbatim, by permission/i)).toBeVisible();
+  await expect(page.getByText(/paraphrased and cited, never quoted at length/i)).toBeVisible();
+});
+
 test('v1 is archived under /v1/ and reachable', async ({ page }) => {
   await page.goto('./#/v1/');
   await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();

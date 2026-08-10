@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { useAutosave } from '@/hooks/useAutosave';
 import { useOpenStudy } from '@/hooks/useOpenStudy';
 import { ReaderShell } from '@/v2/ReaderShell';
+import About from '@/v2/pages/About';
 import Home from '@/v2/pages/Home';
 import NotFound from '@/v2/pages/NotFound';
 import PrintHandout from '@/v2/pages/PrintHandout';
@@ -46,6 +47,7 @@ export function V2App() {
       <Route path="/print/:id/handout" element={<PrintHandout />} />
       <Route path="/print/:id/leader" element={<PrintLeader />} />
       <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
       <Route path="/styleguide" element={<Styleguide />} />
       <Route path="/study/:id" element={<StudyIndexRedirect />} />
       <Route path="/study/:id/reader" element={<ReaderRoute />} />

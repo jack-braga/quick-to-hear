@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en" data-theme="day" data-guidance="full">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — teaching help + attribution (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.1); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.13); --amber-ink: #8a6a16;
+        --rubric: #a6321e;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 12px 32px -12px rgba(30,27,20,0.22);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #131418; --leaf: #1c1e24; --panel: #20232b;
+        --ink: #e9e5db; --ink-soft: #9a958a; --ink-faint: #6b675d;
+        --line: #2b2e36;
+        --lapis: #86a6ea; --lapis-ink: #bcd0f6; --lapis-wash: rgba(124,160,230,0.16); --lapis-edge: rgba(124,160,230,0.4);
+        --amber-wash: rgba(217,182,91,0.14); --amber-ink: #e2c877;
+        --rubric: #e0785f;
+        --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 18px 40px -14px rgba(0,0,0,0.6);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+
+      .topbar { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .ref { font-family: var(--font-scripture); font-size: 19px; }
+      .grow { flex: 1; }
+      .seg { display: inline-flex; align-items: center; gap: 2px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 3px; }
+      .seg-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); margin-right: 4px; }
+      .seg button { border: none; background: none; border-radius: 5px; padding: 3px 9px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
+      .seg button[aria-pressed='true'] { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg button[aria-pressed='true'] { color: #10131a; }
+      .about { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 5px 10px; }
+      .toggle { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); width: 32px; height: 32px; border-radius: 8px; }
+
+      .wrap { max-width: 720px; margin: 0 auto; padding: 30px 22px 70px; }
+      .lens-tag { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .18em; color: var(--ink-faint); margin-bottom: 6px; }
+      h1.lens { font-family: var(--font-scripture); font-weight: 600; font-size: 25px; margin: 0 0 4px; }
+      .lead { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 20px; }
+
+      .field { margin-bottom: 26px; }
+      .field-head { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+      .field-head label { font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--ink); }
+      .info { width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--line); color: var(--ink-faint); font-size: 10px; display: grid; place-items: center; font-family: var(--font-mono); }
+      .input { width: 100%; border: 1px solid var(--line); background: var(--leaf); border-radius: 8px; padding: 9px 11px; font-family: var(--font-scripture); font-size: 15px; color: var(--ink); box-shadow: var(--shadow); }
+      .input::placeholder { color: var(--ink-faint); font-style: italic; }
+
+      /* the quiet always-on [I] help */
+      .help-i { margin-top: 7px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+      .help-i b, .help-i strong { color: var(--ink); font-weight: 600; }
+      .help-i em { color: var(--ink); font-style: italic; }
+      /* the [E] disclosure */
+      .more { margin-top: 6px; }
+      .more-btn { display: inline-flex; align-items: center; gap: 5px; border: none; background: none; padding: 0; font-family: var(--font-mono); font-size: 11px; color: var(--lapis-ink); }
+      .more-btn .chev { transition: transform .15s; }
+      .more-btn[aria-expanded='true'] .chev { transform: rotate(180deg); }
+      .more-body { margin-top: 7px; border-left: 2px solid var(--lapis-edge); padding-left: 12px; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); }
+      .more-body em { color: var(--ink); }
+      .credit { margin-top: 7px; font-size: 11.5px; font-style: italic; color: var(--ink-faint); }
+      /* brief mode hides the expandable affordance entirely */
+      :root[data-guidance='brief'] .more { display: none; }
+
+      /* the ★★ reassurance callout */
+      .callout { margin: 26px 0; border: 1px solid var(--line); border-left: 3px solid var(--amber-ink); background: var(--amber-wash); border-radius: var(--radius); padding: 12px 14px; }
+      .callout .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--amber-ink); margin-bottom: 5px; }
+      .callout p { margin: 0; font-size: 13px; color: var(--ink); line-height: 1.55; }
+
+      .divider { border: none; border-top: 1px solid var(--line); margin: 34px 0 24px; }
+
+      /* attribution page */
+      .attr h2 { font-family: var(--font-scripture); font-weight: 600; font-size: 20px; margin: 0 0 4px; }
+      .attr .sub { color: var(--ink-soft); font-size: 12.5px; margin: 0 0 16px; }
+      .attr h3 { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em; color: var(--lapis-ink); margin: 16px 0 5px; }
+      .attr p { font-size: 13px; color: var(--ink-soft); margin: 0 0 8px; line-height: 1.6; }
+      .attr p b { color: var(--ink); }
+      .verbatim { background: var(--lapis-wash); border-radius: 4px; padding: 0 3px; color: var(--lapis-ink); font-weight: 600; }
+
+      .note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); text-align: center; margin: 8px 0 24px; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+      <span class="ref">Luke 1:5–25</span>
+      <span class="grow"></span>
+      <div class="seg" role="group" aria-label="Guidance detail">
+        <span class="seg-label">Guidance</span>
+        <button aria-pressed="true" onclick="setGuidance('full')">Full</button>
+        <button aria-pressed="false" onclick="setGuidance('brief')">Brief</button>
+      </div>
+      <a class="about" href="#attribution">About &amp; credits</a>
+      <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+    </div>
+
+    <div class="wrap">
+      <div class="lens-tag">05 · Theme &amp; aim</div>
+      <h1 class="lens">The passage's spine</h1>
+      <p class="lead">The one line the whole study serves. Guidance sits quietly under each field — always the [I] line; <b>Tell me more</b> opens the fuller reasoning. Flip <b>Guidance → Brief</b> (top right) to collapse to the [I] lines only.</p>
+
+      <!-- Theme -->
+      <div class="field">
+        <div class="field-head"><label>Theme</label><span class="info">i</span></div>
+        <input class="input" placeholder="In this passage, Luke shows that…" />
+        <div class="help-i">The theme is what the passage says, in one sentence. Not its topic (prayer, suffering) but its point: what the passage actually claims. Fill in the frame: <em>In this passage, [author] shows that ___.</em></div>
+        <div class="more">
+          <button class="more-btn" aria-expanded="false" onclick="toggleMore(this)"><span class="chev">▾</span> Tell me more</button>
+          <div class="more-body" hidden>A topic is a word; a theme is a sentence. “Suffering” is a topic. “Suffering does not mean God has abandoned his people” is a theme, because it makes a claim you could agree or disagree with. If your sentence would fit three other passages equally well, it is probably a topic or a truism rather than this passage's theme, so push it until it needs this text.</div>
+        </div>
+      </div>
+
+      <!-- Author's aim -->
+      <div class="field">
+        <div class="field-head"><label>The author's aim</label><span class="info">i</span></div>
+        <input class="input" placeholder="He wrote it so that his readers would…" />
+        <div class="help-i">The aim is what the author wanted to happen: not what the passage says, but what he wrote it to do to his first readers. Fill in the frame: <em>He wrote it so that his readers would ___.</em></div>
+        <div class="more">
+          <button class="more-btn" aria-expanded="false" onclick="toggleMore(this)"><span class="chev">▾</span> Tell me more</button>
+          <div class="more-body" hidden>Theme and aim are a pair, and they are different. The theme is the point; the aim is the effect, the change the author wanted in the people who first received it. A passage written to reassure frightened believers is doing something different from one written to warn complacent ones, even when the theme sounds similar, and the aim is what tells them apart.</div>
+        </div>
+      </div>
+
+      <!-- Faithfulness callout (the ★★ reassurance) -->
+      <div class="callout">
+        <div class="t">Faithfulness is not certainty</div>
+        <p>Faithfulness is not the same as certainty. Several themes could fairly be defended from this passage, and landing among them is faithful, even if another careful reader would choose slightly differently. <span style="color:var(--amber-ink);font-family:var(--font-mono);font-size:11px">▾ more</span></p>
+      </div>
+
+      <!-- Christ route (cited → carries a credit) -->
+      <div class="field">
+        <div class="field-head"><label>How it gets to Christ</label><span class="info">i</span></div>
+        <input class="input" placeholder="This passage reaches Christ by…" />
+        <div class="help-i">Say in one sentence how this passage gets to Christ. Follow the route rather than jumping straight there: text → its place in the Bible's unfolding story → its fulfilment in Christ → us, who are in him.</div>
+        <div class="more">
+          <button class="more-btn" aria-expanded="true" onclick="toggleMore(this)"><span class="chev">▾</span> Tell me more</button>
+          <div class="more-body">The route matters more than the destination. Do not reach for Christ by resemblance, and do not tack the cross onto the end. Trace the line the passage itself sits on: a promise, a covenant, an office, an institution, an unsolved problem. Follow that line forward to him, and then to us in him. <em>— after Goldsworthy</em></div>
+        </div>
+        <p class="credit">The point that inductive guides can assume or skip the whole-Bible connection is after Graeme Goldsworthy, <em>Preaching the Whole Bible as Christian Scripture</em> (Eerdmans, 2000).</p>
+      </div>
+
+      <p class="note">▲ real help text, loaded from content/help/phase5/*.md — the writing already exists; v2 just isn't showing it yet.</p>
+
+      <!-- ================= attribution page ================= -->
+      <hr class="divider" id="attribution" />
+      <div class="attr">
+        <div class="lens-tag">About</div>
+        <h2>Attribution &amp; further reading</h2>
+        <p class="sub">The one place credit is framed exactly: only COMA is reproduced word-for-word; everything else is the tool's own, after the writers named.</p>
+
+        <h3>COMA question sets</h3>
+        <p>Reproduced <span class="verbatim">verbatim, by permission</span>, from David Helm, <b><em>One-to-One Bible Reading</em></b> (© Matthias Media and Holy Trinity Church, 2011). The full attribution appears wherever these question sets are shown, not only here.</p>
+
+        <h3>The Christ connection &amp; its traps</h3>
+        <p>Follow the biblical theology of Graeme Goldsworthy, <b><em>Preaching the Whole Bible as Christian Scripture</em></b> (Eerdmans, 2000). His argument is <b>paraphrased and cited, never quoted at length</b> — “after / informed by,” not reproduced.</p>
+
+        <h3>Method content &amp; code</h3>
+        <p>The guidance, tests, and formulas are the tool's own work (CC BY-SA 4.0); the code is MIT. <b>Everything not marked otherwise is authored here</b>, not copied.</p>
+
+        <h3>Further reading</h3>
+        <p>A short shelf the tool's tradition rests on (Helm · Goldsworthy · Sweatman · Marshall · Robinson · Chapell · Fee &amp; Stuart …). Listing a book here doesn't mean the content came from it — where the tool draws on one directly, it says so.</p>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const night = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', night ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = night ? '☾' : '☀';
+      });
+      function setGuidance(mode) {
+        root.setAttribute('data-guidance', mode);
+        document.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.textContent.toLowerCase() === mode)));
+      }
+      function toggleMore(btn) {
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+        btn.parentElement.querySelector('.more-body').hidden = open;
+      }
+    </script>
+  </body>
+</html>

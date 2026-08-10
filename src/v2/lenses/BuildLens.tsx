@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import type { AimComponent, Annotation, QuestionType } from '@/types/study';
+import { Help } from '@/v2/Help';
 import { isQuestionReady } from '@/v2/annotations';
 import { moveBefore, moveBy, orderedQuestions, QUESTION_TYPE_OPTIONS } from '@/v2/build';
 import { formatVerseIds } from '@/v2/reader/selection';
@@ -48,7 +49,11 @@ export function BuildLens({
   return (
     <article className="mx-auto w-full max-w-[46rem] rounded-leaf border border-line bg-leaf px-[clamp(24px,5vw,52px)] py-10 shadow-leaf">
       <div className="flex items-baseline justify-between gap-4">
-        <h1 className="font-scripture text-[26px] leading-tight text-ink">Build the study</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="font-scripture text-[26px] leading-tight text-ink">Build the study</h1>
+          <Help helpKey="p6e.expected" label="The expected answer (the one hard rule)" />
+          <Help helpKey="p6g.sequence" label="Sequence" />
+        </div>
         <span className="font-mono text-[11px] text-ink-faint">
           {ordered.length} question{ordered.length === 1 ? '' : 's'}
         </span>

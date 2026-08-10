@@ -7,6 +7,7 @@ import { primaryText } from '@/lib/passage';
 import { cn } from '@/lib/utils';
 import { useStudyStore } from '@/store/study';
 import type { CoverageTag, Study } from '@/types/study';
+import { Help } from '@/v2/Help';
 import { isQuestionReady } from '@/v2/annotations';
 import { orderedQuestions } from '@/v2/build';
 import { downloadV2Handout, downloadV2Leader, projectForExport } from '@/v2/export';
@@ -65,7 +66,10 @@ export function CheckLens({ study }: { study: Study }) {
 
   return (
     <article className="mx-auto w-full max-w-[44rem] rounded-leaf border border-line bg-leaf px-[clamp(24px,5vw,52px)] py-10 shadow-leaf">
-      <h1 className="font-scripture text-[26px] leading-tight text-ink">Check &amp; export</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="font-scripture text-[26px] leading-tight text-ink">Check &amp; export</h1>
+        <Help helpKey="p7.audit.intro" label="The checks" />
+      </div>
       <p className="mt-1 text-[14px] text-ink-soft">
         Review the study against the checks, then produce the two documents. Nothing here blocks
         export — the checks are a nudge, not a gate.
@@ -80,7 +84,10 @@ export function CheckLens({ study }: { study: Study }) {
 
       {/* Coverage */}
       <div className="mt-8">
-        <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">Coverage</div>
+        <div className="mb-2 flex items-center gap-1.5">
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">Coverage</span>
+          <Help helpKey="p7.coverage" label="Coverage" />
+        </div>
         {!coverage.hasSections ? (
           <p className="text-[13px] text-ink-soft">Divide the passage into sections (Map) to map coverage.</p>
         ) : (

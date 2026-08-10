@@ -1,6 +1,7 @@
 import { readingTipForGenre } from '@/lib/content';
 import { useStudyStore } from '@/store/study';
 import type { Study } from '@/types/study';
+import { Help } from '@/v2/Help';
 
 /**
  * The Read lens margin (SPEC Phase 2) — the pray-and-read discipline the tool can enforce that
@@ -15,8 +16,9 @@ export function ReadPanel({ study }: { study: Study }) {
 
   return (
     <div>
-      <div className="mx-1 mb-3.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
+      <div className="mx-1 mb-3.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
         Pray &amp; read
+        <Help helpKey="p2.read" label="Pray and read" />
       </div>
 
       <p className="mb-4 text-[13px] leading-[1.55] text-ink-soft">
