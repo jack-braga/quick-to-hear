@@ -54,6 +54,18 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   `rejectByOrigins` (blacklist companion to `filterByOrigins`; chip state = the *hidden* set).
   `ReaderShell.onAction`/`onAddFloating` now stamp `origin:'map'`. Live-verified (Map/COMA/Theme chips
   filter, survives reload). **Two panel switches (hover-reveal, hide-vs-dim) deferred to Slice 3b.**
+- **Field-feedback batch** `f9c3c18` — set-up now **lands on Read** (was skipping it; CTA "Read the
+  passage →"); the panel gained **`＋ mark`** beside `＋ note` (unanchored confusion mark).
+- **Slice 4** `f5719b7` — **inline anchor capture**. Click a card's anchor chip (or dashed `⌖ anchor`)
+  → hint banner + crosshair + card ring; the next passage selection sets the card's verse(s), reusing
+  the drag/⇧/⌘ primitive; Esc / Done / click-chip-again ends. `capturingId` in `ReaderShell`; canvases
+  take `capturing`; `MarginAnnotations` gains `onStartCapture`/`onEndCapture`. **Gotcha (fixed):** the
+  select→anchor commit runs in an *effect*, not the native pointer handler — a mid-gesture store write
+  corrupted ⌘-disjoint. Live-verified (single / range / ⌘ / Esc / Done / reload-persist).
+- **ParallelCanvas gaps** — `bd0ae7a` diagonal multi-tone stripe now in parallel (shared pure
+  `multiToneGradient` in `tones.ts`; shell passes `verseTones`, retired `anchorTone`); `9fce981`
+  manuscript mode now works in parallel (cells render via `verseToLines` — formatted keeps poetry
+  lines, manuscript flattens; prose unchanged).
 
 ## Do next — in slices, each testable + committable
 
@@ -63,13 +75,16 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   filtered-out"** (off = dim the filtered-out cards at ~0.32 opacity instead of removing them) to the
   `MarginAnnotations` filter header, per `v2-panel-filters.html`. Persist both toggles alongside the
   chip set.
-- **Slice 4 — click-chip anchor capture.** A `capturingId` state in `ReaderShell`; while set, a passage
-  selection sets that card's `verseIds` (instead of creating a new annotation), with a hint banner over
-  the canvas + Esc/Done to finish; the card's anchor chip is the trigger. Reuse `useDragSelection`.
+- ~~**Slice 4 — click-chip anchor capture.**~~ ✅ shipped `f5719b7` (see "Shipped so far").
+- **#4c the new Questions lens** — add the 8th lens (`src/v2/lenses.ts` + branch in `ReaderShell`);
+  author + convert-from-prior-cards. **This unblocks item 2** (no Question button in Map): Map is
+  currently the ONLY place to author a question (Build only edits/reorders), so remove the Map Question
+  action only *after* this lands. (Owner call 2026-08-11: "Questions lens first.")
 - Then **#4b COMA** (answer-on-demand cards + `setup.genres` multi-select in `SetupLens` + labelled
-  prompts in `ComaPanel.tsx`), **#4c the new Questions lens** (add the 8th lens to `src/v2/lenses.ts`
-  + branch it in `ReaderShell`; author + convert-from-prior-cards), **#4d Build → pure assembly**,
+  prompts in `ComaPanel.tsx`), **Slice 3b** (the two panel switches), **#4d Build → pure assembly**,
   **#4e Read → strip tints/cards** (pure reading).
+- Still-open parallel item (V2-UX-BACKLOG §4): **sectioning is disabled in parallel** — enable
+  any-verse divide/merge on the primary column while parallel.
 
 ## House rules
 

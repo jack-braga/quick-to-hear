@@ -181,12 +181,13 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
 - **Sectioning disabled in parallel (msg#2304, #2749).** `ParallelCanvas` has no divide/merge
   affordance; you can only section in single-column. Enable any-verse sectioning on the primary column
   while parallel. **[open]**
-- **Manuscript looks identical to formatted in parallel (msg#2749).** The manuscript/flatten transform
-  isn't applied in the parallel path. **[open]**
-- **Diagonal shared-verse highlight not in the app (msg#2091 liked, msg#2749 "not in yet").** A verse
-  carrying 2+ annotation tones should render an alternating diagonal pattern (`.v.multi` in the
-  mockup). Must accommodate **as many colours as are present**, not just two. Ships naturally with
-  increment #4. **[open]**
+- ~~**Manuscript looks identical to formatted in parallel (msg#2749).**~~ **[fixed `9fce981`]** —
+  parallel cells now render via `verseToLines(span)`: formatted keeps the poetry lines/indents,
+  manuscript flattens each verse to prose, so the two modes visibly differ (prose is unchanged).
+- ~~**Diagonal shared-verse highlight not in the app (msg#2091 liked, msg#2749 "not in yet").**~~
+  **[fixed]** — a verse carrying 2+ tones renders the 45° multi-tone stripe (as many colours as
+  present) via the shared pure `multiToneGradient` in `tones.ts`: single-column `eb57bae`, parallel
+  `bd0ae7a`. NB the owner saw it "missing" on live prod = a **deploy lag** (redeploy to ship it).
 - **Note-anchor jump animation should match the note's tone (msg#1999).** Clicking a note's anchor
   snaps to the verse correctly, but the flash should be the colour/style of *that note's kind*, not a
   generic lapis. **[open]**
