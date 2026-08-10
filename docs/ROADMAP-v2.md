@@ -19,6 +19,11 @@
 > frozen v1 workbook is a separate app under `/v1/`. The reader/Map lens works for real against
 > the store (real Luke 1:5–25 + Psalm 23, selection, any-verse sectioning, marks, reload
 > persistence, day/night). See **§7 Progress log** for what shipped, deviations, and next up.
+>
+> **Active line of work (2026-08-11): the "Layout B" shell overhaul + owner UX backlog.** All of the
+> owner's UI/UX feedback and the Layout-B increment plan (1–3 shipped, **#4 open**) are captured in
+> **`docs/V2-UX-BACKLOG.md`** — read it before doing UX work. Next target: **increment #4, the single
+> filtered card panel** (`docs/mockups/v2-panel-filters.html`).
 
 ---
 
