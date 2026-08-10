@@ -81,6 +81,27 @@ prompts stay as quiet one-liners. Helm attribution renders at the foot (inviolab
   *Owner to confirm whether to also add a "select a range → make it a section" action, or keep
   divide/merge only.*
 
+**Proposed flow restructure (owner, 2026-08-11) — split authoring from assembly.** The owner spotted
+that *writing* questions and *assembling* the study are two jobs v1 mashed into one long "Build." New
+proposed shape (seven lenses → **eight**):
+
+> Set up · Read · Map · COMA · Theme & aim · **Questions (new)** · Build · Check
+
+- **Questions lens (new, after Theme & aim)** — text-central, *show everything* like Map/COMA (the
+  filtered card panel). This is where **recycle-forward happens**: prior COMA answers / notes carry a
+  **→ Make a question** (seed a question at the same anchor), or you write fresh. Each question keeps
+  its anchor + the **expected-answer hard block** (SPEC 6e). *(This resolves the recycle-forward
+  question — it's the "panel + convert" model, living here rather than in Build.)*
+- **Build lens (now pure assembly)** — take the questions you made and **sequence** them (drag / ↑↓),
+  set timing, cut / reserve → the **running order that exports**. Only questions enter, **plus optional
+  filler** (a leader note / background box; **images deferred** per §6). No question *authoring* here.
+- Consistency win: Map · COMA · Theme · Questions are all "work against the text, show everything"
+  lenses; **Build is the single assembly step**. *Owner to confirm the split (vs. keeping one Build
+  lens with the filtered panel).*
+- **Unanchored-card rule (owner deciding):** (a) no anchor = study-level, vs **(b, recommended)** anchor
+  is orthogonal to kind — an unanchored COMA answer stays a COMA answer; only a deliberately study-level
+  *note* sits in Study-notes.
+
 **Increment #4 is the point of Layout B**; 1–3 were the groundwork (reclaim width, unify menus). The
 `v2-panel-filters.html` mockup specifies it exactly: a 380px right panel, chips `All · Map · COMA ·
 Theme · Build`, two toggle switches, tone-accented cards (lapis/amber/rubric), a `▸ step NN · Name`
