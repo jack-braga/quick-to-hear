@@ -31,3 +31,12 @@ export const TONE: Record<
       '-translate-x-[3px] border-lapis bg-lapis-wash shadow-[0_0_0_2px_var(--lapis),0_8px_20px_-8px_rgba(40,70,138,0.4)]',
   },
 };
+
+/** The wash colour per tone as a raw CSS value — for the diagonal multi-tone stripe a verse gets
+ *  when it carries two or more tones (built inline as a repeating-linear-gradient). rubric/lapis
+ *  are theme-adaptive vars; amber has no var, so its fixed rgba mirrors `TONE.amber.wash`. */
+export const TONE_WASH: Record<AnnotationTone, string> = {
+  rubric: 'var(--rubric-wash)',
+  amber: 'rgba(185,138,30,0.13)',
+  lapis: 'var(--lapis-wash)',
+};

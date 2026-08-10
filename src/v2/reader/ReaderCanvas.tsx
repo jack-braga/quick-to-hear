@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { verseRefLabel } from '@/lib/map';
@@ -7,7 +7,7 @@ import type { AnnotationTone } from '@/v2/annotations';
 import type { ReaderBand, ReaderGroup, ReaderModel, ReaderVerse } from '@/v2/reader/model';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { useDragSelection } from '@/v2/reader/useDragSelection';
-import { TONE } from '@/v2/tones';
+import { TONE, TONE_WASH } from '@/v2/tones';
 
 /**
  * The Scripture canvas (v2.2) — renders the {@link ReaderModel} as the passage-as-canvas, and
@@ -33,8 +33,9 @@ export interface ReaderCanvasProps {
   leafMeta: string;
   selected: string[];
   lastAnchor: string | null;
-  /** Resting tint per annotated verse (highest-priority tone wins). */
-  anchorTone: Map<string, AnnotationTone>;
+  /** Distinct tones per annotated verse (highest-priority first). One tone → a flat wash; two or
+   *  more → a diagonal multi-tone stripe. */
+  verseTones: Map<string, AnnotationTone[]>;
   /** Verses lit by a hovered margin card, in that card's tone. */
   lit: { ids: Set<string>; tone: AnnotationTone } | null;
   flashVerseId: string | null;
@@ -102,17 +103,31 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
   const verseClass = (v: ReaderVerse, block: boolean): string => {
     const sel = selectedSet.has(v.verseId);
     const isLit = !sel && props.lit != null && props.lit.ids.has(v.verseId);
-    const tone = props.anchorTone.get(v.verseId);
-    const anchored = !sel && !isLit && tone != null;
+    const tones = props.verseTones.get(v.verseId) ?? [];
+    const anchored = !sel && !isLit && tones.length > 0;
     return cn(
       'rounded-[4px] transition-colors',
       block ? 'px-2 py-0.5' : 'px-[0.12em] py-[0.04em] [-webkit-box-decoration-break:clone] [box-decoration-break:clone]',
       interactive && 'cursor-pointer hover:bg-lapis-wash',
       sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
       isLit && props.lit && TONE[props.lit.tone].ring,
-      anchored && tone && TONE[tone].wash,
+      // one tone → a flat wash class; two or more render a gradient via verseStyle instead.
+      anchored && tones.length === 1 && TONE[tones[0]!].wash,
       props.flashVerseId === v.verseId && 'animate-verse-flash',
     );
+  };
+
+  // A verse carrying two or more distinct tones gets a diagonal multi-tone stripe (owner request:
+  // "as many colours as are available"). Inline because the stop list is dynamic. Suppressed while
+  // the verse is selected or lit — those states own the highlight.
+  const verseStyle = (v: ReaderVerse): CSSProperties | undefined => {
+    const sel = selectedSet.has(v.verseId);
+    const isLit = !sel && props.lit != null && props.lit.ids.has(v.verseId);
+    const tones = props.verseTones.get(v.verseId) ?? [];
+    if (sel || isLit || tones.length < 2) return undefined;
+    const BAND = 8;
+    const stops = tones.map((t, i) => `${TONE_WASH[t]} ${i * BAND}px ${(i + 1) * BAND}px`).join(', ');
+    return { backgroundImage: `repeating-linear-gradient(45deg, ${stops})` };
   };
 
   const VerseNo = ({ v }: { v: ReaderVerse }) => (
@@ -176,7 +191,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
         <span key={v.verseId} className="qth-verse" onMouseEnter={enter} onMouseLeave={leave}>
           {showBefore && <DivideInline band={band} boundary={v.verseId} />}
           {v.present ? (
-            <span data-v={v.verseId} className={verseClass(v, false)}>
+            <span data-v={v.verseId} className={verseClass(v, false)} style={verseStyle(v)}>
               <VerseNo v={v} />
               {v.lines[0]?.frags.map((f, j) => <FragmentText key={j} text={f.text} wj={f.wj} />)}
             </span>
@@ -196,7 +211,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
       <div key={v.verseId} className="relative my-[3px]" onMouseEnter={enter} onMouseLeave={leave}>
         {showBefore && <DivideBar band={band} boundary={v.verseId} where="before" />}
         {v.present ? (
-          <div data-v={v.verseId} className={verseClass(v, true)}>
+          <div data-v={v.verseId} className={verseClass(v, true)} style={verseStyle(v)}>
             {v.lines.map((line, i) => (
               <div key={i} className={line.indent >= 1 ? INDENT[Math.min(line.indent, 3)] : undefined}>
                 {i === 0 && <VerseNo v={v} />}

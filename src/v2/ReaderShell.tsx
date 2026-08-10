@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
 import type { Annotation, Section, Study } from '@/types/study';
-import { anchorToneByVerse, makeAnnotation, toneFor, type AnnotationTone } from '@/v2/annotations';
+import { anchorToneByVerse, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
@@ -87,6 +87,7 @@ export function ReaderShell({ study }: { study: Study }) {
     }
   }, []);
   const anchorTone = useMemo(() => anchorToneByVerse(annotations), [annotations]);
+  const verseToneSets = useMemo(() => verseTonesByVerse(annotations), [annotations]);
   const pvIds = useMemo(() => (passage ? verseIds(passage) : []), [passage]);
   // OSIS keys of references already promoted to a support passage — mutes those inline chips and
   // guards against promoting the same reference twice.
@@ -395,7 +396,7 @@ export function ReaderShell({ study }: { study: Study }) {
         leafMeta={leafMeta}
         selected={selected}
         lastAnchor={lastAnchor}
-        anchorTone={anchorTone}
+        verseTones={verseToneSets}
         lit={litForCanvas}
         flashVerseId={flashVerse}
         focusSectionId={focusSectionId}
