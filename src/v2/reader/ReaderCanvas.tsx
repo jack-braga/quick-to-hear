@@ -7,7 +7,7 @@ import type { AnnotationTone } from '@/v2/annotations';
 import type { ReaderBand, ReaderGroup, ReaderModel, ReaderVerse } from '@/v2/reader/model';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { useDragSelection } from '@/v2/reader/useDragSelection';
-import { TONE, TONE_WASH } from '@/v2/tones';
+import { TONE, multiToneGradient } from '@/v2/tones';
 
 /**
  * The Scripture canvas (v2.2) — renders the {@link ReaderModel} as the passage-as-canvas, and
@@ -126,11 +126,9 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
   const verseStyle = (v: ReaderVerse): CSSProperties | undefined => {
     const sel = selectedSet.has(v.verseId);
     const isLit = !sel && props.lit != null && props.lit.ids.has(v.verseId);
-    const tones = props.verseTones.get(v.verseId) ?? [];
-    if (sel || isLit || tones.length < 2) return undefined;
-    const BAND = 8;
-    const stops = tones.map((t, i) => `${TONE_WASH[t]} ${i * BAND}px ${(i + 1) * BAND}px`).join(', ');
-    return { backgroundImage: `repeating-linear-gradient(45deg, ${stops})` };
+    if (sel || isLit) return undefined;
+    const gradient = multiToneGradient(props.verseTones.get(v.verseId) ?? []);
+    return gradient ? { backgroundImage: gradient } : undefined;
   };
 
   const VerseNo = ({ v }: { v: ReaderVerse }) => (

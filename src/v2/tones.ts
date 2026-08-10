@@ -40,3 +40,14 @@ export const TONE_WASH: Record<AnnotationTone, string> = {
   amber: 'rgba(185,138,30,0.13)',
   lapis: 'var(--lapis-wash)',
 };
+
+/**
+ * The 45° repeating-linear-gradient a verse carrying **two or more** distinct tones renders (owner:
+ * "as many colours as are available"). Returns `undefined` for 0–1 tones (a single tone stays a flat
+ * `TONE[t].wash` class). Shared by the single-column {@link ReaderCanvas} and {@link ParallelCanvas}.
+ */
+export function multiToneGradient(tones: AnnotationTone[], band = 8): string | undefined {
+  if (tones.length < 2) return undefined;
+  const stops = tones.map((t, i) => `${TONE_WASH[t]} ${i * band}px ${(i + 1) * band}px`).join(', ');
+  return `repeating-linear-gradient(45deg, ${stops})`;
+}

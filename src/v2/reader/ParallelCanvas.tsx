@@ -1,4 +1,4 @@
-import { Fragment, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 
 import { cn } from '@/lib/utils';
 import { parseVerseId } from '@/lib/verse/ids';
@@ -7,7 +7,7 @@ import type { AnnotationTone } from '@/v2/annotations';
 import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { useDragSelection } from '@/v2/reader/useDragSelection';
-import { TONE } from '@/v2/tones';
+import { TONE, multiToneGradient } from '@/v2/tones';
 
 /**
  * The parallel (side-by-side) canvas (v2.9) — **N** translations lined up **verse by verse** by
@@ -26,7 +26,9 @@ export interface ParallelCanvasProps {
   interactive: boolean;
   selected: string[];
   lastAnchor: string | null;
-  anchorTone: Map<string, AnnotationTone>;
+  /** Distinct tones per annotated verse (highest-priority first) — one tone is a flat wash, two or
+   *  more render the diagonal multi-tone stripe (shared with {@link ReaderCanvas}). */
+  verseTones: Map<string, AnnotationTone[]>;
   lit: { ids: Set<string>; tone: AnnotationTone } | null;
   flashVerseId: string | null;
   onSelect: (r: { selected: string[]; lastAnchor: string | null }) => void;
@@ -115,7 +117,7 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
     const sel = selectedSet.has(id);
     const cardLit = props.lit != null && props.lit.ids.has(id);
     const hoverLit = hoverVerse === id;
-    const tone = props.anchorTone.get(id);
+    const tones = props.verseTones.get(id) ?? [];
     return cn(
       'rounded-[5px] px-2 py-1 transition-colors',
       interactive && present && 'cursor-pointer hover:bg-lapis-wash',
@@ -123,9 +125,21 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
       sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
       !sel && cardLit && props.lit && TONE[props.lit.tone].ring,
       !sel && !cardLit && hoverLit && 'bg-lapis-wash',
-      !sel && !cardLit && !hoverLit && tone && TONE[tone].wash,
+      // one tone → a flat wash; two or more render a gradient via cellStyle instead.
+      !sel && !cardLit && !hoverLit && tones.length === 1 && TONE[tones[0]!].wash,
       props.flashVerseId === id && 'animate-verse-flash',
     );
+  };
+
+  // A verse carrying two or more distinct tones gets the diagonal multi-tone stripe (shared with
+  // ReaderCanvas), suppressed while the verse is selected or lit — those states own the highlight.
+  const cellStyle = (id: string): CSSProperties | undefined => {
+    const sel = selectedSet.has(id);
+    const cardLit = props.lit != null && props.lit.ids.has(id);
+    const hoverLit = hoverVerse === id;
+    if (sel || cardLit || hoverLit) return undefined;
+    const gradient = multiToneGradient(props.verseTones.get(id) ?? []);
+    return gradient ? { backgroundImage: gradient } : undefined;
   };
 
   const gridStyle = {
@@ -167,6 +181,7 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
                       key={i}
                       data-v={id}
                       className={cellClass(id, present)}
+                      style={cellStyle(id)}
                       onPointerDownCapture={(e) => {
                         anchorCellRef.current = e.currentTarget;
                       }}
