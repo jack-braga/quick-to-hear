@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { parseReference } from '@/lib/verse';
 import { cn } from '@/lib/utils';
 import { allVerses, verseText, type ParsedText } from '@/types/passage';
-import { ANNOTATION_ORIGINS, type Annotation, type AnnotationOrigin } from '@/types/study';
+import { ANNOTATION_ORIGINS, type Annotation, type AnnotationOrigin, type NoteFlag } from '@/types/study';
 import {
   ORIGIN_LABEL,
   annotationMeta,
@@ -78,7 +78,8 @@ export interface MarginAnnotationsProps {
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
   onJump: (verseId: string) => void;
-  onAddFloating: () => void;
+  /** Add a study-level (unanchored) card — a plain note, or a confusion mark (`'confusing'`). */
+  onAddFloating: (flag?: NoteFlag) => void;
   onPromoteMention: (host: Annotation, reference: string) => void;
   onFocusHandled: () => void;
 }
@@ -278,18 +279,28 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
   return (
     <div>
       {/* filter header — the chip row filters the flat card list by origin (its step) */}
-      <div className="mx-1 mb-2.5 flex items-center gap-2">
-        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+      <div className="mx-1 mb-2.5 flex items-center justify-between gap-2">
+        <span className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">
           Show from step
         </span>
-        <span className="ml-auto font-mono text-[10px] text-ink-faint">{shownCount} shown</span>
+        <span className="whitespace-nowrap font-mono text-[10px] text-ink-faint">{shownCount} shown</span>
+      </div>
+      <div className="mx-1 mb-3 flex justify-end gap-1.5">
         <button
           type="button"
-          onClick={props.onAddFloating}
-          title="Add a card (anchor it to verses later)"
+          onClick={() => props.onAddFloating()}
+          title="Add a note (anchor it to verses later)"
           className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
         >
           ＋ note
+        </button>
+        <button
+          type="button"
+          onClick={() => props.onAddFloating('confusing')}
+          title="Add a confusion mark (anchor it to verses later)"
+          className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-rubric hover:text-rubric"
+        >
+          ＋ mark
         </button>
       </div>
 

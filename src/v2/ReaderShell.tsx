@@ -9,7 +9,7 @@ import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Annotation, Section, Study } from '@/types/study';
+import type { Annotation, NoteFlag, Section, Study } from '@/types/study';
 import { anchorToneByVerse, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
@@ -179,8 +179,10 @@ export function ReaderShell({ study }: { study: Study }) {
     addAnnotation(a);
   };
 
-  const onAddFloating = () =>
-    addAnnotation(makeAnnotation(newId(), { kind: 'note', verseIds: [], origin: 'map' }));
+  // Add a study-level (unanchored) card from the panel — a plain note, or a confusion mark
+  // (flag: 'confusing'). Its anchor is set later via the card (Slice 4 click-chip capture).
+  const onAddFloating = (flag?: NoteFlag) =>
+    addAnnotation(makeAnnotation(newId(), { kind: 'note', verseIds: [], flag, origin: 'map' }));
 
   // Promote an inline @-mention (inside a note) to a cross-ref annotation anchored to the host's
   // verses — this is what `projectForExport` turns into a printed Support passage. De-duped by OSIS.
@@ -340,8 +342,8 @@ export function ReaderShell({ study }: { study: Study }) {
   let margin: React.ReactNode;
 
   if (lens === 'setup') {
-    center = <SetupLens study={study} onLoaded={() => setLens('map')} />;
-    margin = <MarginPlaceholder text="Load a passage on the left, then move to the Map lens to divide and mark it." />;
+    center = <SetupLens study={study} onLoaded={() => setLens('read')} />;
+    margin = <MarginPlaceholder text="Load a passage on the left, then read it through before you map and mark it." />;
   } else if (!passage || !model) {
     center = <EmptyLeaf onSetup={() => setLens('setup')} />;
     margin = <MarginPlaceholder text="No passage yet." />;

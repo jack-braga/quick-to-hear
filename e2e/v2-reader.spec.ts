@@ -10,10 +10,12 @@ test('v2 reader: load a passage, mark a verse, and it survives a reload', async 
 
   await page.getByRole('button', { name: /new study/i }).click();
 
-  // The Set-up engine: enter a reference, import a bundled translation, start mapping.
+  // The Set-up engine: enter a reference, import a bundled translation, read the passage.
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  // Set-up now lands on Read; step across to Map for the interactive work.
+  await page.getByRole('button', { name: '03 Map' }).click();
 
   // The Map lens renders the real verses.
   const verse8 = page.locator('[data-v="LUKE.1.8"]');
@@ -40,7 +42,7 @@ test('v2 Read + COMA lenses: the read counter persists, and COMA shows genre pro
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
   // Read lens — the pray-and-read counter, an enforceable discipline paper can't do.
@@ -84,7 +86,7 @@ test('v2 set-up: paste-and-clean lands a passage', async ({ page }) => {
   );
   await page.getByRole('button', { name: /tidy it up/i }).click();
   await page.getByRole('button', { name: /accept as the passage/i }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
 
   // The pasted text becomes the real passage and renders in the Map lens.
   await expect(page.locator('[data-v="PS.23.1"]')).toBeVisible();
@@ -96,7 +98,8 @@ test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persis
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
 
   // Select a verse and add a Question from the action bar.
   await page.locator('[data-v="LUKE.1.10"]').click();
@@ -122,7 +125,8 @@ test('v2.5 reading modes: the Manuscript toggle persists, and sections show in e
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
   // Reading mode lives in the Aa Text menu now; sections show in every mode (owner call).
@@ -155,7 +159,8 @@ test('v2 parallel translations: tick a second to view side by side (every column
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
 
   // One translation → single view: exactly one cell per verse.
   await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveCount(1);
@@ -189,7 +194,7 @@ test('v2 command palette: switch the primary translation', async ({ page }) => {
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: '+ ASV' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
   await page.getByRole('button', { name: /\/ command/ }).click();
@@ -204,7 +209,8 @@ test('v2 @mention cross-reference: chip in a note → peek → promote → print
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
 
   // A note anchored to v17, with an inline @-mention of another passage.
   await page.locator('[data-v="LUKE.1.17"]').click();
@@ -241,7 +247,8 @@ test('v2 Build lens: questions order by verse, reorder, and persist', async ({ p
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
 
   const addQuestion = async (v: string) => {
     await page.locator(`[data-v="${v}"]`).click();
@@ -273,7 +280,8 @@ test('v2 exports: handout excludes answers, leader includes them', async ({ page
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
 
   // Author one question with text + an expected answer.
   await page.locator('[data-v="LUKE.1.8"]').click();
@@ -332,7 +340,7 @@ test('v2.8 teaching help: the (i) opens the inline guidance, and "Tell me more" 
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: /start mapping/i }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
   await page.getByRole('button', { name: /theme & aim/i }).first().click();
 
   // Closed by default; clicking the (i) opens the inline [I] guidance.
