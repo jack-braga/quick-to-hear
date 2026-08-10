@@ -32,6 +32,8 @@ export interface ParallelCanvasProps {
   onSelect: (r: { selected: string[]; lastAnchor: string | null }) => void;
   onVerseHover: (verseId: string | null) => void;
   onAction: (kind: ActionKind) => void;
+  /** Anchor-capture mode: the selection re-anchors a card, so the action bar is suppressed. */
+  capturing?: boolean;
 }
 
 export function ParallelCanvas(props: ParallelCanvasProps) {
@@ -184,7 +186,7 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
         </div>
       </article>
 
-      {barPos && (
+      {barPos && !props.capturing && (
         <ActionBar label={formatVerseIds(selected)} style={{ left: barPos.left, top: barPos.top }} onAction={props.onAction} />
       )}
     </>

@@ -118,6 +118,36 @@ test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persis
   );
 });
 
+test('v2 anchor capture: click a card’s chip, pick a verse, and it anchors (persists)', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
+
+  // Add an unanchored note from the panel — it starts with a dashed "⌖ anchor" chip (no verse).
+  const panel = page.locator('aside');
+  await panel.getByRole('button', { name: /note/i }).click();
+  const anchorChip = panel.getByRole('button', { name: /anchor/i });
+  await expect(anchorChip).toBeVisible();
+
+  // Click the chip → capture starts (a hint banner over the passage); pick a verse → it anchors.
+  await anchorChip.click();
+  await expect(page.getByText(/Anchoring/)).toBeVisible();
+  await page.locator('[data-v="LUKE.1.9"]').click();
+  await page.getByRole('button', { name: 'Done' }).click();
+
+  await expect(page.getByRole('button', { name: 'Luke 1:9', exact: true })).toBeVisible();
+
+  // The anchor survives a reload.
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Luke 1:9', exact: true })).toBeVisible();
+});
+
 test('v2.5 reading modes: the Manuscript toggle persists, and sections show in every mode', async ({
   page,
 }) => {

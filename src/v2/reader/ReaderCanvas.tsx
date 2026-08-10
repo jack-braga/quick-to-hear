@@ -48,6 +48,9 @@ export interface ReaderCanvasProps {
   onSelectSectionRange: (startVerseId: string, endVerseId: string) => void;
   onSectionFocusHandled: () => void;
   onAction: (kind: ActionKind) => void;
+  /** Anchor-capture mode: the selection re-anchors a card, so the action bar is suppressed and
+   *  the verses read as a crosshair target. */
+  capturing?: boolean;
 }
 
 export function ReaderCanvas(props: ReaderCanvasProps) {
@@ -108,7 +111,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
     return cn(
       'rounded-[4px] transition-colors',
       block ? 'px-2 py-0.5' : 'px-[0.12em] py-[0.04em] [-webkit-box-decoration-break:clone] [box-decoration-break:clone]',
-      interactive && 'cursor-pointer hover:bg-lapis-wash',
+      interactive && (props.capturing ? 'cursor-crosshair' : 'cursor-pointer hover:bg-lapis-wash'),
       sel && 'bg-lapis-wash shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
       isLit && props.lit && TONE[props.lit.tone].ring,
       // one tone → a flat wash class; two or more render a gradient via verseStyle instead.
@@ -311,7 +314,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
         </div>
       </article>
 
-      {barPos && (
+      {barPos && !props.capturing && (
         <ActionBar
           label={formatVerseIds(selected)}
           style={{ left: barPos.left, top: barPos.top }}

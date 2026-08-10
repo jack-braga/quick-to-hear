@@ -77,7 +77,12 @@ export interface MarginAnnotationsProps {
   onHover: (a: Annotation | null) => void;
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
-  onJump: (verseId: string) => void;
+  /** The card currently in anchor-capture mode (its chip is the trigger), or null. */
+  capturingId: string | null;
+  /** Enter capture for a card — the next passage selection sets its anchor verse(s). */
+  onStartCapture: (id: string) => void;
+  /** Finish capture (also on Esc / Done from the canvas banner). */
+  onEndCapture: () => void;
   /** Add a study-level (unanchored) card — a plain note, or a confusion mark (`'confusing'`). */
   onAddFloating: (flag?: NoteFlag) => void;
   onPromoteMention: (host: Annotation, reference: string) => void;
@@ -133,6 +138,8 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
     const meta = annotationMeta(a);
     const lit = litVerseId != null && a.verseIds.includes(litVerseId);
     const anchoredCard = a.verseIds.length > 0;
+    const capturing = props.capturingId === a.id;
+    const onAnchorClick = () => (capturing ? props.onEndCapture() : props.onStartCapture(a.id));
     return (
       <div
         key={a.id}
@@ -142,25 +149,34 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           'group mb-3 rounded-lg border border-line border-l-[3px] bg-leaf p-[11px_13px] transition-all',
           TONE[tone].borderL,
           lit && TONE[tone].cardLit,
+          capturing && 'shadow-[0_0_0_2px_var(--lapis-edge)]',
         )}
       >
         <div className="mb-1.5 flex items-center gap-2">
           {anchoredCard ? (
             <button
               type="button"
-              onClick={() => props.onJump(a.verseIds[0]!)}
-              title="Jump to these verses"
-              className="rounded-[5px] bg-lapis-wash px-1.5 py-0.5 font-mono text-[11px] text-lapis-ink hover:underline"
+              onClick={onAnchorClick}
+              title={capturing ? 'Selecting verses… click to finish' : 'Set the anchor — pick verses in the passage'}
+              className={cn(
+                'rounded-[5px] bg-lapis-wash px-1.5 py-0.5 font-mono text-[11px] text-lapis-ink hover:underline',
+                capturing && 'shadow-[inset_0_0_0_1px_var(--lapis-edge)]',
+              )}
             >
               {formatVerseIds(a.verseIds)}
             </button>
           ) : (
-            <span
-              title="Unanchored — this card isn’t tied to any verse yet"
-              className="font-mono text-[13px] leading-none text-ink-faint"
+            <button
+              type="button"
+              onClick={onAnchorClick}
+              title={capturing ? 'Selecting verses… click to finish' : 'Anchor this card — pick verses in the passage'}
+              className={cn(
+                'rounded-[5px] border border-dashed border-line px-1.5 py-0.5 font-mono text-[11px] text-ink-faint hover:border-lapis-edge hover:text-lapis-ink',
+                capturing && 'border-solid border-lapis-edge text-lapis-ink',
+              )}
             >
-              —
-            </span>
+              ⌖ anchor
+            </button>
           )}
           <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
             {meta.tag}

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
 import type { Annotation, NoteFlag, Section, Study } from '@/types/study';
-import { anchorToneByVerse, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
+import { anchorToneByVerse, annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
@@ -71,6 +71,8 @@ export function ReaderShell({ study }: { study: Study }) {
   const [focusSectionId, setFocusSectionId] = useState<string | null>(null);
   const clearFocusSection = useCallback(() => setFocusSectionId(null), []);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // Inline anchor-capture (Slice 4): the card whose anchor the next passage selection sets.
+  const [capturingId, setCapturingId] = useState<string | null>(null);
 
   const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
   // Manuscript mode renders a flattened copy of the model (display-only; the data is untouched).
@@ -110,7 +112,10 @@ export function ReaderShell({ study }: { study: Study }) {
   // Escape clears the live selection; "/" opens the command palette (unless typing in a field).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') clearSelection();
+      if (e.key === 'Escape') {
+        setCapturingId(null); // cancel an in-progress anchor capture, if any
+        clearSelection();
+      }
       if (e.key === '/') {
         const el = e.target as HTMLElement | null;
         const tag = el?.tagName?.toLowerCase();
@@ -123,6 +128,22 @@ export function ReaderShell({ study }: { study: Study }) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, []);
+
+  // Anchor capture is a Map-lens interaction (its panel lives there); leaving the lens ends it.
+  useEffect(() => {
+    if (lens !== 'map') setCapturingId(null);
+  }, [lens]);
+
+  // While capturing, the live selection *is* the card's anchor — mirror it (present verses only)
+  // from an effect, decoupled from the pointer handler. On endCapture, capturingId clears in the
+  // same tick as the selection, so this early-returns and never wipes the anchor to empty.
+  useEffect(() => {
+    if (!capturingId || !passage) return;
+    const present = new Set(allVerses(passage).filter((v) => v.present).map((v) => v.verseId));
+    onEditAnnotation(capturingId, { verseIds: selected.filter((id) => present.has(id)) });
+    // onEditAnnotation/passage are intentionally omitted — this must run only on selection changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, capturingId]);
 
   const setSections = (recipe: (prev: Section[]) => Section[]) =>
     applyToCurrent((s) => ({ ...s, map: { ...s.map, sections: recipe(s.map.sections) } }));
@@ -200,6 +221,33 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const onRemoveAnnotation = (id: string) =>
     applyToCurrent((s) => ({ ...s, annotations: s.annotations.filter((a) => a.id !== id) }));
+
+  // ---- inline anchor capture (Slice 4) -----------------------------------------------------
+  // Click a card's anchor chip → the next passage selection *sets that card's verse(s)* instead of
+  // creating a new annotation. Reuses the drag/⇧/⌘ primitive (via handleSelect), live-committing.
+  // Esc / Done / clicking the chip again ends it.
+  const startCapture = (id: string) => {
+    const ids = annotations.find((a) => a.id === id)?.verseIds ?? [];
+    setCapturingId(id);
+    setSelected(ids);
+    setLastAnchor(ids.length ? ids[ids.length - 1]! : null);
+    if (ids.length) {
+      const el = document.querySelector(`[data-v="${CSS.escape(ids[0]!)}"]`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+  const endCapture = () => {
+    setCapturingId(null);
+    clearSelection();
+  };
+
+  // Every passage selection routes here — the same handler in capture and normal mode (so the
+  // drag/⇧/⌘ algebra is identical). The capture commit happens in an effect, *not* here: writing to
+  // the store from inside this native pointer handler re-enters mid-gesture and corrupts ⌘-disjoint.
+  const handleSelect = (r: { selected: string[]; lastAnchor: string | null }) => {
+    setSelected(r.selected);
+    setLastAnchor(r.lastAnchor);
+  };
 
   const onReorder = (ids: string[]) => applyToCurrent((s) => ({ ...s, runningOrder: ids }));
 
@@ -337,6 +385,7 @@ export function ReaderShell({ study }: { study: Study }) {
   const litForCanvas = litAnnotation
     ? { ids: new Set(litAnnotation.ids), tone: litAnnotation.tone }
     : null;
+  const capturingCard = capturingId ? (annotations.find((a) => a.id === capturingId) ?? null) : null;
 
   let center: React.ReactNode;
   let margin: React.ReactNode;
@@ -384,10 +433,8 @@ export function ReaderShell({ study }: { study: Study }) {
         anchorTone={anchorTone}
         lit={litForCanvas}
         flashVerseId={flashVerse}
-        onSelect={(r) => {
-          setSelected(r.selected);
-          setLastAnchor(r.lastAnchor);
-        }}
+        onSelect={handleSelect}
+        capturing={capturingId != null}
         onVerseHover={setHoveredVerse}
         onAction={onAction}
       />
@@ -403,10 +450,8 @@ export function ReaderShell({ study }: { study: Study }) {
         lit={litForCanvas}
         flashVerseId={flashVerse}
         focusSectionId={focusSectionId}
-        onSelect={(r) => {
-          setSelected(r.selected);
-          setLastAnchor(r.lastAnchor);
-        }}
+        onSelect={handleSelect}
+        capturing={capturingId != null}
         onVerseHover={setHoveredVerse}
         onDivide={onDivide}
         onMerge={onMerge}
@@ -428,7 +473,9 @@ export function ReaderShell({ study }: { study: Study }) {
           onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
           onEdit={onEditAnnotation}
           onRemove={onRemoveAnnotation}
-          onJump={onJump}
+          capturingId={capturingId}
+          onStartCapture={startCapture}
+          onEndCapture={endCapture}
           onAddFloating={onAddFloating}
           onPromoteMention={onPromoteMention}
           onFocusHandled={clearFocusAnnotation}
@@ -509,6 +556,22 @@ export function ReaderShell({ study }: { study: Study }) {
           {margin}
         </aside>
       </div>
+
+      {capturingCard && (
+        <div className="fixed left-1/2 top-16 z-40 flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-lg bg-lapis px-3.5 py-2 text-[12.5px] text-white shadow-[0_12px_30px_-8px_rgba(0,0,0,0.5)] dark:text-[#14161c]">
+          <span>
+            ⌖ <b className="font-semibold">Anchoring {annotationMeta(capturingCard).tag}</b> — select
+            verse(s) in the passage · Esc to cancel
+          </span>
+          <button
+            type="button"
+            onClick={endCapture}
+            className="rounded-md bg-white/20 px-2.5 py-0.5 font-mono text-[11px] hover:bg-white/30"
+          >
+            Done
+          </button>
+        </div>
+      )}
 
       <CommandBar onOpen={() => setPaletteOpen(true)} />
 
