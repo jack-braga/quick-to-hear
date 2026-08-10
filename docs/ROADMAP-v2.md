@@ -129,6 +129,37 @@ manuscript that answers to a command line*. Full day/night.
 
 ## 5. Progress log
 
+### 2026-08-11 — Shell redesign (header lens rail, unified Text menu, N-column parallel) + Read/COMA re-verify
+
+**Shipped (across five commits) + verified.** A batch of shell/reader refactors landed after the
+2026-08-10 lens work; this entry records them and the Read + COMA re-verification against the new
+shell (the §3 open questions Q1/Q3 were updated inline, but the log had no dated entry).
+
+- **Lens tracker moved into the header; the left rail was removed** (`c2fa135`). The seven phases are
+  now a `nav "Study phases"` in the top bar, freeing the full width for the leaf + margin.
+- **Help popover hardened** (`1764414`) — clamps to the viewport and resets font/case so the `(i)`
+  never opens off-screen or inherits Scripture/mono styling.
+- **Section bands kept in Manuscript mode** (`736f2be`) — sections show (and stay dividable) in every
+  reading mode; only the *formatting inside them* flattens (owner call, §3 Q1).
+- **Unified "Aa Text" menu + N-column parallel** (`c2e229a`) — one header menu holds the reading mode
+  **and** the translations as **✓ = view · ★ = main**; tick 2+ to read them in parallel (any number of
+  columns, no separate toggle). Resolves §3 Q3.
+- **Parallel action bar opens over the clicked column** (`2b5a1ad`).
+
+- **Read + COMA lenses re-verified (Playwright MCP)** on a real Luke 1:5–25 / WEBBE study, genre
+  auto-inferred → *gospels-acts*, against the post-refactor shell:
+  - **Read** — the passage renders read-only (the canvas stays put); the pray-and-read counter
+    increments **0 → 2** and **rehydrates to 2 after a hard reload** (IndexedDB); the gospels-acts
+    reading tip shows; the Help **(i)** opens the inline `[I]`, **▾ Tell me more** reveals the `[E]`,
+    ✕ closes. Also correct in **parallel** (WEBBE ‖ ASV, verse-aligned) with the panel intact.
+  - **COMA** — all four groups render the **verbatim Helm prompts** for the genre (Context 2 ·
+    Observation 5 · Meaning 4 · Application 3); the **Helm attribution renders in-panel** (inviolable
+    rule 8); the Help **(i)** opens inline prose + Tell me more + the cited source line. Also correct
+    in **parallel**.
+
+Gate green: `typecheck && lint && test (298) && build`; **0 console errors** bar the two known
+React-Router future-flag warnings.
+
 ### 2026-08-10 — v2.8 teaching help + attribution (surfaced in v2)
 
 **Shipped.** The teaching prose was **already written** (69 files under `content/help/**`, nearly all
