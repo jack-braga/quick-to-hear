@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { findTranslation } from '@/lib/bible';
+import { BUNDLED_TRANSLATIONS, findTranslation, loadReading } from '@/lib/bible';
 import { newId } from '@/lib/id';
 import { mergeSectionUp, renameSection, splitSectionAt, wholePassageSection } from '@/lib/map';
 import { parseReference } from '@/lib/verse';
-import { primaryText, setPrimary, translationOrder } from '@/lib/passage';
+import { addSecondary, primaryText, removeTranslation, translationOrder } from '@/lib/passage';
 import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
@@ -22,8 +22,10 @@ import { ThemeAimLens } from '@/v2/lenses/ThemeAimLens';
 import { buildReaderModel, manuscriptModel } from '@/v2/reader/model';
 import { ComaPanel } from '@/v2/reader/ComaPanel';
 import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
+import { ParallelCanvas } from '@/v2/reader/ParallelCanvas';
 import { ReadPanel } from '@/v2/reader/ReadPanel';
 import { ReaderCanvas, type ReadingMode } from '@/v2/reader/ReaderCanvas';
+import { TranslationControls } from '@/v2/TranslationControls';
 import type { ActionKind } from '@/v2/reader/ActionBar';
 import type { PaletteAction, PaletteContext } from '@/v2/reader/paletteItems';
 
@@ -56,6 +58,9 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const [lens, setLens] = useState<LensId>(passage ? 'map' : 'setup');
   const [readingMode, setReadingMode] = useState<ReadingMode>(loadReadingMode);
+  // Parallel (side-by-side) reading state (v2.9) — transient; the primary switch itself persists.
+  const [parallelOn, setParallelOn] = useState(false);
+  const [parallelSecondaryId, setParallelSecondaryId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [lastAnchor, setLastAnchor] = useState<string | null>(null);
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
@@ -229,11 +234,44 @@ export function ReaderShell({ study }: { study: Study }) {
     [pvIds, selected.length, study.passage],
   );
 
+  // Switching among loaded translations only re-designates the primary — every translation is
+  // kept (the old primary becomes a comparison text), so the parallel view swaps columns rather
+  // than dropping a side. (`setPrimary` from M3 intentionally *drops* the old primary; that's the
+  // wrong semantics once the reader holds several translations.)
   const switchTranslation = async (id: string) => {
-    const text = study.passage.translations[id];
-    if (!text || id === study.passage.primaryId) return;
-    await setPassage(setPrimary(study.passage, text));
+    if (id === study.passage.primaryId || !study.passage.translations[id]) return;
+    await setPassage({ ...study.passage, primaryId: id });
     updateSetup({ primaryTranslationId: id });
+  };
+
+  // ---- translations: the top-bar switcher + parallel (side-by-side) view ------------------
+  const loadedTranslations = useMemo(
+    () =>
+      translationOrder(study.passage).map((id) => {
+        const t = findTranslation(id);
+        return { id, name: t?.name ?? id, shortName: t?.shortName ?? id, isPrimary: id === study.passage.primaryId };
+      }),
+    [study.passage],
+  );
+  const availableTranslations = useMemo(
+    () => BUNDLED_TRANSLATIONS.filter((t) => !study.passage.translations[t.id]).map((t) => ({ id: t.id, name: t.name, shortName: t.shortName })),
+    [study.passage],
+  );
+  // The effective secondary is a loaded non-primary id (falls back to the first when unset/stale).
+  const secondaryIds = loadedTranslations.filter((t) => !t.isPrimary).map((t) => t.id);
+  const effectiveSecondaryId =
+    parallelSecondaryId && secondaryIds.includes(parallelSecondaryId) ? parallelSecondaryId : (secondaryIds[0] ?? null);
+  const parallelActive = parallelOn && effectiveSecondaryId != null && passage != null;
+
+  const addTranslation = async (id: string) => {
+    const ref = parseReference(study.setup.reference || passage?.reference || '');
+    if (!ref) return;
+    const text = await loadReading(id, ref);
+    await setPassage(addSecondary(study.passage, text));
+  };
+  const removeSecondary = async (id: string) => {
+    if (parallelSecondaryId === id) setParallelSecondaryId(null);
+    await setPassage(removeTranslation(study.passage, id));
   };
 
   const onPaletteAction = (action: PaletteAction) => {
@@ -302,7 +340,27 @@ export function ReaderShell({ study }: { study: Study }) {
     );
   } else {
     const interactive = lens === 'map';
-    center = (
+    center = parallelActive ? (
+      <ParallelCanvas
+        primary={passage}
+        secondary={study.passage.translations[effectiveSecondaryId!]!}
+        primaryLabel={findTranslation(passage.translationId)?.shortName ?? passage.translationId}
+        secondaryLabel={findTranslation(effectiveSecondaryId!)?.shortName ?? effectiveSecondaryId!}
+        leafTitle={leafTitle}
+        interactive={interactive}
+        selected={selected}
+        lastAnchor={lastAnchor}
+        anchorTone={anchorTone}
+        lit={litForCanvas}
+        flashVerseId={flashVerse}
+        onSelect={(r) => {
+          setSelected(r.selected);
+          setLastAnchor(r.lastAnchor);
+        }}
+        onVerseHover={setHoveredVerse}
+        onAction={onAction}
+      />
+    ) : (
       <ReaderCanvas
         model={renderModel ?? model}
         interactive={interactive}
@@ -364,12 +422,20 @@ export function ReaderShell({ study }: { study: Study }) {
             Quick&nbsp;to&nbsp;Hear
           </a>
           <span className="truncate font-scripture text-[19px] tracking-[0.01em]">{reference}</span>
-          {tr && (
-            <span className="rounded-md border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] tracking-[0.02em] text-ink-soft">
-              {tr.shortName}
-            </span>
-          )}
         </div>
+        {passage && (
+          <TranslationControls
+            translations={loadedTranslations}
+            available={availableTranslations}
+            parallelOn={parallelActive}
+            secondaryId={effectiveSecondaryId}
+            onSwitchPrimary={(id) => void switchTranslation(id)}
+            onAddTranslation={(id) => void addTranslation(id)}
+            onRemoveTranslation={(id) => void removeSecondary(id)}
+            onToggleParallel={() => setParallelOn((on) => !on)}
+            onPickSecondary={setParallelSecondaryId}
+          />
+        )}
         <div className="flex-1" />
         <nav aria-label="Study phases" className="hidden items-center gap-0.5 sm:flex">
           {LENSES.map((l, i) => (

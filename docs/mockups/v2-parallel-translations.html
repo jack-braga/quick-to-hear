@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — parallel translations (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.1); --lapis-edge: rgba(40,70,138,0.32);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.1);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 12px 32px -12px rgba(30,27,20,0.22);
+        --menu-shadow: 0 2px 6px rgba(30,27,20,0.08), 0 22px 48px -16px rgba(30,27,20,0.34);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #131418; --leaf: #1c1e24; --panel: #20232b;
+        --ink: #e9e5db; --ink-soft: #9a958a; --ink-faint: #6b675d;
+        --line: #2b2e36;
+        --lapis: #86a6ea; --lapis-ink: #bcd0f6; --lapis-wash: rgba(124,160,230,0.16); --lapis-edge: rgba(124,160,230,0.4);
+        --rubric: #e0785f; --rubric-wash: rgba(224,120,95,0.16);
+        --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 18px 40px -14px rgba(0,0,0,0.6);
+        --menu-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 26px 54px -16px rgba(0,0,0,0.7);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink);
+        -webkit-font-smoothing: antialiased; line-height: 1.5;
+      }
+      button { font-family: inherit; cursor: pointer; }
+
+      /* ---- top bar ---- */
+      .topbar {
+        display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 20px;
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--desk) 82%, var(--leaf));
+        position: relative; z-index: 20;
+      }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .ref { font-family: var(--font-scripture); font-size: 19px; }
+      .grow { flex: 1; }
+
+      /* translation switcher */
+      .tr-wrap { position: relative; }
+      .tr-btn, .parallel-btn {
+        display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px;
+        border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft);
+        border-radius: 8px; font-family: var(--font-mono); font-size: 12px;
+      }
+      .parallel-btn.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .tr-menu {
+        position: absolute; top: 38px; left: 0; width: 210px; padding: 6px;
+        border: 1px solid var(--line); border-radius: 10px; background: var(--leaf); box-shadow: var(--menu-shadow);
+      }
+      .tr-menu .item {
+        display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+        padding: 7px 9px; border: none; background: none; color: var(--ink); border-radius: 7px;
+        font-family: var(--font-ui); font-size: 13px;
+      }
+      .tr-menu .item:hover { background: var(--lapis-wash); }
+      .tr-menu .item .sn { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); margin-left: auto; }
+      .tr-menu .item.checked { color: var(--lapis-ink); font-weight: 600; }
+      .tr-menu .sep { height: 1px; background: var(--line); margin: 5px 2px; }
+      .tr-menu .add { color: var(--lapis-ink); font-family: var(--font-mono); font-size: 12px; }
+
+      .phases { display: flex; gap: 2px; }
+      .dot { width: 24px; height: 24px; display: grid; place-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); border-radius: 6px; }
+      .dot.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .dot.on { color: #10131a; }
+      .toggle { border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); width: 32px; height: 32px; border-radius: 8px; }
+
+      /* ---- stage / leaf ---- */
+      .stage { padding: 34px 22px 60px; display: flex; justify-content: center; }
+      .leaf {
+        width: 100%; max-width: 60rem; background: var(--leaf); border: 1px solid var(--line);
+        border-radius: 14px; box-shadow: var(--shadow); padding: 40px clamp(24px,4vw,56px) 56px;
+      }
+      .leaf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 8px; }
+      .leaf-head h1 { font-family: var(--font-scripture); font-size: 30px; margin: 0; }
+      .leaf-head .meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); letter-spacing: .03em; }
+
+      .cols-head { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 14px 0 4px; }
+      .cols-head > div { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .14em; color: var(--lapis-ink); }
+      .cols-head span { color: var(--ink-faint); }
+
+      .parallel { display: grid; grid-template-columns: 1fr 1fr; column-gap: 30px; row-gap: 6px; align-items: start; }
+      .cell {
+        font-family: var(--font-scripture); font-size: 1.16rem; line-height: 1.62; color: var(--ink);
+        padding: 4px 6px; border-radius: 5px; cursor: pointer; transition: background .12s, box-shadow .12s;
+      }
+      .cell sup { font-family: var(--font-mono); font-size: 0.62em; font-weight: 500; color: var(--ink-faint); margin-right: 3px; vertical-align: super; }
+      .cell.lit { background: var(--lapis-wash); }
+      .cell.lit sup { color: var(--lapis); }
+      .cell.sel { box-shadow: inset 0 0 0 1px var(--lapis-edge); background: var(--lapis-wash); }
+      /* a faint column divider */
+      .parallel::before { content: none; }
+
+      .caps { max-width: 60rem; margin: 22px auto 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 26px; }
+      @media (max-width: 720px) { .caps { grid-template-columns: 1fr; } .parallel, .cols-head { grid-template-columns: 1fr; } .cols-head { row-gap: 14px; } }
+      .cap { font-size: 12.5px; color: var(--ink-soft); display: flex; gap: 8px; }
+      .cap b { color: var(--ink); font-weight: 600; }
+      .cap .g { color: var(--lapis-ink); font-family: var(--font-mono); font-size: 12px; }
+
+      .stack-note {
+        max-width: 60rem; margin: 26px auto 0; border-top: 1px solid var(--line); padding-top: 18px;
+        font-size: 12.5px; color: var(--ink-soft);
+      }
+      .stack-note b { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+      <span class="ref">Luke 1:5–25</span>
+      <div class="tr-wrap">
+        <button class="tr-btn" id="trBtn">WEBBE ▾</button>
+        <div class="tr-menu" id="trMenu">
+          <button class="item checked">✓ World English Bible (British)<span class="sn">WEBBE</span></button>
+          <button class="item">American Standard Version<span class="sn">ASV</span></button>
+          <button class="item">Berean Standard Bible<span class="sn">BSB</span></button>
+          <div class="sep"></div>
+          <button class="item add">＋ Add a translation…</button>
+        </div>
+      </div>
+      <button class="parallel-btn on" id="parBtn">⊕ Parallel: ASV ▾</button>
+      <span class="grow"></span>
+      <div class="phases"><span class="dot">1</span><span class="dot">2</span><span class="dot on">3</span><span class="dot">4</span><span class="dot">5</span><span class="dot">6</span><span class="dot">7</span></div>
+      <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+    </div>
+
+    <div class="stage">
+      <div class="leaf">
+        <div class="leaf-head">
+          <h1>Luke 1:5–25</h1>
+          <span class="meta">Parallel · WEBBE ‖ ASV</span>
+        </div>
+        <div class="cols-head">
+          <div>WEBBE <span>· public domain</span></div>
+          <div>ASV <span>· public domain</span></div>
+        </div>
+        <div class="parallel" id="parallel">
+          <!-- v5 -->
+          <div class="cell" data-v="5"><sup>5</sup>There was in the days of Herod, the king of Judea, a certain priest named Zacharias, of the priestly division of Abijah. He had a wife of the daughters of Aaron, and her name was Elizabeth.</div>
+          <div class="cell" data-v="5"><sup>5</sup>There was in the days of Herod, king of Judaea, a certain priest named Zacharias, of the course of Abijah: and he had a wife of the daughters of Aaron, and her name was Elisabeth.</div>
+          <!-- v6 (pre-lit to show the cross-column hover) -->
+          <div class="cell lit" data-v="6"><sup>6</sup>They were both righteous before God, walking blamelessly in all the commandments and ordinances of the Lord.</div>
+          <div class="cell lit" data-v="6"><sup>6</sup>And they were both righteous before God, walking in all the commandments and ordinances of the Lord blameless.</div>
+          <!-- v7 (selected in the primary) -->
+          <div class="cell sel" data-v="7"><sup>7</sup>But they had no child, because Elizabeth was barren, and they both were well advanced in years.</div>
+          <div class="cell" data-v="7"><sup>7</sup>And they had no child, because that Elisabeth was barren, and they both were now well stricken in years.</div>
+          <!-- v8 -->
+          <div class="cell" data-v="8"><sup>8</sup>Now while he executed the priest’s office before God in the order of his division,</div>
+          <div class="cell" data-v="8"><sup>8</sup>Now it came to pass, while he executed the priest’s office before God in the order of his course,</div>
+          <!-- v9 -->
+          <div class="cell" data-v="9"><sup>9</sup>according to the custom of the priest’s office, his lot was to enter into the temple of the Lord and burn incense.</div>
+          <div class="cell" data-v="9"><sup>9</sup>according to the custom of the priest’s office, his lot was to enter into the temple of the Lord and burn incense.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="caps">
+      <div class="cap"><span class="g">⇄</span><span><b>Switch the primary</b> from the top-bar chip (or the <code>/</code> palette). <b>＋ Add</b> imports another bundled text for this passage.</span></div>
+      <div class="cap"><span class="g">⊕</span><span><b>Parallel</b> pops a second, verse-aligned column — <b>default single</b>. Pick which secondary when more than two are loaded.</span></div>
+      <div class="cap"><span class="g">◉</span><span><b>Hover any verse</b> (try it) — it lights in <b>both</b> columns; a margin card’s hover lights both too.</span></div>
+      <div class="cap"><span class="g">✎</span><span><b>Select & annotate in the primary</b> (left, v7 shown selected). The secondary is <b>read-only reference</b> — anchors bind to one source of truth.</span></div>
+    </div>
+
+    <div class="stack-note">
+      <b>Narrow screens:</b> the two columns <b>stack</b> — primary above, secondary below (each verse still paired) — so it stays readable on a phone without a horizontal scroll.
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const night = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', night ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = night ? '☾' : '☀';
+      });
+      // Cross-column hover: hovering a verse lights that verse in BOTH columns.
+      const cells = [...document.querySelectorAll('.cell[data-v]')];
+      const preLit = new Set(['6']); // the demo's initial highlight
+      function setLit(v, on) {
+        cells.filter((c) => c.dataset.v === v).forEach((c) => c.classList.toggle('lit', on));
+      }
+      cells.forEach((c) => {
+        c.addEventListener('mouseenter', () => setLit(c.dataset.v, true));
+        c.addEventListener('mouseleave', () => setLit(c.dataset.v, preLit.has(c.dataset.v)));
+      });
+    </script>
+  </body>
+</html>

@@ -82,10 +82,11 @@ manuscript that answers to a command line*. Full day/night.
   type**, **drag-and-drop reorder**, and **delete**. The anchored cards (spatial) and this list
   (sequence) are two views of one set; the running order is what exports (defaults to verse
   order, freely reorderable — observation before meaning, application last).
-- **Parallel translations:** keep **one primary text central** (anchors bind to a single source
-  of truth); secondaries are **tabs** you can pop **side-by-side** or collapse, **default
-  single**. Reuses the M3 compare feature (per-verse peek + optional side-by-side); kept
-  subordinate so the passage stays the subject.
+- **Parallel translations (built 2026-08-10):** keep **one primary text central** (anchors bind to
+  a single source of truth); a **⊕ Parallel** toggle pops a second, verse-aligned column,
+  **default single**. A top-bar switcher changes/adds/removes translations; switching the primary
+  **swaps** columns (both kept), and hovering a verse lights it in **both**. Reuses the M3
+  `alignTranslations` engine; the secondary is read-only so the passage stays the subject.
 - **Optional study title** (defaults to the reference) — becomes the handout heading; lives in
   the Set-up lens.
 
@@ -102,8 +103,10 @@ manuscript that answers to a command line*. Full day/night.
    user's thinking — Inviolable rule 1). Any-verse sectioning already shipped in v2.2.
 2. **Annotation icons/labels — final polish.** The three kinds are decided; the exact glyphs and
    the COMA-type sub-tagging UI are for the annotation-layer phase (v2.4).
-3. **Translations UX detail.** Tab affordance vs. a translations menu; how the side-by-side
-   column behaves on narrow screens. Settle when the translations lens is built.
+3. **Translations UX — resolved (built 2026-08-10).** A **top-bar switcher menu** (change primary ·
+   ＋ add · remove) + a **⊕ Parallel toggle** (default single) that pops a second, verse-aligned
+   column. Hovering a verse lights it in **both** columns. On narrow screens the two columns
+   **stack** (per verse, each cell labelled), no horizontal scroll.
 
 ---
 
@@ -122,6 +125,35 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
 ## 5. Progress log
+
+### 2026-08-10 — Parallel translations (switcher + side-by-side)
+
+**Shipped.** The §2 "parallel translations" decision is now real, resolving §3 Q3.
+
+- **Top-bar switcher** (`TranslationControls`) — the static translation chip became a menu: switch
+  the **primary**, **＋ add** another bundled translation for this passage (reusing the Set-up import
+  path), **remove** a comparison one.
+- **⊕ Parallel toggle** — default **single**; on, it pops a second **verse-aligned** column via the
+  tested `alignTranslations` engine. New `ParallelCanvas` renders the two columns; the **primary**
+  (left) carries `data-v` + the selection + the annotation tones (it's the source of truth), the
+  **secondary** is read-only reference. A secondary picker appears only when >2 are loaded (pasted).
+- **Cross-column hover** — hovering a verse in either column (or a margin card) lights it in **both**
+  (`data-v` ‖ `data-vsec`, keyed by verse id).
+- **Switch = swap, not drop.** Fixed the reader's `switchTranslation`: M3's `setPrimary` *drops* the
+  old primary, which is wrong once several translations are loaded — it now just re-designates the
+  primary, keeping every translation, so parallel **swaps columns** and stays on.
+- **Narrow screens stack** — the grid collapses to one column below `sm`, each cell labelled with its
+  translation (no horizontal scroll).
+- **Refactor:** the drag-to-range / ⌘-disjoint / ⇧-extend / click selection was extracted from
+  `ReaderCanvas` into a shared `useDragSelection` hook, now used by both canvases.
+
+Verified live (Playwright MCP) on Luke 1:5–25: added ASV, popped Parallel (WEBBE ‖ ASV, the
+Judea/Judæa · division/course · Elizabeth/Elisabeth contrasts visible), cross-column hover lit both
+sides, selection + action bar worked on the primary, switching primary swapped columns while keeping
+both, and the narrow layout stacked with per-cell labels; 0 console errors bar the known Router
+warnings. New e2e covers add → parallel → cross-column hover → swap. Design mockup:
+`docs/mockups/v2-parallel-translations.html`. Gate: `typecheck && lint && test (295) && build &&
+test:e2e (14)`.
 
 ### 2026-08-10 — v2.5 reading modes (Manuscript toggle)
 
@@ -363,11 +395,10 @@ overlines, question numbers) to ink, so the user decides colour-vs-economy; prev
 `src/v2/print/{PrintShell,PrintPassage,HandoutDoc,LeaderDoc}` + the `.qth-doc` CSS scope; v1's print
 components stay frozen and are removed with the rest of v1.
 
-**Next up.** *(Read + COMA, the inline `@`-mention cross-references, and v2.5 reading modes all
-landed 2026-08-10 — see the top of this log.)* (a) **Translations UX** — surface easy primary-switch
-+ optional side-by-side parallel (the M3 compare feature; §2 "parallel translations", §3 Q3 — the
-switch exists only in the `/` palette today). (b) **v2.8** — teaching/help text + the attribution
-"verbatim only for COMA" sweep. (c) Remove the v1 crib.
+**Next up.** *(Read + COMA, the inline `@`-mention cross-references, v2.5 reading modes, and parallel
+translations all landed 2026-08-10 — see the top of this log.)* (a) **v2.8** — teaching/help text +
+the attribution "verbatim only for COMA" sweep. (b) Remove the v1 crib. (c) Polish deferrals: BSB
+edition; a mobile-responsive shell (the lens rail + margin aren't phone-friendly yet).
 
 ---
 

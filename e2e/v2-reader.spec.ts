@@ -142,6 +142,39 @@ test('v2.5 reading modes: Manuscript flattens the passage and the choice persist
   await expect(page.getByRole('textbox', { name: 'Section name' })).toBeVisible();
 });
 
+test('v2 parallel translations: add ASV, compare side by side (cross-column hover), swap primary', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
+
+  // One translation loaded → no parallel toggle yet.
+  await expect(page.getByRole('button', { name: /⊕ Parallel/ })).toHaveCount(0);
+
+  // Add ASV from the top-bar switcher.
+  await page.locator('button[aria-haspopup="menu"]').click();
+  await page.getByRole('button', { name: /Add American Standard/i }).click();
+
+  // The parallel toggle now appears; turn it on → a second, verse-aligned column.
+  await page.getByRole('button', { name: /⊕ Parallel/ }).click();
+  await expect(page.locator('[data-vsec="LUKE.1.8"]')).toBeVisible();
+  await expect(page.getByText(/course of Abijah/i)).toBeVisible(); // ASV's distinct wording (v5)
+
+  // Cross-column hover: hovering a primary verse lights the same verse in the secondary column.
+  await page.locator('[data-v="LUKE.1.6"]').hover();
+  await expect(page.locator('[data-vsec="LUKE.1.6"]')).toHaveClass(/lapis-wash/);
+
+  // Swap the primary (WEBBE → ASV): the columns swap, both are kept, and parallel stays on.
+  await page.locator('button[aria-haspopup="menu"]').click();
+  await page.getByRole('menuitemradio', { name: /American Standard/i }).click();
+  await expect(page.getByRole('button', { name: /⊕ Parallel: WEBBE/ })).toBeVisible();
+  await expect(page.locator('[data-vsec="LUKE.1.8"]')).toBeVisible(); // WEBBE now the secondary
+});
+
 test('v2 command palette: switch the primary translation', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

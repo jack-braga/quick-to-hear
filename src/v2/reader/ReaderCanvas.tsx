@@ -5,8 +5,8 @@ import { verseRefLabel } from '@/lib/map';
 import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
 import type { AnnotationTone } from '@/v2/annotations';
 import type { ReaderBand, ReaderGroup, ReaderModel, ReaderVerse } from '@/v2/reader/model';
-import { clickSelection, dragSelection, formatVerseIds } from '@/v2/reader/selection';
-import { useCallbackRef } from '@/v2/reader/useCallbackRef';
+import { formatVerseIds } from '@/v2/reader/selection';
+import { useDragSelection } from '@/v2/reader/useDragSelection';
 import { TONE } from '@/v2/tones';
 
 /**
@@ -59,94 +59,9 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedSet = new Set(selected);
   const order = model.verseIds;
-  const onSelect = useCallbackRef(props.onSelect);
 
-  // Transient drag state (refs, so a re-render mid-drag never desyncs it).
-  const drag = useRef({
-    active: false,
-    anchor: '' as string,
-    base: [] as string[],
-    pre: [] as string[],
-    lastTarget: '' as string,
-    moved: false,
-    meta: false,
-    shift: false,
-    lastAnchor: null as string | null,
-  });
-
-  // Keep the latest selection/anchor readable inside the (stable) pointer handlers.
-  const selectedRef = useRef(selected);
-  const lastAnchorRef = useRef(lastAnchor);
-  selectedRef.current = selected;
-  lastAnchorRef.current = lastAnchor;
-
-  // ---- pointer-drag selection -------------------------------------------------------------
-  useEffect(() => {
-    if (!interactive) return;
-    const el = containerRef.current;
-    if (!el) return;
-
-    const verseFrom = (t: EventTarget | null): string | null => {
-      const node = (t as HTMLElement | null)?.closest?.('[data-v]');
-      return node ? (node as HTMLElement).dataset.v! : null;
-    };
-
-    const onDown = (e: PointerEvent) => {
-      const v = verseFrom(e.target);
-      if (!v) return;
-      e.preventDefault();
-      const d = drag.current;
-      d.active = true;
-      d.moved = false;
-      d.pre = [...selectedRef.current];
-      d.meta = e.metaKey || e.ctrlKey;
-      d.shift = e.shiftKey && lastAnchorRef.current != null;
-      d.lastAnchor = lastAnchorRef.current;
-      if (d.meta) {
-        d.base = [...selectedRef.current];
-        d.anchor = v;
-      } else if (d.shift && d.lastAnchor) {
-        d.base = [...selectedRef.current];
-        d.anchor = d.lastAnchor;
-      } else {
-        d.base = [];
-        d.anchor = v;
-      }
-      d.lastTarget = v;
-      onSelect({ selected: dragSelection(order, d.base, d.anchor, v), lastAnchor: lastAnchorRef.current });
-    };
-
-    const onOver = (e: PointerEvent) => {
-      const d = drag.current;
-      if (!d.active) return;
-      const v = verseFrom(e.target);
-      if (!v) return;
-      if (v !== d.anchor) d.moved = true;
-      d.lastTarget = v;
-      onSelect({ selected: dragSelection(order, d.base, d.anchor, v), lastAnchor: lastAnchorRef.current });
-    };
-
-    const onUp = () => {
-      const d = drag.current;
-      if (!d.active) return;
-      d.active = false;
-      if (!d.moved && !d.shift) {
-        onSelect(clickSelection(order, d.pre, d.anchor, { meta: d.meta }, d.lastAnchor));
-      } else {
-        const sel = dragSelection(order, d.base, d.anchor, d.lastTarget);
-        onSelect({ selected: sel, lastAnchor: sel.length ? d.anchor : null });
-      }
-    };
-
-    el.addEventListener('pointerdown', onDown);
-    el.addEventListener('pointerover', onOver);
-    window.addEventListener('pointerup', onUp);
-    return () => {
-      el.removeEventListener('pointerdown', onDown);
-      el.removeEventListener('pointerover', onOver);
-      window.removeEventListener('pointerup', onUp);
-    };
-  }, [interactive, order, onSelect]);
+  // The drag-to-range / ⌘-disjoint / ⇧-extend / click selection (shared with ParallelCanvas).
+  useDragSelection({ containerRef, interactive, order, selected, lastAnchor, onSelect: props.onSelect });
 
   // Which verse the pointer is over — drives the divide affordances (shown only for the
   // hovered verse, before + after) as well as the two-way margin lighting.
