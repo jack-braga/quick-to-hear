@@ -10,6 +10,7 @@ import {
   translationOrder,
 } from '@/lib/passage';
 import { DURATION_OPTIONS, GENRE_LABELS, GENRE_OPTIONS, GROUP_OPTIONS } from '@/lib/setup-options';
+import { cn } from '@/lib/utils';
 import { BOOKS, inferGenreForBook, parseReference, type ParsedReference } from '@/lib/verse';
 import { allVerses } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
@@ -77,9 +78,10 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
       const first = translationOrder(passage).length === 0;
       await setPassage(first ? loadFreshPrimary(text) : addSecondary(passage, text));
       if (first) {
+        const inferred = inferGenreForBook(parsed.start.book.id);
         updateSetup({
           reference: parsed.input,
-          genre: inferGenreForBook(parsed.start.book.id),
+          genres: inferred ? [inferred] : [],
           primaryTranslationId: id,
         });
       }
@@ -106,6 +108,13 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
     setReference('');
     setError(null);
     setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  // Multi-genre: toggle a text-type in/out of `genres`; the first stays the primary (drives the
+  // reading tip). A passage can be more than one genre (e.g. Gospel narrative + Hebrew poetry).
+  const toggleGenre = (g: Genre) => {
+    const cur = study.setup.genres;
+    updateSetup({ genres: cur.includes(g) ? cur.filter((x) => x !== g) : [...cur, g] });
   };
 
   const availableBundled = BUNDLED_TRANSLATIONS.filter((t) => !passage.translations[t.id]);
@@ -309,31 +318,49 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
         {/* 4 — the shape of the study (drives guidance, timing, and the handout) */}
         {primary && (
           <div className="space-y-4 border-t border-line pt-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <div className="flex items-center gap-1.5">
-                  <label htmlFor="v2-genre" className={LABEL}>
-                    Genre <span className="normal-case tracking-normal text-ink-faint">(inferred)</span>
-                  </label>
-                  <Help helpKey="p1.genre" label="Genre" />
-                </div>
-                <select
-                  id="v2-genre"
-                  className={FIELD}
-                  value={study.setup.genre ?? ''}
-                  onChange={(e) => updateSetup({ genre: (e.target.value || null) as Genre | null })}
-                >
-                  <option value="">Choose a genre…</option>
-                  {GENRE_OPTIONS.map((g) => (
-                    <option key={g.value} value={g.value}>
-                      {g.label}
-                    </option>
-                  ))}
-                </select>
-                {study.setup.genre && (
-                  <p className="text-[12px] text-ink-faint">Shapes the COMA prompts: {GENRE_LABELS[study.setup.genre]}.</p>
-                )}
+            {/* text-type(s) — a passage can be more than one genre; the first (★) is primary */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
+                <span className={LABEL}>
+                  Text-type{' '}
+                  <span className="normal-case tracking-normal text-ink-faint">
+                    (inferred; pick one or more)
+                  </span>
+                </span>
+                <Help helpKey="p1.genre" label="Genre" />
               </div>
+              <div className="flex flex-wrap gap-1.5">
+                {GENRE_OPTIONS.map((g) => {
+                  const on = study.setup.genres.includes(g.value);
+                  const primary = study.setup.genres[0] === g.value;
+                  return (
+                    <button
+                      key={g.value}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => toggleGenre(g.value)}
+                      className={cn(
+                        'rounded-full border px-2.5 py-1 font-sans text-[12.5px]',
+                        on
+                          ? 'border-lapis-edge bg-lapis-wash text-lapis-ink'
+                          : 'border-line bg-panel text-ink-soft hover:border-lapis-edge hover:text-ink',
+                      )}
+                    >
+                      {primary && <span className="mr-1 text-[10px] text-lapis">★</span>}
+                      {g.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {study.setup.genres.length > 0 && (
+                <p className="text-[12px] text-ink-faint">
+                  Shapes the COMA prompts: {study.setup.genres.map((g) => GENRE_LABELS[g]).join(' · ')}
+                  {study.setup.genres.length > 1 && ' — the reading tip follows the primary (★).'}
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5">
                   <label htmlFor="v2-duration" className={LABEL}>
@@ -355,33 +382,32 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                   ))}
                 </select>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5">
-                <label htmlFor="v2-group" className={LABEL}>
-                  Group composition
-                </label>
-                <Help helpKey="p1.group" label="Group composition" />
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="v2-group" className={LABEL}>
+                    Group composition
+                  </label>
+                  <Help helpKey="p1.group" label="Group composition" />
+                </div>
+                <select
+                  id="v2-group"
+                  className={FIELD}
+                  value={study.setup.groupComposition ?? ''}
+                  onChange={(e) =>
+                    updateSetup({ groupComposition: (e.target.value || null) as GroupComposition | null })
+                  }
+                >
+                  <option value="">Choose…</option>
+                  {GROUP_OPTIONS.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[12px] text-ink-faint">
+                  A mixed or not-yet-Christian group asks the study to make the gospel plain (the audit checks it).
+                </p>
               </div>
-              <select
-                id="v2-group"
-                className={FIELD}
-                value={study.setup.groupComposition ?? ''}
-                onChange={(e) =>
-                  updateSetup({ groupComposition: (e.target.value || null) as GroupComposition | null })
-                }
-              >
-                <option value="">Choose…</option>
-                {GROUP_OPTIONS.map((g) => (
-                  <option key={g.value} value={g.value}>
-                    {g.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-[12px] text-ink-faint">
-                A mixed or not-yet-Christian group asks the study to make the gospel plain (the audit checks it).
-              </p>
             </div>
 
             <div className="space-y-2">

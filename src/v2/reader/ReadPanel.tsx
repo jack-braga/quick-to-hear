@@ -12,7 +12,8 @@ import { Help } from '@/v2/Help';
 export function ReadPanel({ study }: { study: Study }) {
   const incrementRead = useStudyStore((s) => s.incrementRead);
   const count = study.read.count;
-  const tip = readingTipForGenre(study.setup.genre).trim();
+  // Multi-genre: the reading tip follows the primary (first) text-type.
+  const tip = readingTipForGenre(study.setup.genres[0] ?? null).trim();
 
   return (
     <div>

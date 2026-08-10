@@ -242,9 +242,10 @@ export default function PasteReview() {
         // A comparison translation — never touches the primary, its anchor, or the setup.
         await setPassage(addSecondary(study.passage, text));
       } else {
+        const inferred = study.setup.genres[0] ?? inferGenreForBook(parsedRef!.start.book.id);
         updateSetup({
           reference: ctx.reference,
-          genre: study.setup.genre ?? inferGenreForBook(parsedRef!.start.book.id),
+          genres: inferred ? [inferred] : [],
           primaryTranslationId: ctx.translationId,
         });
         await setPassage(setPrimary(study.passage, text));

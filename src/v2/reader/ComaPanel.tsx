@@ -17,7 +17,8 @@ const GROUPS = [
 ] as const;
 
 export function ComaPanel({ study }: { study: Study }) {
-  const set = comaSetForGenre(study.setup.genre);
+  // #4b-1 uses the primary genre; #4b-2 rebuilds this panel to iterate all genres with answer-cards.
+  const set = comaSetForGenre(study.setup.genres[0] ?? null);
 
   let attribution = '';
   try {
@@ -33,10 +34,10 @@ export function ComaPanel({ study }: { study: Study }) {
         <Help helpKey="p4.overview" label="COMA" />
       </div>
 
-      {!study.setup.genre ? (
+      {study.setup.genres.length === 0 ? (
         <p className="rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
-          Set the passage’s <b className="font-semibold text-ink">genre</b> in Set up to see its COMA
-          prompts.
+          Set the passage’s <b className="font-semibold text-ink">text-type(s)</b> in Set up to see its
+          COMA prompts.
         </p>
       ) : !set ? (
         <p className="rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">

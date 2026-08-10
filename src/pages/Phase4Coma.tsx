@@ -359,7 +359,7 @@ export default function Phase4Coma() {
   if (!study) return <StudyNotFound loading={loading} />;
 
   const passage = primaryText(study.passage);
-  const genre = study.setup.genre;
+  const genre = study.setup.genres[0] ?? null;
   const comaSet: ComaGenreSet | null = comaSetForGenre(genre);
   const readingTip = readingTipForGenre(genre);
   const coma = comaContent();

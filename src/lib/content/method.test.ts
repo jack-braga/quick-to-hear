@@ -17,6 +17,7 @@ import {
   auditChecks,
   comaContent,
   comaSetForGenre,
+  comaSetsForGenres,
   formulasForType,
   litmusForQuestionType,
   litmusQuestionTests,
@@ -269,6 +270,14 @@ describe('accessors (real files via glob)', () => {
   it('comaSetForGenre / readingTipForGenre are null/empty for an unset genre', () => {
     expect(comaSetForGenre(null)).toBeNull();
     expect(readingTipForGenre(null)).toBe('');
+  });
+
+  it('comaSetsForGenres resolves each genre to a labelled set, deduped, dropping unknowns/empties', () => {
+    const rows = comaSetsForGenres(['epistles', 'epistles', null, 'not-a-genre', 'wisdom-poetry']);
+    expect(rows.map((r) => r.genre)).toEqual(['epistles', 'wisdom-poetry']); // deduped; unknown/null dropped
+    expect(rows[0]!.label.length).toBeGreaterThan(0);
+    expect(rows[0]!.set).toHaveProperty('context');
+    expect(comaSetsForGenres([])).toEqual([]);
   });
 });
 

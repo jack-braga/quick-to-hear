@@ -3,6 +3,7 @@ export {
   auditChecks,
   comaContent,
   comaSetForGenre,
+  comaSetsForGenres,
   formulaGroups,
   formulasForType,
   genreItems,

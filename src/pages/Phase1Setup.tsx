@@ -97,9 +97,10 @@ export default function Phase1Setup() {
     setLoading(true);
     try {
       const parsed = await loadReading(translationId, ref);
+      const inferred = inferGenreForBook(ref.start.book.id);
       updateSetup({
         reference: ref.input,
-        genre: inferGenreForBook(ref.start.book.id),
+        genres: inferred ? [inferred] : [],
         primaryTranslationId: translationId,
       });
       // A fresh reference load establishes THE passage — drop any comparison texts that
@@ -340,8 +341,10 @@ export default function Phase1Setup() {
         </label>
         <Select
           id="genre"
-          value={setup.genre ?? ''}
-          onChange={(e) => updateSetup({ genre: (e.target.value || null) as typeof setup.genre })}
+          value={setup.genres[0] ?? ''}
+          onChange={(e) =>
+            updateSetup({ genres: e.target.value ? [e.target.value as (typeof setup.genres)[number]] : [] })
+          }
         >
           <option value="">Choose a genre…</option>
           {GENRE_OPTIONS.map((g) => (
@@ -350,9 +353,9 @@ export default function Phase1Setup() {
             </option>
           ))}
         </Select>
-        {setup.genre && (
+        {setup.genres[0] && (
           <p className="text-xs text-muted-foreground">
-            Determines which COMA prompts appear in Phase 4: {GENRE_LABELS[setup.genre]}.
+            Determines which COMA prompts appear in Phase 4: {GENRE_LABELS[setup.genres[0]]}.
           </p>
         )}
         <Help helpKey="p1.genre" />

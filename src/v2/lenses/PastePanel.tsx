@@ -212,11 +212,9 @@ export function PastePanel({
       if (asSecondary) {
         await setPassage(addSecondary(study.passage, text));
       } else {
-        updateSetup({
-          reference: ctx.reference,
-          genre: study.setup.genre ?? inferGenreForBook(parsedRef!.start.book.id),
-          primaryTranslationId: ctx.translationId,
-        });
+        const inferred = inferGenreForBook(parsedRef!.start.book.id);
+        const genres = study.setup.genres.length ? study.setup.genres : inferred ? [inferred] : [];
+        updateSetup({ reference: ctx.reference, genres, primaryTranslationId: ctx.translationId });
         await setPassage(loadFreshPrimary(text));
       }
       onDone();

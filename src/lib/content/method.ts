@@ -118,6 +118,23 @@ export function readingTipForGenre(genre: string | null | undefined): string {
   return genreItems().find((g) => g.id === genre)?.readingTip ?? '';
 }
 
+/** Each genre's COMA set with its display label, for the multi-genre COMA lens — deduped, in the
+ *  given order, dropping genres that are unset/unknown or have no prompt set. */
+export function comaSetsForGenres(
+  genres: readonly (string | null | undefined)[],
+): { genre: string; label: string; set: ComaGenreSet }[] {
+  const out: { genre: string; label: string; set: ComaGenreSet }[] = [];
+  const seen = new Set<string>();
+  for (const g of genres) {
+    if (!g || seen.has(g)) continue;
+    seen.add(g);
+    const set = comaSetForGenre(g);
+    if (!set) continue;
+    out.push({ genre: g, label: genreItems().find((it) => it.id === g)?.label ?? g, set });
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // litmus.yaml — the theme[] tests (Phase 5, on exit) + question[] tests (Phase 6)
 // ---------------------------------------------------------------------------

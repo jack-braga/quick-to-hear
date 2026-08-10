@@ -79,7 +79,11 @@ export const SetupSchema = z.object({
   // Optional study title (v2 locked decision) — defaults to the reference; becomes the
   // handout heading. Additive-optional, so v1 docs load unchanged (default '').
   title: z.string().default(''),
-  genre: GenreSchema.nullable().default(null),
+  // Text-type(s) — a passage can be set up as more than one genre (e.g. Gospel narrative + Hebrew
+  // poetry for the Magnificat), so COMA shows each set's prompts. `genres[0]` is the **primary**
+  // (drives the Read-lens tip + the summary). Clean break: replaces the old single `genre` — no
+  // migration (studies are non-upgradable).
+  genres: z.array(GenreSchema).default([]),
   format: FormatSchema.default('study'),
   durationMinutes: z.number().nullable().default(null),
   groupComposition: GroupCompositionSchema.nullable().default(null),
@@ -385,7 +389,8 @@ export function toSummary(study: Study): StudySummary {
     id: study.id,
     reference: study.setup.reference,
     seriesNote: study.setup.seriesNote,
-    genre: study.setup.genre,
+    // the summary keeps a single primary genre; `?.` guards pre-`genres` stored docs (non-upgradable)
+    genre: study.setup.genres?.[0] ?? null,
     updatedAt: study.updatedAt,
     createdAt: study.createdAt,
     questionCount: study.build.format === 'study' ? study.build.questions.length : 0,

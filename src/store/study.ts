@@ -99,7 +99,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
           id: study.id,
           reference: study.setup.reference,
           seriesNote: study.setup.seriesNote,
-          genre: study.setup.genre,
+          genre: study.setup.genres[0] ?? null,
           updatedAt: study.updatedAt,
           createdAt: study.createdAt,
           questionCount: 0,
