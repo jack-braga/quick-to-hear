@@ -86,13 +86,17 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   chip set.
 - ~~**Slice 4 — click-chip anchor capture.**~~ ✅ shipped `f5719b7` (see "Shipped so far").
 - ~~**#4c the new Questions lens** (unblocks item 2)~~ ✅ shipped `bb34d46` (see "Shipped so far").
-- **#4b COMA answer-cards** (the biggest remaining piece) — in the COMA lens the genre's Helm prompts
-  are quiet rows with a **✎ Answer** that spawns an answer-card (answer field + editable anchor via the
-  click-chip capture; **multiple answers per prompt**; write-first). Plus **multi-genre**:
-  `setup.genre` → `setup.genres` (Set-up multi-select; `comaSetForGenre` iterates; prompts labelled by
-  text-type). Helm attribution renders (rule 8). See `v2-coma-answer-cards.html` + `v2-coma-multigenre.html`.
-- Then **Slice 3b** (the two panel switches), **#4d Build → pure assembly**, **#4e Read → strip
-  tints/cards** (pure reading).
+- ~~**#4b COMA answer-cards + multi-genre**~~ ✅ shipped `05b8365` (#4b-1 model) + `14ea0ca` (#4b-2
+  answer-cards). `setup.genres[]`, Set-up chip multi-select, ComaPanel answer-on-demand with
+  ✎ Answer / answer again + click-chip anchor, prompts tagged by genre + chip-filter, `origin:'coma'`
+  answer-cards that recycle-forward.
+- **Slice 3b — the two panel switches** (see above): hover-reveal + hide-vs-dim in `MarginAnnotations`.
+- **#4d Build → pure assembly** — Build stops authoring (done — #4c) and becomes sequence/timing/cut +
+  optional filler (leader note / background box); **images deferred**. Only questions + filler enter the
+  running order.
+- **#4e Read → strip tints/cards** — the Read lens should suppress *all* overlays (verse tones **and**
+  cards): just the clean passage + the pray-and-read panel (V2-UX-BACKLOG §1). Currently Read still
+  paints the annotation tones.
 - Still-open parallel item (V2-UX-BACKLOG §4): **sectioning is disabled in parallel** — enable
   any-verse divide/merge on the primary column while parallel.
 

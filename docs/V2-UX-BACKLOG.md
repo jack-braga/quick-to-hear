@@ -134,15 +134,12 @@ source line, two-way verse↔card hover, and the diagonal gradient for shared ve
   - **"Return question"** — the follow-up that steers the group *back* to the main passage after you
     send them to another one (the v1 "step everyone forgets"). e.g. studying Luke 1, you send them to
     Malachi 4 for the Elijah promise; the return-question brings them home.
-- **COMA answer-cards (owner idea — msg#1999, #2091; active design 2026-08-11).** In the COMA lens the
-  genre's Helm prompts (still shown, per genre) are **answerable as cards** in the right panel: each
-  card = a prompt + an answer field you fill + an editable **anchor** (one or more verses). Treated
-  like a note (feeds recycle-forward → Build candidate questions). **Open design questions to resolve
-  in the mockup:** (a) how a prompt *becomes* an answer-card — every prompt pre-rendered as an empty
-  card, vs. a compact prompt list you "Answer" on demand, vs. a prompts strip with answers accumulating
-  below; (b) **one answer per prompt** (one-to-one) vs. **multiple** answer-cards per prompt vs. also
-  free answer-cards not tied to any prompt; (c) the anchor gesture (see the inline-anchor decision in
-  §1). The COMA attribution (Helm) must still render wherever the prompts appear (inviolable rule 8).
+- ~~**COMA answer-cards (owner idea — msg#1999, #2091).**~~ **[shipped #4b-2 `14ea0ca`]** — resolved as
+  **answer-on-demand** (prompts as quiet rows → **✎ Answer** spawns an answer-card, write-first),
+  **multiple per prompt** (✎ answer again), **click-chip anchor**. Answer-cards are `origin:'coma'`
+  notes → recycle-forward into questions; Helm attribution renders (rule 8). Multi-genre shipped in
+  #4b-1 (`05b8365`): `setup.genre` → `setup.genres[]`, prompts grouped by heading + tagged by text-type
+  + a chip-filter, `genres[0]` = primary.
 - **Card naming convention (msg#2091, #2304).** Card names must be clear and rooted in the documented
   flow. `MARK · CONFUSING` was called out as a weird name. Owner liked the clearer labels in the
   mockups — port that convention into the app. *Owner may have more input here.*
