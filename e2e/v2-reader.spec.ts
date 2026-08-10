@@ -33,6 +33,37 @@ test('v2 reader: load a passage, mark a verse, and it survives a reload', async 
   await expect(page.getByRole('button', { name: 'Luke 1:8', exact: true })).toBeVisible();
 });
 
+test('v2 Read + COMA lenses: the read counter persists, and COMA shows genre prompts + Helm attribution', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+  await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
+
+  // Read lens — the pray-and-read counter, an enforceable discipline paper can't do.
+  await page.getByRole('button', { name: '02 Read' }).click();
+  // Genre (inferred: gospels-acts) drives the reading tip.
+  await expect(page.getByText(/how the writer wants you to see Jesus/i)).toBeVisible();
+  // Count starts at 0 → the plural label; one tap flips it to the singular "time read".
+  await expect(page.getByText('times read')).toBeVisible();
+  await page.getByRole('button', { name: /I’ve read it/ }).click();
+  await expect(page.getByText('time read', { exact: true })).toBeVisible();
+
+  // The count survives a reload (autosaved with the study body).
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await page.getByRole('button', { name: '02 Read' }).click();
+  await expect(page.getByText('time read', { exact: true })).toBeVisible();
+
+  // COMA lens — the verbatim genre prompts + the required on-screen Helm attribution (rule 8).
+  await page.getByRole('button', { name: '04 COMA' }).click();
+  await expect(page.getByText(/What has happened so far in the narrative/i)).toBeVisible();
+  await expect(page.getByText(/David Helm.*used by permission/i)).toBeVisible();
+});
+
 test('v2 set-up: paste-and-clean lands a passage', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

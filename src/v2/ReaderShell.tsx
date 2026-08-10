@@ -13,13 +13,15 @@ import { anchorToneByVerse, makeAnnotation, toneFor, type AnnotationTone } from 
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
-import { LENSES, LIVE_LENSES, type LensId } from '@/v2/lenses';
+import { LENSES, type LensId } from '@/v2/lenses';
 import { BuildLens } from '@/v2/lenses/BuildLens';
 import { CheckLens } from '@/v2/lenses/CheckLens';
 import { SetupLens } from '@/v2/lenses/SetupLens';
 import { ThemeAimLens } from '@/v2/lenses/ThemeAimLens';
 import { buildReaderModel } from '@/v2/reader/model';
+import { ComaPanel } from '@/v2/reader/ComaPanel';
 import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
+import { ReadPanel } from '@/v2/reader/ReadPanel';
 import { ReaderCanvas } from '@/v2/reader/ReaderCanvas';
 import type { ActionKind } from '@/v2/reader/ActionBar';
 import type { PaletteAction, PaletteContext } from '@/v2/reader/paletteItems';
@@ -309,14 +311,12 @@ export function ReaderShell({ study }: { study: Study }) {
           onAddFloating={onAddFloating}
           onFocusHandled={clearFocusAnnotation}
         />
+      ) : lens === 'read' ? (
+        <ReadPanel study={study} />
+      ) : lens === 'coma' ? (
+        <ComaPanel study={study} />
       ) : (
-        <MarginPlaceholder
-          text={
-            LIVE_LENSES.has(lens)
-              ? 'Reading view — switch to Map to divide the passage and mark what confuses you.'
-              : `The ${LENSES[activeIndex]?.name} lens arrives in a later slice (v2.6). The text stays put; the overlay changes.`
-          }
-        />
+        <MarginPlaceholder text="The text stays put; the overlay changes with the lens." />
       );
   }
 

@@ -112,11 +112,36 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.3 — The `/` command** ✅ | Slash palette over `bcv_parser` + the bundled book list: jump to verse/ref, insert a cross-reference, switch translation, create note/question/mark on the selection, go to a lens, book completion. | Pure `v2/reader/paletteItems.ts` (+tests); dialog with keyboard nav; `/` global + the command bar open it. The `@`-mention-in-content chips + promote-to-support are still open (need a richer text surface). |
 | **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Cross-reference (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`; the four action-bar kinds are wired. Recycle-forward / promote-to-support land with the Build lens (v2.6). |
 | **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
-| **v2.6 — Phases as lenses** *(Set up ✅, Theme & aim ✅, Build ✅, Check ✅; Read/COMA pending)* | Flesh out the lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | Set up (full: genre/group/duration/series/intro + paste), Theme & aim (theme/aim/know-feel-do/Christ route/prayer), Build (running order + per-question load-bearing/aim/gospel-plain), and Check (the audit + coverage) are done. Read/COMA remain (largely subsumed by the annotation surface). |
+| **v2.6 — Phases as lenses** ✅ | Flesh out the lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | All seven lenses live: Set up (full: genre/group/duration/series/intro + paste), **Read** (pray-and-read counter + genre reading tip), Map, **COMA** (verbatim Helm prompts per genre + on-screen attribution), Theme & aim (theme/aim/know-feel-do/Christ route/prayer), Build (running order + per-question load-bearing/aim/gospel-plain), and Check (the audit + coverage). |
 | **v2.7 — Exports** ✅ | The two printable documents (handout + leader) + markdown downloads, from a **Check lens** hub; documents restyled to the v2 language with a per-print **Ink-saver / Colour** toggle. | Pure `projectForExport` maps v2 annotations + running order → the v1 export model (`handoutModel`/`leaderModel` reused unchanged); new `src/v2/print/*` render them white-bg + Scripture serif + mono labels + hairline rules, monochrome by default, one lapis accent when the toggle is off (preview + print match; choice persisted). |
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
 ## 5. Progress log
+
+### 2026-08-10 — Read + COMA lenses (v2.6 complete)
+
+**Shipped.** The two remaining phase lenses, closing out v2.6 — all seven lenses now render live over
+the one canvas.
+
+- **Read lens (SPEC Phase 2).** A margin panel (`src/v2/reader/ReadPanel.tsx`) for the pray-and-read
+  discipline paper can't enforce: read slowly, prayerfully, **more than once** before analysing. A
+  running count (`study.read.count`, tapped via the store's `incrementRead`, autosaved with the body)
+  makes it concrete; a genre-specific `readingTipForGenre` nudges *how* to read. The centre shows the
+  passage read-only (no divide/mark affordances — the text stays put, the overlay changes).
+- **COMA lens (SPEC Phase 4).** A margin panel (`src/v2/reader/ComaPanel.tsx`) of the guided
+  **Context · Observation · Meaning · Application** prompts for the study's genre, via
+  `comaSetForGenre()` (David Helm's questions, **verbatim by permission**). The required Helm
+  attribution renders in-panel from `comaContent().attribution` because COMA content appears here
+  (**inviolable rule 8**); genre-unset / no-set states degrade to a quiet notice. The tool prompts,
+  never writes the answers (**rule 1**) — you jot what you see as a note/question in the Map lens.
+- **Wiring.** `ReaderShell` branches `read`/`coma` to these panels (centre = `ReaderCanvas` read-only,
+  margin = the panel); the old `LIVE_LENSES` placeholder is gone (every lens is live now).
+
+Verified live (Playwright MCP) on a real Luke 1:5–25 study (genre inferred → *gospels-acts*): the Read
+counter increments (0 → 2) and **survives a reload**, with the gospels-acts reading tip; the COMA lens
+shows all four groups of verbatim prompts **plus** the Helm attribution line; 0 console errors bar the
+known Router future-flag warnings. Added a new e2e (`v2 Read + COMA lenses…`). Full gate green:
+`typecheck && lint && test (281) && build && test:e2e (11)`.
 
 ### 2026-08-07 — v2.1 + v2.2 (this session)
 
@@ -271,11 +296,10 @@ overlines, question numbers) to ink, so the user decides colour-vs-economy; prev
 `src/v2/print/{PrintShell,PrintPassage,HandoutDoc,LeaderDoc}` + the `.qth-doc` CSS scope; v1's print
 components stay frozen and are removed with the rest of v1.
 
-**Next up.** (a) **Read + COMA lenses** — the pray-and-read counter + the guided genre-specific COMA
-prompts (both largely subsumed by the annotation surface today). (b) **Cross-reference, richer** —
-`@`-mention inside a note + promote → Support passage. (c) **v2.5** — Manuscript/flatten reading
-toggle + pre-suggested breaks. (d) **v2.8** — teaching/help text + the attribution "verbatim only for
-COMA" sweep. (e) Remove the v1 crib.
+**Next up.** *(Read + COMA landed 2026-08-10 — see the top of this log.)* (a) **Cross-reference,
+richer** — `@`-mention inside a note + promote → Support passage. (b) **v2.5** — Manuscript/flatten
+reading toggle + pre-suggested breaks. (c) **v2.8** — teaching/help text + the attribution "verbatim
+only for COMA" sweep. (d) Remove the v1 crib.
 
 ---
 
