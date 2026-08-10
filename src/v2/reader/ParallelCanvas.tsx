@@ -2,12 +2,15 @@ import { Fragment, useLayoutEffect, useMemo, useRef, useState, type CSSPropertie
 
 import { cn } from '@/lib/utils';
 import { parseVerseId } from '@/lib/verse/ids';
-import { allVerses, verseIds, verseText, type ParsedText } from '@/types/passage';
+import { allVerses, verseIds, verseText, type ParsedText, type VerseSpan } from '@/types/passage';
 import type { AnnotationTone } from '@/v2/annotations';
 import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
+import { verseToLines } from '@/v2/reader/model';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { useDragSelection } from '@/v2/reader/useDragSelection';
 import { TONE, multiToneGradient } from '@/v2/tones';
+
+const CELL_INDENT = ['', 'pl-4', 'pl-8', 'pl-12'] as const;
 
 /**
  * The parallel (side-by-side) canvas (v2.9) — **N** translations lined up **verse by verse** by
@@ -24,6 +27,9 @@ export interface ParallelCanvasProps {
   labels: string[];
   leafTitle: string;
   interactive: boolean;
+  /** Manuscript reading mode: flatten each cell's poetry to running prose (formatted keeps the
+   *  poetry lines + indents). Without this the two modes look identical in parallel. */
+  manuscript: boolean;
   selected: string[];
   lastAnchor: string | null;
   /** Distinct tones per annotated verse (highest-priority first) — one tone is a flat wash, two or
@@ -188,10 +194,14 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
                       onMouseEnter={() => enter(id)}
                       onMouseLeave={() => leave(id)}
                     >
-                      <sup className={cn('mr-1 select-none align-super font-mono text-[0.6em] font-medium', selectedSet.has(id) ? 'text-lapis' : 'text-ink-faint')}>
-                        {num}
-                      </sup>
-                      {present ? verseText(span!) : <span className="italic">—</span>}
+                      {present ? (
+                        <CellText span={span!} num={num} selected={selectedSet.has(id)} manuscript={props.manuscript} />
+                      ) : (
+                        <>
+                          <VerseNoSup num={num} selected={selectedSet.has(id)} />
+                          <span className="italic">—</span>
+                        </>
+                      )}
                     </div>
                   );
                 })}
@@ -204,6 +214,50 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
       {barPos && !props.capturing && (
         <ActionBar label={formatVerseIds(selected)} style={{ left: barPos.left, top: barPos.top }} onAction={props.onAction} />
       )}
+    </>
+  );
+}
+
+function VerseNoSup({ num, selected }: { num: string; selected: boolean }) {
+  return (
+    <sup className={cn('mr-1 select-none align-super font-mono text-[0.6em] font-medium', selected ? 'text-lapis' : 'text-ink-faint')}>
+      {num}
+    </sup>
+  );
+}
+
+/** A parallel cell's text. In **formatted** mode a poetry verse keeps its lines + indents; a prose
+ *  verse (and **manuscript** mode for any verse) renders as one flat run — so the two reading modes
+ *  visibly differ in parallel (they didn't when every cell was flat `verseText`). */
+function CellText({
+  span,
+  num,
+  selected,
+  manuscript,
+}: {
+  span: VerseSpan;
+  num: string;
+  selected: boolean;
+  manuscript: boolean;
+}) {
+  const lines = verseToLines(span);
+  const isPoetry = !manuscript && lines.some((l) => l.indent >= 1);
+  if (!isPoetry) {
+    return (
+      <>
+        <VerseNoSup num={num} selected={selected} />
+        {verseText(span)}
+      </>
+    );
+  }
+  return (
+    <>
+      {lines.map((line, i) => (
+        <div key={i} className={line.indent >= 1 ? CELL_INDENT[Math.min(line.indent, 3)] : undefined}>
+          {i === 0 && <VerseNoSup num={num} selected={selected} />}
+          {line.frags.map((f) => f.text).join(' ').replace(/\s+/g, ' ').trim()}
+        </div>
+      ))}
     </>
   );
 }

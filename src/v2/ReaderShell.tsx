@@ -427,6 +427,7 @@ export function ReaderShell({ study }: { study: Study }) {
         labels={viewedTranslations.map((t) => t.shortName)}
         leafTitle={leafTitle}
         interactive={interactive}
+        manuscript={readingMode === 'manuscript'}
         selected={selected}
         lastAnchor={lastAnchor}
         verseTones={verseToneSets}
