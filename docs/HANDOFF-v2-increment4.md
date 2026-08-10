@@ -47,14 +47,22 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   (takes `verseTones`; `verseStyle` builds the gradient from `TONE_WASH` in `src/v2/tones.ts`;
   `ReaderShell` computes + passes it). Live-verified on Luke 1:8. **ParallelCanvas still single-tone —
   a follow-up.**
+- **Slice 3** `93f956b` — the **chip-filtered card panel** in `src/v2/reader/MarginAnnotations.tsx`:
+  origin chip row (`All` + `presentOrigins`), flat card list, `▸ step NN · Name` source line, **no
+  Study-notes section** (unanchored card shows `—`), `＋ note` adds an unanchored `origin:'map'` card,
+  hidden-chip set persisted in `localStorage` (`qth2/panel-hidden-origins`). New pure
+  `rejectByOrigins` (blacklist companion to `filterByOrigins`; chip state = the *hidden* set).
+  `ReaderShell.onAction`/`onAddFloating` now stamp `origin:'map'`. Live-verified (Map/COMA/Theme chips
+  filter, survives reload). **Two panel switches (hover-reveal, hide-vs-dim) deferred to Slice 3b.**
 
 ## Do next — in slices, each testable + committable
 
-- **Slice 3 — chip-filtered card panel.** Evolve `src/v2/reader/MarginAnnotations.tsx`: an origin
-  **chip row** (`presentOrigins` + `filterByOrigins`), a flat card list with a source-step line
-  (`ORIGIN_LABEL`), **remove the "Study notes" section** (everything's a card; an unanchored card shows
-  with a `—` instead of an anchor chip). Set `origin: 'map'` when creating annotations in
-  `ReaderShell.onAction` (`makeAnnotation(..., { origin: 'map' })`). Persist chip state in `localStorage`.
+- ~~**Slice 3 — chip-filtered card panel.**~~ ✅ shipped `93f956b` (see "Shipped so far").
+- **Slice 3b — the two panel switches.** Add **"Reveal only on hover"** (cards hide until you hover
+  their anchor verse — needs the `litVerseId`/hover wiring, already passed in) and **"Hide vs dim
+  filtered-out"** (off = dim the filtered-out cards at ~0.32 opacity instead of removing them) to the
+  `MarginAnnotations` filter header, per `v2-panel-filters.html`. Persist both toggles alongside the
+  chip set.
 - **Slice 4 — click-chip anchor capture.** A `capturingId` state in `ReaderShell`; while set, a passage
   selection sets that card's `verseIds` (instead of creating a new annotation), with a hint banner over
   the canvas + Esc/Done to finish; the card's anchor chip is the trigger. Reuse `useDragSelection`.
