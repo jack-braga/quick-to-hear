@@ -95,8 +95,8 @@ proposed shape (seven lenses → **eight**):
   set timing, cut / reserve → the **running order that exports**. Only questions enter, **plus optional
   filler** (a leader note / background box; **images deferred** per §6). No question *authoring* here.
 - Consistency win: Map · COMA · Theme · Questions are all "work against the text, show everything"
-  lenses; **Build is the single assembly step**. *Owner to confirm the split (vs. keeping one Build
-  lens with the filtered panel).*
+  lenses; **Build is the single assembly step**. **CONFIRMED (owner, 2026-08-11): do the split — eight
+  lenses.**
 - **Unanchored-card rule DECIDED (owner, 2026-08-11): there is no "Study notes" category — everything
   is a card.** Every annotation is just a card with (1) an **origin** = the step it came from (Map /
   COMA / Theme / Questions…), which drives the filter chips + the source line, and (2) **optional
@@ -109,10 +109,12 @@ proposed shape (seven lenses → **eight**):
     later lens (e.g. jot a new COMA answer while in Questions), or does each lens only add *its own* type
     (with prior types view-only)? Leaning: panel shows all; each lens's primary add = its own type; a
     secondary affordance lets you add a prior type when you need to.
-  - **Collapsible origin-groups in the panel.** The panel groups cards by origin; each group should be
-    **collapse/expand** so e.g. the COMA group can shrink to compact rows showing just the **→ Make a
-    question** button (not the full answer text) — density control (owner's "bring it back without
-    cluttering").
+  - **Panel density = chip filter, NOT collapsible origin-groups (owner, 2026-08-11).** The
+    `v2-questions-lens.html` collapsible-groups panel read as "too much going on." Owner prefers the
+    **chip-filter** approach from `v2-panel-scope-options.html` / `v2-panel-filters.html`: a chip row
+    (All · by origin / by genre) picks which cards show; flat list, no accordion nesting; fewer cards on
+    screen at once. Convert (**→ make a question**) still lives on each prior card. *(The collapsible-
+    groups idea is dropped in favour of chips.)*
 
 **Increment #4 is the point of Layout B**; 1–3 were the groundwork (reclaim width, unify menus). The
 `v2-panel-filters.html` mockup specifies it exactly: a 380px right panel, chips `All · Map · COMA ·
