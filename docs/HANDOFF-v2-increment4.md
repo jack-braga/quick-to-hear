@@ -97,7 +97,10 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
   keep sequence + type-filter + assembly metadata (type/load-bearing/aim/gospel-plain) + jump + drop.
   **Deferred (owner: core scope):** filler (leader note/background box — needs export-model work),
   per-question timing, cut/reserve.
-- **Slice 3b — the two panel switches** (see above): hover-reveal + hide-vs-dim in `MarginAnnotations`.
+- ~~**Slice 3b — the two panel switches**~~ ✅ shipped `69d39a8` — Reveal-only-on-hover + Hide-vs-dim
+  in `MarginAnnotations`, both persisted. **Increment #4 is now complete.**
+- **Sectioning in the parallel view** (V2-UX-BACKLOG §4) — enable any-verse divide/merge on the
+  primary column while parallel; the manuscript flatten in parallel also lands there.
 - **Deferred #4d extras** — filler / timing / cut-reserve, when the owner wants them.
 - Still-open parallel item (V2-UX-BACKLOG §4): **sectioning is disabled in parallel** — enable
   any-verse divide/merge on the primary column while parallel.

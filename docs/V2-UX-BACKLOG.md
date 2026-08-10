@@ -30,7 +30,7 @@ now and card-ify them later.
 | 1 | Muted / warmer night palette | ✅ shipped `9b7969e` |
 | 2 | Lens tracker → header (icons + hover labels); remove the left rail | ✅ shipped `c2fa135` |
 | 3 | Unified "Aa Text" menu (✓ view · ★ main) + N-column parallel | ✅ shipped `c2e229a` |
-| **4** | **The single filtered card panel** — step-filter chips + "reveal only on hover" + "hide vs dim" filtered-out cards; every note/question/COMA-answer is a card with an anchor + tag + source-step line; **diagonal multi-colour highlight** for a verse shared by several tones (`.v.multi`) | ❌ **not built — "the big one"** |
+| **4** | **The single filtered card panel** — step-filter chips + "reveal only on hover" + "hide vs dim" filtered-out cards; every note/question/COMA-answer is a card with an anchor + tag + source-step line; **diagonal multi-colour highlight** for a verse shared by several tones (`.v.multi`) | ✅ **built** — chip panel `93f956b` + both switches `69d39a8`; anchor-capture `f5719b7`; diagonal single `eb57bae` / parallel `bd0ae7a`. Plus the flow-split (#4c Questions, #4b COMA answer-cards + multi-genre, #4d Build assembly, #4e pure Read). |
 
 **Per-lens scope decided (owner, 2026-08-11), after the `v2-panel-scope-options.html` mockup:**
 - ~~**Read** = **pure reading**.~~ **[shipped #4e `442ae48`]** — Read paints no verse tones (cards were
