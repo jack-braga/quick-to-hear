@@ -23,11 +23,18 @@ import { TONE } from '@/v2/tones';
 
 const INDENT = ['', 'pl-4', 'pl-8', 'pl-12'] as const;
 
+/** The reader's display mode (v2.5): the formatted view, or a flattened "manuscript" flow. */
+export type ReadingMode = 'formatted' | 'manuscript';
+
 export interface ReaderCanvasProps {
   model: ReaderModel;
   interactive: boolean;
   leafTitle: string;
   leafMeta: string;
+  /** Formatted vs. Manuscript (v2.5). The parent flattens `model` for manuscript; the canvas
+   *  hides the section chrome (bands + divide handles) so it reads as one continuous flow. */
+  mode: ReadingMode;
+  onModeChange: (mode: ReadingMode) => void;
   selected: string[];
   lastAnchor: string | null;
   /** Resting tint per annotated verse (highest-priority tone wins). */
@@ -48,6 +55,7 @@ export interface ReaderCanvasProps {
 
 export function ReaderCanvas(props: ReaderCanvasProps) {
   const { model, interactive, selected, lastAnchor } = props;
+  const manuscript = props.mode === 'manuscript';
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedSet = new Set(selected);
   const order = model.verseIds;
@@ -240,7 +248,8 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
 
   const renderVerse = (band: ReaderBand, v: ReaderVerse, nextVerseId: string | null) => {
     const isBandStart = v.verseId === band.startVerseId;
-    const hovered = interactive && hoverVerse === v.verseId;
+    // Manuscript mode is one continuous flow — no sectioning, so no divide handles.
+    const hovered = interactive && !manuscript && hoverVerse === v.verseId;
     const showBefore = hovered && !isBandStart;
     const showAfter = hovered && !!nextVerseId;
     const enter = () => {
@@ -344,9 +353,12 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
   return (
     <>
       <article className="mx-auto w-full max-w-[46rem] rounded-leaf border border-line bg-leaf px-[clamp(28px,6vw,68px)] pb-[72px] pt-[52px] shadow-leaf">
-        <header className="mb-[30px] flex items-baseline justify-between gap-4 border-b border-line pb-[18px]">
+        <header className="mb-[30px] flex items-start justify-between gap-4 border-b border-line pb-[18px]">
           <h1 className="font-scripture text-[30px] leading-tight text-ink">{props.leafTitle}</h1>
-          <span className="font-mono text-[11px] tracking-[0.03em] text-ink-faint">{props.leafMeta}</span>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <ModeToggle mode={props.mode} onChange={props.onModeChange} />
+            <span className="font-mono text-[11px] tracking-[0.03em] text-ink-faint">{props.leafMeta}</span>
+          </div>
         </header>
 
         <div ref={containerRef} className="select-none font-scripture text-[1.32rem] leading-[1.72] text-ink">
@@ -362,15 +374,17 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
             };
             return (
               <section key={band.startVerseId}>
-                <BandHeader
-                  band={band}
-                  interactive={interactive}
-                  focusSectionId={props.focusSectionId}
-                  onMerge={props.onMerge}
-                  onRename={props.onRename}
-                  onSelectRange={props.onSelectSectionRange}
-                  onFocusHandled={props.onSectionFocusHandled}
-                />
+                {!manuscript && (
+                  <BandHeader
+                    band={band}
+                    interactive={interactive}
+                    focusSectionId={props.focusSectionId}
+                    onMerge={props.onMerge}
+                    onRename={props.onRename}
+                    onSelectRange={props.onSelectSectionRange}
+                    onFocusHandled={props.onSectionFocusHandled}
+                  />
+                )}
                 {band.groups.map((g, gi) => renderGroup(band, g, gi, nextOf))}
               </section>
             );
@@ -392,6 +406,40 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
 function FragmentText({ text, wj }: { text: string; wj?: boolean }) {
   if (wj) return <span className="text-rubric">{text}</span>;
   return <>{text}</>;
+}
+
+/** The Formatted ↔ Manuscript reading toggle (v2.5) — a small segmented control in the leaf head. */
+function ModeToggle({ mode, onChange }: { mode: ReadingMode; onChange: (m: ReadingMode) => void }) {
+  const opt = (m: ReadingMode, label: string) => (
+    <button
+      type="button"
+      onClick={() => onChange(m)}
+      aria-pressed={mode === m}
+      title={
+        m === 'manuscript'
+          ? 'Read the passage as one continuous flow (verse numbers only)'
+          : 'Read the passage with its paragraphs, poetry, and headings'
+      }
+      className={cn(
+        'rounded-[5px] px-2 py-0.5 font-mono text-[10.5px] uppercase tracking-[0.08em] transition-colors',
+        mode === m
+          ? 'bg-lapis text-white dark:text-[#10131a]'
+          : 'text-ink-faint hover:text-ink',
+      )}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div
+      role="group"
+      aria-label="Reading mode"
+      className="inline-flex items-center gap-0.5 rounded-md border border-line bg-panel p-0.5"
+    >
+      {opt('formatted', 'Formatted')}
+      {opt('manuscript', 'Manuscript')}
+    </div>
+  );
 }
 
 function BandHeader({

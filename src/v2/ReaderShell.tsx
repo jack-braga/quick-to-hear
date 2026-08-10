@@ -19,11 +19,11 @@ import { BuildLens } from '@/v2/lenses/BuildLens';
 import { CheckLens } from '@/v2/lenses/CheckLens';
 import { SetupLens } from '@/v2/lenses/SetupLens';
 import { ThemeAimLens } from '@/v2/lenses/ThemeAimLens';
-import { buildReaderModel } from '@/v2/reader/model';
+import { buildReaderModel, manuscriptModel } from '@/v2/reader/model';
 import { ComaPanel } from '@/v2/reader/ComaPanel';
 import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
 import { ReadPanel } from '@/v2/reader/ReadPanel';
-import { ReaderCanvas } from '@/v2/reader/ReaderCanvas';
+import { ReaderCanvas, type ReadingMode } from '@/v2/reader/ReaderCanvas';
 import type { ActionKind } from '@/v2/reader/ActionBar';
 import type { PaletteAction, PaletteContext } from '@/v2/reader/paletteItems';
 
@@ -35,6 +35,16 @@ import type { PaletteAction, PaletteContext } from '@/v2/reader/paletteItems';
  * logic stays in the pure libs (`buildReaderModel`, `selection.ts`, `map.ts`); this component
  * wires them to the store — the house pattern.
  */
+/** The reading mode is a global display preference (v2.5), remembered like the ink-saver toggle. */
+const READING_MODE_KEY = 'qth2/reading-mode';
+function loadReadingMode(): ReadingMode {
+  try {
+    return localStorage.getItem(READING_MODE_KEY) === 'manuscript' ? 'manuscript' : 'formatted';
+  } catch {
+    return 'formatted';
+  }
+}
+
 export function ReaderShell({ study }: { study: Study }) {
   const applyToCurrent = useStudyStore((s) => s.applyToCurrent);
   const setPassage = useStudyStore((s) => s.setPassage);
@@ -45,6 +55,7 @@ export function ReaderShell({ study }: { study: Study }) {
   const annotations = study.annotations;
 
   const [lens, setLens] = useState<LensId>(passage ? 'map' : 'setup');
+  const [readingMode, setReadingMode] = useState<ReadingMode>(loadReadingMode);
   const [selected, setSelected] = useState<string[]>([]);
   const [lastAnchor, setLastAnchor] = useState<string | null>(null);
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
@@ -57,6 +68,19 @@ export function ReaderShell({ study }: { study: Study }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
+  // Manuscript mode renders a flattened copy of the model (display-only; the data is untouched).
+  const renderModel = useMemo(
+    () => (model && readingMode === 'manuscript' ? manuscriptModel(model) : model),
+    [model, readingMode],
+  );
+  const changeReadingMode = useCallback((m: ReadingMode) => {
+    setReadingMode(m);
+    try {
+      localStorage.setItem(READING_MODE_KEY, m);
+    } catch {
+      /* storage unavailable — the mode still applies for this session */
+    }
+  }, []);
   const anchorTone = useMemo(() => anchorToneByVerse(annotations), [annotations]);
   const pvIds = useMemo(() => (passage ? verseIds(passage) : []), [passage]);
   // OSIS keys of references already promoted to a support passage — mutes those inline chips and
@@ -280,8 +304,10 @@ export function ReaderShell({ study }: { study: Study }) {
     const interactive = lens === 'map';
     center = (
       <ReaderCanvas
-        model={model}
+        model={renderModel ?? model}
         interactive={interactive}
+        mode={readingMode}
+        onModeChange={changeReadingMode}
         leafTitle={leafTitle}
         leafMeta={leafMeta}
         selected={selected}

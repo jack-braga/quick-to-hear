@@ -93,12 +93,13 @@ manuscript that answers to a command line*. Full day/night.
 
 ## 3. Open design questions (resolve inside the relevant phase)
 
-1. **Manuscript / flatten reading mode + verse-level sectioning — agreed in principle, unbuilt.**
-   A reading toggle: *Formatted* (poetry lines, paragraphs, headings) ↔ *Manuscript* (continuous
-   prose, verse numbers faint/hidden). **Both require one verse-driven render**, which *also*
-   enables **section breaks between any two verses** (the prototype splits at paragraph gaps for
-   demo simplicity). Ship the verse-driven render once (v2.5) and get both. Detail to settle:
-   how faint/hidden verse numbers get in Manuscript mode while staying selectable.
+1. **Manuscript / flatten reading mode — built (2026-08-10).** A global *Formatted* ↔ *Manuscript*
+   toggle. **Owner call:** Manuscript keeps it simple — flatten *everything* to one continuous flow
+   and keep verse **numbers visible** (not faint); no poetry indents, editorial headings, paragraph
+   breaks, or section bands. It's a display-only transform (`manuscriptModel`); sections/annotations
+   are untouched. **Owner call:** the "pre-suggest section breaks from the translation's paragraphs"
+   idea is **dropped** — *making sections is part of the exegetical work* (the tool must not do the
+   user's thinking — Inviolable rule 1). Any-verse sectioning already shipped in v2.2.
 2. **Annotation icons/labels — final polish.** The three kinds are decided; the exact glyphs and
    the COMA-type sub-tagging UI are for the annotation-layer phase (v2.4).
 3. **Translations UX detail.** Tab affordance vs. a translations menu; how the side-by-side
@@ -115,12 +116,37 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.2 — Reader / Map lens** ✅ | The selection primitive (drag-range + ⌘-disjoint + click-to-deselect) + floating action bar; the real passage from the store; named section bands (any-verse divide/merge/rename); marks persisted with two-way hover. | Pure libs `v2/reader/{selection,model}.ts` (unit-tested); `ReaderCanvas` a thin component over them. **Any-verse sectioning pulled forward from v2.5 (owner).** Action bar: Mark wired; Note/Question/Cross-ref deferred to v2.4. |
 | **v2.3 — The `/` command** ✅ | Slash palette over `bcv_parser` + the bundled book list: jump to verse/ref, insert a cross-reference, switch translation, create note/question/mark on the selection, go to a lens, book completion. | Pure `v2/reader/paletteItems.ts` (+tests); dialog with keyboard nav; `/` global + the command bar open it. (The `@`-mention chips + promote-to-support shipped 2026-08-10 — see §5; the palette's insert-cross-reference was retired then.) |
 | **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Support-passage (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`. Action bar = Note / Question / Mark confusing (the standalone Cross-reference was retired 2026-08-10 — references are inline `@`-mentions in a note, promoted to a Support passage). |
-| **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
+| **v2.5 — Reading modes** ✅ | The global Manuscript/flatten toggle (Q4). | Pure `manuscriptModel` flattens the render to one continuous flow (verse numbers only); a segmented toggle in the leaf head, persisted like ink-saver. **Section pre-suggestion dropped (owner): making sections is exegetical work.** Any-boundary sectioning already shipped in v2.2. |
 | **v2.6 — Phases as lenses** ✅ | Flesh out the lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | All seven lenses live: Set up (full: genre/group/duration/series/intro + paste), **Read** (pray-and-read counter + genre reading tip), Map, **COMA** (verbatim Helm prompts per genre + on-screen attribution), Theme & aim (theme/aim/know-feel-do/Christ route/prayer), Build (running order + per-question load-bearing/aim/gospel-plain), and Check (the audit + coverage). |
 | **v2.7 — Exports** ✅ | The two printable documents (handout + leader) + markdown downloads, from a **Check lens** hub; documents restyled to the v2 language with a per-print **Ink-saver / Colour** toggle. | Pure `projectForExport` maps v2 annotations + running order → the v1 export model (`handoutModel`/`leaderModel` reused unchanged); new `src/v2/print/*` render them white-bg + Scripture serif + mono labels + hairline rules, monochrome by default, one lapis accent when the toggle is off (preview + print match; choice persisted). |
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
 ## 5. Progress log
+
+### 2026-08-10 — v2.5 reading modes (Manuscript toggle)
+
+**Shipped.** A global **Formatted ↔ Manuscript** reading toggle (a segmented control in the leaf
+head, present across Read/Map/COMA, persisted in `localStorage` like the ink-saver toggle).
+
+- **Manuscript = flatten everything, keep verse numbers.** Owner steer: keep it dead simple — the
+  whole passage becomes one continuous flow with verse numbers inline and nothing else (no poetry
+  indents, editorial headings, paragraph breaks, or section bands). Implemented as a **pure
+  `manuscriptModel(model)`** transform (+ 3 tests): merges every paragraph across sections into one
+  prose band, flattens poetry lines to running prose (joined with a space; red-letter preserved),
+  drops editorial headings + blank spacers, keeps Psalm superscriptions (they're scripture). It's
+  **display-only** — sections, annotations, and verse anchors are untouched, and the same verse ids
+  flow through, so selection + two-way hover keep working. The canvas hides the section chrome
+  (band headers + divide handles) when manuscript.
+- **Section pre-suggestion: dropped (owner).** The roadmap had also filed "pre-suggest section
+  breaks from the translation's paragraphs" under v2.5; the owner cut it — *making sections is part
+  of the exegetical work*, so the tool must not pre-do it (Inviolable rule 1). Not built.
+
+Verified live (Playwright MCP): Luke 1:5–25 (prose) flattens from 6 paragraphs to one flow with all
+21 verse numbers and no section header; Psalm 23 (poetry) flattens to running prose keeping the
+superscription; the choice **persists across a full reload**; Formatted round-trips back to the
+paragraphs/section header; annotations (a note + its promoted support passage) survive both modes;
+0 console errors bar the known Router warnings. New e2e covers flatten + persist + round-trip. Gate
+green: `typecheck && lint && test (295) && build && test:e2e (13)`.
 
 ### 2026-08-10 — Inline `@`-mention cross-references (the reference paradigm, built)
 
@@ -337,10 +363,11 @@ overlines, question numbers) to ink, so the user decides colour-vs-economy; prev
 `src/v2/print/{PrintShell,PrintPassage,HandoutDoc,LeaderDoc}` + the `.qth-doc` CSS scope; v1's print
 components stay frozen and are removed with the rest of v1.
 
-**Next up.** *(Read + COMA and the inline `@`-mention cross-references both landed 2026-08-10 — see
-the top of this log.)* (a) **v2.5** — Manuscript/flatten reading toggle + pre-suggested breaks.
-(b) **v2.8** — teaching/help text + the attribution "verbatim only for COMA" sweep. (c) Remove the
-v1 crib.
+**Next up.** *(Read + COMA, the inline `@`-mention cross-references, and v2.5 reading modes all
+landed 2026-08-10 — see the top of this log.)* (a) **Translations UX** — surface easy primary-switch
++ optional side-by-side parallel (the M3 compare feature; §2 "parallel translations", §3 Q3 — the
+switch exists only in the `/` palette today). (b) **v2.8** — teaching/help text + the attribution
+"verbatim only for COMA" sweep. (c) Remove the v1 crib.
 
 ---
 

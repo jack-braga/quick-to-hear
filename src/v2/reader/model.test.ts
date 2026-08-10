@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildReaderModel } from '@/v2/reader/model';
+import { buildReaderModel, manuscriptModel } from '@/v2/reader/model';
 import { ParsedTextSchema, type ParsedText } from '@/types/passage';
 import type { Section } from '@/types/study';
 
@@ -157,5 +157,57 @@ describe('buildReaderModel — empty passage', () => {
     const model = buildReaderModel(empty, []);
     expect(model.bands).toEqual([]);
     expect(model.verseIds).toEqual([]);
+  });
+});
+
+describe('manuscriptModel — flatten to one continuous flow', () => {
+  it('merges every paragraph (and ignores section bands) into a single unnamed prose band', () => {
+    // Divided into two sections — manuscript ignores the division entirely.
+    const sections: Section[] = [
+      { id: 'a', startVerseId: 'LUKE.1.5', endVerseId: 'LUKE.1.7', name: 'Introduction' },
+      { id: 'b', startVerseId: 'LUKE.1.8', endVerseId: 'LUKE.1.10', name: 'The service' },
+    ];
+    const model = manuscriptModel(buildReaderModel(LUKE, sections));
+    expect(model.bands).toHaveLength(1);
+    const band = model.bands[0]!;
+    expect(band.sectionId).toBe('');
+    expect(band.name).toBe('');
+    // One prose group holding all six verses, in order.
+    expect(band.groups.map((g) => g.kind)).toEqual(['prose']);
+    const verses = (band.groups[0] as { verses: { verseId: string }[] }).verses;
+    expect(verses.map((v) => v.verseId)).toEqual([
+      'LUKE.1.5',
+      'LUKE.1.6',
+      'LUKE.1.7',
+      'LUKE.1.8',
+      'LUKE.1.9',
+      'LUKE.1.10',
+    ]);
+    // Verse ids (the selection basis) are untouched.
+    expect(model.verseIds).toEqual(buildReaderModel(LUKE, sections).verseIds);
+  });
+
+  it('flattens poetry to prose, keeps the superscription + verse numbers, drops the heading', () => {
+    const model = manuscriptModel(buildReaderModel(PSALM, []));
+    const band = model.bands[0]!;
+    // The superscription (scripture) survives; the editorial heading does not; poetry becomes prose.
+    expect(band.groups.map((g) => g.kind)).toEqual(['super', 'prose']);
+
+    const prose = band.groups[1] as {
+      verses: { verseId: string; number: string; present: boolean; lines: { indent: number }[] }[];
+    };
+    // Every present verse is now a single inline (indent-0) line — no poetry indents remain.
+    for (const v of prose.verses) {
+      if (v.present) expect(v.lines.map((l) => l.indent)).toEqual([0]);
+    }
+    // Verse numbers are kept (the one marker manuscript retains) and the gap verse survives.
+    expect(prose.verses.map((v) => v.number)).toEqual(['1', '2', '3', '4']);
+    expect(prose.verses.find((v) => v.verseId === 'PS.23.4')!.present).toBe(false);
+  });
+
+  it('is a no-op-shaped transform on an empty model', () => {
+    const empty = ParsedTextSchema.parse({ translationId: 'webbe', blocks: [] });
+    const model = manuscriptModel(buildReaderModel(empty, []));
+    expect(model.bands).toEqual([]);
   });
 });

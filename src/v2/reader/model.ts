@@ -218,3 +218,62 @@ export function buildReaderModel(passage: ParsedText, sections: Section[]): Read
     multiChapter: passageIsMultiChapter(passage),
   };
 }
+
+/**
+ * The **Manuscript** reading transform (v2.5) — collapse the formatted render into one continuous
+ * flow: poetry flattened to running prose, editorial headings + blank spacers dropped, and the
+ * section bands ignored (the whole passage becomes a single unnamed band). The verse **numbers**
+ * survive — the one marker the manuscript keeps — as do Psalm superscriptions (they are text, not
+ * editorial). It is **display-only**: the underlying sections, annotations, and verse anchors are
+ * untouched, and the same `verseIds` flow through, so selection and two-way hover keep working.
+ */
+export function manuscriptModel(model: ReaderModel): ReaderModel {
+  const groups: ReaderGroup[] = [];
+  let run: ReaderVerse[] = [];
+  const flush = () => {
+    if (run.length > 0) groups.push({ kind: 'prose', verses: run });
+    run = [];
+  };
+  for (const band of model.bands) {
+    for (const g of band.groups) {
+      if (g.kind === 'prose' || g.kind === 'poetry') {
+        for (const v of g.verses) run.push(flattenVerse(v));
+      } else if (g.kind === 'super') {
+        flush(); // a superscription (scripture) interrupts the flow; keep it, drop editorial chrome
+        groups.push(g);
+      }
+      // 'heading' + 'space' are editorial scaffolding — dropped in manuscript.
+    }
+  }
+  flush();
+
+  const first = model.verseIds[0] ?? '';
+  const last = model.verseIds[model.verseIds.length - 1] ?? '';
+  const band: ReaderBand = {
+    sectionId: '',
+    name: '',
+    startVerseId: first,
+    endVerseId: last,
+    ref: first ? rangeRef(first, last) : '',
+    groups,
+    canMergeUp: false,
+  };
+  return {
+    ...model,
+    bands: model.bands.length > 0 ? [band] : [],
+    firstVerseOfBand: new Set(first ? [first] : []),
+  };
+}
+
+/** Flatten a verse's rendered lines into one inline (indent-0) line, joining former poetry lines
+ *  with a space so they read continuously. Red-letter (`wj`) is preserved on each fragment; an
+ *  omitted ("gap") verse keeps its empty lines. */
+function flattenVerse(v: ReaderVerse): ReaderVerse {
+  if (!v.present) return v;
+  const frags: Fragment[] = [];
+  v.lines.forEach((line, i) => {
+    if (i > 0) frags.push({ text: ' ', qlevel: 0 });
+    for (const f of line.frags) frags.push({ ...f, qlevel: 0 });
+  });
+  return { ...v, lines: frags.length > 0 ? [{ indent: 0, frags }] : [] };
+}
