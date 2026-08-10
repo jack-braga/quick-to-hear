@@ -139,6 +139,32 @@ test('v2 Build lens: questions order by verse, reorder, and persist', async ({ p
   await expect(page.locator('ol > li').first()).toContainText('Luke 1:13');
 });
 
+test('v2 exports: handout excludes answers, leader includes them', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+
+  // Author one question with text + an expected answer.
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').fill('What was his role?');
+  await page.locator('input[placeholder^="Expected answer"]').fill('He served as priest.');
+  await page.waitForTimeout(1000); // let autosave persist before reloading into the print route
+
+  const id = page.url().match(/study\/([^/]+)\//)![1];
+
+  // Participant handout — carries the question, defined by exclusion (no answer).
+  await page.goto(`./#/print/${id}/handout`);
+  await expect(page.getByText('What was his role?')).toBeVisible();
+  await expect(page.getByText('He served as priest.')).toHaveCount(0);
+
+  // Leader's notes — carries the expected answer.
+  await page.goto(`./#/print/${id}/leader`);
+  await expect(page.getByText('He served as priest.')).toBeVisible();
+});
+
 test('v1 is archived under /v1/ and reachable', async ({ page }) => {
   await page.goto('./#/v1/');
   await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();

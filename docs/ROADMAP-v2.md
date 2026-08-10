@@ -113,7 +113,7 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Cross-reference (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`; the four action-bar kinds are wired. Recycle-forward / promote-to-support land with the Build lens (v2.6). |
 | **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
 | **v2.6 — Phases as lenses** *(Set up ✅, Build ✅; Read/COMA/Theme/Check pending)* | Flesh out the remaining lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | Set up (with paste) + **Build** (running order) are done. Read/COMA are largely subsumed by the annotation surface; Theme & aim + Check remain. |
-| **v2.7 — Exports refresh** | Handout + leader restyled to the new language; carry the Stage-10 wins (coverage pips, support placement, pastoral). | |
+| **v2.7 — Exports** ✅ | The two printable documents (participant handout + leader's notes) + markdown downloads, produced from the v2 study. A **Check lens** is the export hub. | Pure `projectForExport` maps v2 annotations + running order → the v1 export model, reusing `handoutModel`/`leaderModel` + markdown + the print components unchanged. Restyle to the leaf/lapis language is a later polish. |
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
 ## 5. Progress log
@@ -239,13 +239,21 @@ SPEC 6e readiness — *needs answer → ready*); jump back to a question's verse
 Pure `v2/build.ts` (+ tests). Verified live (verse-order default, reorder + persist, type, ready
 flip, jump) + a new e2e.
 
-**Next up — the deliverable.** (a) **v2.7 Exports** — turn the study into the two printable
-documents (handout + leader). The running order + typed questions + expected answers now exist; a
-pure adapter can project the v2 annotations onto v1's tested export models
-(`handoutModel`/`leaderModel` → markdown/print) — this is the tool's reason to exist. (b)
-**Cross-reference, richer** — the `@`-mention inside a note's content + **promote → Support
-passage** (needs a richer text surface; feeds the handout). (c) **v2.5** — Manuscript/flatten
-reading toggle + pre-suggested section breaks. (d) The remaining lenses (Theme & aim, Check).
+**Exports (v2.7, done).** The full loop now closes: reference → mark up → questions → order →
+**two documents**. A **Check lens** is the export hub (a readiness summary + the SPEC-6e warning +
+four actions). A pure `projectForExport(study)` maps the v2 `annotations` + `runningOrder` onto a
+v1-shaped `build` (question annotations → ordered `build.questions`; cross-refs → support passages
+attached to the question at their verses; an optional study title → the heading), so the **entire
+tested v1 export pipeline** (`handoutModel`/`leaderModel` → markdown + the print components) is
+reused unchanged. Verified live: the participant **handout** (passage + numbered questions + the
+copyright, no answers) and the **leader's notes** (running order with type/answer/anchor, drop
+order, copyright + the COMA/method attributions — inviolable rule 8). `.md` downloads for both.
+
+**Next up.** (a) **Theme & aim lens** — capture theme, author/group aim, know/feel/do, the Christ
+route + intro + prayer, so the documents carry them (they render blank until then). (b) **v2.7
+restyle** — the print documents in the leaf/lapis language. (c) **Cross-reference, richer** —
+`@`-mention inside a note + promote → Support passage. (d) **v2.5** — Manuscript/flatten reading
+toggle + pre-suggested breaks. (e) **Check/audit** — the coverage map + the 11 checks.
 
 ---
 

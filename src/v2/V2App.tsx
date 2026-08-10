@@ -5,6 +5,8 @@ import { useOpenStudy } from '@/hooks/useOpenStudy';
 import { ReaderShell } from '@/v2/ReaderShell';
 import Home from '@/v2/pages/Home';
 import NotFound from '@/v2/pages/NotFound';
+import PrintHandout from '@/v2/pages/PrintHandout';
+import PrintLeader from '@/v2/pages/PrintLeader';
 import Styleguide from '@/v2/pages/Styleguide';
 
 /**
@@ -40,6 +42,9 @@ export function V2App() {
   useAutosave();
   return (
     <Routes>
+      {/* Bare print-CSS pages (outside the shell), like v1. */}
+      <Route path="/print/:id/handout" element={<PrintHandout />} />
+      <Route path="/print/:id/leader" element={<PrintLeader />} />
       <Route path="/" element={<Home />} />
       <Route path="/styleguide" element={<Styleguide />} />
       <Route path="/study/:id" element={<StudyIndexRedirect />} />
