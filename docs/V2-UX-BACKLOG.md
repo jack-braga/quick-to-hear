@@ -32,6 +32,22 @@ now and card-ify them later.
 | 3 | Unified "Aa Text" menu (✓ view · ★ main) + N-column parallel | ✅ shipped `c2e229a` |
 | **4** | **The single filtered card panel** — step-filter chips + "reveal only on hover" + "hide vs dim" filtered-out cards; every note/question/COMA-answer is a card with an anchor + tag + source-step line; **diagonal multi-colour highlight** for a verse shared by several tones (`.v.multi`) | ❌ **not built — "the big one"** |
 
+**Per-lens scope decided (owner, 2026-08-11), after the `v2-panel-scope-options.html` mockup:**
+- **Read** = **pure reading**. Hide *everything* overlaid — verse tones/highlights **and** cards.
+  Just the clean passage + the pray-and-read counter panel. (Currently Read still paints annotation
+  tones on the verses; those must be suppressed in the Read lens.)
+- **Map** = the filtered card panel as mocked (`v2-panel-filters.html`). Confirmed.
+- **COMA** = the genre's Helm prompts become **answer-cards** in the right panel (see §2 — this is the
+  COMA-answer-cards feature, now in active design). Not merely a prompts-strip.
+- Net: this is **Option C** (Map + COMA get the right panel; Read stays bespoke + clean), with COMA's
+  panel being *answer-cards* rather than a static prompts list.
+
+**General capability decided (owner, 2026-08-11): inline anchor editing on ANY card.** You can change
+a card's anchor verse(s) after creation, done **inline** in the UI (owner prefers this over a separate
+"edit-anchor mode"). Candidate gesture (in design): click a card's anchor chip → the card enters
+"capture" state → your next passage selection becomes its anchor. Applies to notes, questions, and
+COMA answer-cards alike. *(Related deferred item in §6 "edit anchor verses" is now promoted to active.)*
+
 **Increment #4 is the point of Layout B**; 1–3 were the groundwork (reclaim width, unify menus). The
 `v2-panel-filters.html` mockup specifies it exactly: a 380px right panel, chips `All · Map · COMA ·
 Theme · Build`, two toggle switches, tone-accented cards (lapis/amber/rubric), a `▸ step NN · Name`
@@ -50,10 +66,15 @@ source line, two-way verse↔card hover, and the diagonal gradient for shared ve
   - **"Return question"** — the follow-up that steers the group *back* to the main passage after you
     send them to another one (the v1 "step everyone forgets"). e.g. studying Luke 1, you send them to
     Malachi 4 for the Elijah promise; the return-question brings them home.
-- **COMA answer-cards (owner idea — msg#1999, #2091).** Each COMA prompt gets an answer area + optional
-  anchor verse(s), treated like a note. Open question the owner asked: **multiple answers to one COMA
-  prompt** — link several answer-cards to a prompt, or one card holding the whole answer set
-  (one-to-one)? *Needs an owner decision before building.*
+- **COMA answer-cards (owner idea — msg#1999, #2091; active design 2026-08-11).** In the COMA lens the
+  genre's Helm prompts (still shown, per genre) are **answerable as cards** in the right panel: each
+  card = a prompt + an answer field you fill + an editable **anchor** (one or more verses). Treated
+  like a note (feeds recycle-forward → Build candidate questions). **Open design questions to resolve
+  in the mockup:** (a) how a prompt *becomes* an answer-card — every prompt pre-rendered as an empty
+  card, vs. a compact prompt list you "Answer" on demand, vs. a prompts strip with answers accumulating
+  below; (b) **one answer per prompt** (one-to-one) vs. **multiple** answer-cards per prompt vs. also
+  free answer-cards not tied to any prompt; (c) the anchor gesture (see the inline-anchor decision in
+  §1). The COMA attribution (Helm) must still render wherever the prompts appear (inviolable rule 8).
 - **Card naming convention (msg#2091, #2304).** Card names must be clear and rooted in the documented
   flow. `MARK · CONFUSING` was called out as a weird name. Owner liked the clearer labels in the
   mockups — port that convention into the app. *Owner may have more input here.*
@@ -126,7 +147,8 @@ them") and **COMA notes → candidate questions**. Any card-panel + naming work 
 
 ## 6. Deferred / far-future (owner-flagged, low priority)
 
-- Editing a note's **anchor verses** after creation (msg#1999).
+- ~~Editing a note's **anchor verses** after creation (msg#1999).~~ **Promoted to active — see §1**
+  (inline anchor editing on any card).
 - **Word-level selection** (range of words) in manuscript mode — unclear how it works cross-translation
   (msg#1999).
 - **Images** in a study, somehow (msg#2304 — "definitely defer").
