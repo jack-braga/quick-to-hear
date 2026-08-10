@@ -63,9 +63,8 @@ prompts stay as quiet one-liners. Helm attribution renders at the foot (inviolab
 **Batch-2 owner input (2026-08-11) — still to resolve (clarifications in flight):**
 - **Anchor is optional + editable on EVERY card (generalise).** Any card — COMA answer, note, question —
   may sit with **0, 1, or many** anchor verses, and you can **add / remove / change** them after the
-  fact via the click-chip capture. Proposed unifying rule: **0 anchors = a floating / study-level card**
-  (shows under a "study-level" filter / in the Study-notes area); anchoring a floating note later just
-  moves it. *Owner to confirm that "unanchored = study-level" is the right semantics.*
+  fact via the click-chip capture. **Resolved below: there is no Study-notes category — a card's home is
+  its *origin* (step), and the anchor is independent optional metadata.**
 - **Multiple text-types (genres) in Set-up → multi-set COMA (promote from §7 deferred).** Set-up should
   let you pick **more than one** genre (e.g. Gospel narrative **+** Hebrew poetry for the Magnificat).
   Then COMA shows **each selected genre's** prompt set, and **every prompt is labelled with the
@@ -98,9 +97,22 @@ proposed shape (seven lenses → **eight**):
 - Consistency win: Map · COMA · Theme · Questions are all "work against the text, show everything"
   lenses; **Build is the single assembly step**. *Owner to confirm the split (vs. keeping one Build
   lens with the filtered panel).*
-- **Unanchored-card rule (owner deciding):** (a) no anchor = study-level, vs **(b, recommended)** anchor
-  is orthogonal to kind — an unanchored COMA answer stays a COMA answer; only a deliberately study-level
-  *note* sits in Study-notes.
+- **Unanchored-card rule DECIDED (owner, 2026-08-11): there is no "Study notes" category — everything
+  is a card.** Every annotation is just a card with (1) an **origin** = the step it came from (Map /
+  COMA / Theme / Questions…), which drives the filter chips + the source line, and (2) **optional
+  anchor verse(s)** — 0, 1, or many, all fine. Anchored vs unanchored is a *property*, not a category;
+  the old floating/Study-notes area is **removed** (theme/aim/prayer are just cards with a Theme origin;
+  a floating thought is an unanchored card). Supersedes the earlier "0 anchors = study-level" note above.
+- **Two panel questions still open (owner, 2026-08-11) — to mock:**
+  - **Show + ADD prior types in every text-central lens?** In Map / COMA / Questions the filtered panel
+    shows all prior cards (filter by origin). Open: can you also *add* a previous step's card-type from a
+    later lens (e.g. jot a new COMA answer while in Questions), or does each lens only add *its own* type
+    (with prior types view-only)? Leaning: panel shows all; each lens's primary add = its own type; a
+    secondary affordance lets you add a prior type when you need to.
+  - **Collapsible origin-groups in the panel.** The panel groups cards by origin; each group should be
+    **collapse/expand** so e.g. the COMA group can shrink to compact rows showing just the **→ Make a
+    question** button (not the full answer text) — density control (owner's "bring it back without
+    cluttering").
 
 **Increment #4 is the point of Layout B**; 1–3 were the groundwork (reclaim width, unify menus). The
 `v2-panel-filters.html` mockup specifies it exactly: a 380px right panel, chips `All · Map · COMA ·
