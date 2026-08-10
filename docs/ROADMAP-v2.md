@@ -60,17 +60,21 @@ manuscript that answers to a command line*. Full day/night.
 - **Selection details:** ⌘/Ctrl-click toggles a single verse in/out; a plain click on the sole
   selected verse **deselects** it. Action-bar kinds carry icons: `✎ Note · ? Question ·
   ⚑ Mark confusing · ↗ Cross-reference`.
-- **Reference paradigm (resolved).** Two *relationships*, not two paradigms. **Anchor** is
-  first-class and required: every note/question/mark anchors to verses in the **main passage**.
-  A **reference** to another passage is a pointer that lives *inside a note's content* — an
-  `@Malachi 4:5-6` mention rendered as a chip, **not** a separate anchored object. Interactions:
-  click a note's **anchor** → scroll+flash those verses; hover an `@`ref → peek popover; click an
-  `@`ref → open/pull it in. **Promote** an `@`-mention → a full **Support passage** (printed in
-  the handout, framed with a return-question — the v1 support-passage model + `returnQuestion`
-  carry over).
+- **Reference paradigm (resolved — implemented 2026-08-10).** Two *relationships*, not two
+  paradigms. **Anchor** is first-class and required: every note/question/mark anchors to verses in
+  the **main passage**. A **reference** to another passage is a pointer that lives *inside a note's
+  content* — an `@Malachi 4:5-6` mention rendered as an inline chip, **not** a separate anchored
+  object. Interactions: click a note's **anchor** → scroll+flash those verses; hover/click an `@`ref
+  → peek popover (loads the passage); **Promote** an `@`-mention → a full **Support passage** (the
+  v1 support-passage model + `returnQuestion` carry over — it prints in the handout, and in the
+  leader's notes when a question shares its verses). **Owner call (2026-08-10): two gestures, not
+  three** — the standalone "Cross-reference" action-bar button + palette insert were retired; a
+  reference to another passage is only an `@`-mention. (The cross-ref record survives *only* as what
+  a promoted mention becomes.)
 - **Annotation kinds collapse to three:** **Note** (a "Mark = confusing" and a "Comment" are
   just notes with a flag; notes may carry an optional COMA type), **Question** (the deliverable;
-  keeps the expected-answer hard block), **Cross-reference** (an `@`-mention / promoted support).
+  keeps the expected-answer hard block), **Cross-reference** (a *promoted* `@`-mention — the
+  printed Support passage; never created directly, only by promoting a mention inside a note).
 - **Floating / study-level notes (yes).** Annotations may be unanchored (or anchored to the whole
   passage) for study-level content — theme, aim, prayer point, notes-to-self — in a distinct
   margin area, separate from verse-anchored cards.
@@ -109,14 +113,51 @@ manuscript that answers to a command line*. Full day/night.
 | **v2.0 — Direction & prototypes** ✅ | Clickable mockups of the signature screens; lock interaction model + visual language. | `docs/mockups/v2-reader.html` done (reader/Map/`/`/selection/sectioning). |
 | **v2.1 — Design system + shell** ✅ | Type scale (scripture serif + mono tooling), tokens, leaf/desk layout, theming, a living styleguide. | Tokens ported to `index.css` + `tailwind.config.ts`; shell in `src/v2/`; `/styleguide`. |
 | **v2.2 — Reader / Map lens** ✅ | The selection primitive (drag-range + ⌘-disjoint + click-to-deselect) + floating action bar; the real passage from the store; named section bands (any-verse divide/merge/rename); marks persisted with two-way hover. | Pure libs `v2/reader/{selection,model}.ts` (unit-tested); `ReaderCanvas` a thin component over them. **Any-verse sectioning pulled forward from v2.5 (owner).** Action bar: Mark wired; Note/Question/Cross-ref deferred to v2.4. |
-| **v2.3 — The `/` command** ✅ | Slash palette over `bcv_parser` + the bundled book list: jump to verse/ref, insert a cross-reference, switch translation, create note/question/mark on the selection, go to a lens, book completion. | Pure `v2/reader/paletteItems.ts` (+tests); dialog with keyboard nav; `/` global + the command bar open it. The `@`-mention-in-content chips + promote-to-support are still open (need a richer text surface). |
-| **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Cross-reference (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`; the four action-bar kinds are wired. Recycle-forward / promote-to-support land with the Build lens (v2.6). |
+| **v2.3 — The `/` command** ✅ | Slash palette over `bcv_parser` + the bundled book list: jump to verse/ref, insert a cross-reference, switch translation, create note/question/mark on the selection, go to a lens, book completion. | Pure `v2/reader/paletteItems.ts` (+tests); dialog with keyboard nav; `/` global + the command bar open it. (The `@`-mention chips + promote-to-support shipped 2026-08-10 — see §5; the palette's insert-cross-reference was retired then.) |
+| **v2.4 — Annotation layer** ✅ | One anchored-annotation surface: Note / Question / Support-passage (+ floating study-notes). Editable margin cards; per-kind accents + two-way hover; the expected-answer hard-block signal. | `study.annotations` (flat union) + pure `v2/annotations.ts`. Action bar = Note / Question / Mark confusing (the standalone Cross-reference was retired 2026-08-10 — references are inline `@`-mentions in a note, promoted to a Support passage). |
 | **v2.5 — Reading modes** | The Manuscript/flatten toggle (Q4) + pre-suggest section breaks from the translation's own paragraphs/headings. | The verse-driven render + any-boundary sectioning already shipped in v2.2; what remains is the mode toggle + break pre-suggestion. |
 | **v2.6 — Phases as lenses** ✅ | Flesh out the lenses onto the canvas; keep every discipline (the expected-answer hard block, coverage, audit, exports). | All seven lenses live: Set up (full: genre/group/duration/series/intro + paste), **Read** (pray-and-read counter + genre reading tip), Map, **COMA** (verbatim Helm prompts per genre + on-screen attribution), Theme & aim (theme/aim/know-feel-do/Christ route/prayer), Build (running order + per-question load-bearing/aim/gospel-plain), and Check (the audit + coverage). |
 | **v2.7 — Exports** ✅ | The two printable documents (handout + leader) + markdown downloads, from a **Check lens** hub; documents restyled to the v2 language with a per-print **Ink-saver / Colour** toggle. | Pure `projectForExport` maps v2 annotations + running order → the v1 export model (`handoutModel`/`leaderModel` reused unchanged); new `src/v2/print/*` render them white-bg + Scripture serif + mono labels + hairline rules, monochrome by default, one lapis accent when the toggle is off (preview + print match; choice persisted). |
 | **v2.8 — Teaching + attribution pass** *(deferred)* | Fill the [I]/[E]/[X] help tiers now that gaps are visible; sweep attribution so only COMA reads as "verbatim," everything else "after/informed by" (owner rule). COMA transcription. | Deferred until the UI settles — we'll know the real gaps then. |
 
 ## 5. Progress log
+
+### 2026-08-10 — Inline `@`-mention cross-references (the reference paradigm, built)
+
+**Shipped.** The §2 "reference paradigm" is now real: a reference to **another** passage lives
+*inside a note's content* as an inline `@Malachi 4:5-6` chip you can peek and **promote to a Support
+passage**. Owner decision this session: **two referencing gestures, not three** — *anchor* a
+Note/Question/Mark to the main passage, or `@`-mention another passage in a note. The standalone
+"Cross-reference" gesture was retired.
+
+- **Pure `v2/reader/mentions.ts` (+ 11 tests).** `parseMentions(text)` splits a note's plain text
+  into text/mention segments, a mention being an `@` + the **longest prefix `bcv_parser` accepts**
+  (so `@1 Corinthians 15:3-4` and `@Mal 4:5` work; `jack@busable.com` and a bare `@Malachi` stay
+  literal). Text stays a plain string — **no schema change**.
+- **`MentionEditor.tsx` — the delicate bit, kept honest.** A contenteditable note surface that
+  renders each `@ref` as an atomic chip. The DOM is rebuilt **only when the chip structure changes**
+  (a signature diff) — ordinary typing leaves the DOM alone, so the caret never jumps; when a chip
+  does form/dissolve we rebuild once and restore the caret by character offset. Verified live by
+  typing char-by-char: the chip formed mid-sentence and the text *after* it stayed intact.
+- **`MentionPeek.tsx`.** Hover/click a chip → a popover that loads the referenced passage in the
+  primary translation via `loadReading` (offline-safe, cached); a **⤴ Promote** button.
+- **Promote → Support passage.** `ReaderShell.onPromoteMention` adds a `cross-ref` annotation
+  anchored to the host note's verses (de-duped by OSIS; the chip then mutes). `projectForExport`
+  already maps that to a v1 support passage, so it prints — a **handout background box** (with the
+  fetched passage text), and the **leader's notes** when a question shares its verses. No export
+  changes.
+- **Retired the standalone gesture.** The action bar is now Note / Question / Mark confusing (no
+  "↗ Cross-reference"); the palette's `insert-xref` action + item are gone (an out-of-passage
+  reference yields nothing there — it's an `@`-mention). `MentionEditor` is used for **notes only**
+  (a question's text is the exported deliverable, so a raw `@ref` must never leak into it).
+
+Verified live (Playwright MCP) end-to-end on a real Luke 1:5–25 / WEBBE study: typed
+`@Malachi 4:5-6` in a note on v17 → inline chip → peek loaded Malachi 4:5–6 → promote made a Support
+passage (chip muted, de-duped) → reloaded and the chip re-rendered from stored text with its promoted
+state → the handout printed the Malachi background box with the fetched text; 0 console errors bar
+the known Router warnings. New e2e covers the whole loop. Design mockup that drove the "inline chip"
+choice: `docs/mockups/v2-xref-mentions.html`. Gate green: `typecheck && lint && test (292) && build &&
+test:e2e (12)`.
 
 ### 2026-08-10 — Read + COMA lenses (v2.6 complete)
 
@@ -296,10 +337,10 @@ overlines, question numbers) to ink, so the user decides colour-vs-economy; prev
 `src/v2/print/{PrintShell,PrintPassage,HandoutDoc,LeaderDoc}` + the `.qth-doc` CSS scope; v1's print
 components stay frozen and are removed with the rest of v1.
 
-**Next up.** *(Read + COMA landed 2026-08-10 — see the top of this log.)* (a) **Cross-reference,
-richer** — `@`-mention inside a note + promote → Support passage. (b) **v2.5** — Manuscript/flatten
-reading toggle + pre-suggested breaks. (c) **v2.8** — teaching/help text + the attribution "verbatim
-only for COMA" sweep. (d) Remove the v1 crib.
+**Next up.** *(Read + COMA and the inline `@`-mention cross-references both landed 2026-08-10 — see
+the top of this log.)* (a) **v2.5** — Manuscript/flatten reading toggle + pre-suggested breaks.
+(b) **v2.8** — teaching/help text + the attribution "verbatim only for COMA" sweep. (c) Remove the
+v1 crib.
 
 ---
 

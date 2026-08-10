@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { findTranslation } from '@/lib/bible';
 import { newId } from '@/lib/id';
 import { mergeSectionUp, renameSection, splitSectionAt, wholePassageSection } from '@/lib/map';
+import { parseReference } from '@/lib/verse';
 import { primaryText, setPrimary, translationOrder } from '@/lib/passage';
 import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
@@ -58,6 +59,18 @@ export function ReaderShell({ study }: { study: Study }) {
   const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
   const anchorTone = useMemo(() => anchorToneByVerse(annotations), [annotations]);
   const pvIds = useMemo(() => (passage ? verseIds(passage) : []), [passage]);
+  // OSIS keys of references already promoted to a support passage — mutes those inline chips and
+  // guards against promoting the same reference twice.
+  const promotedKeys = useMemo(
+    () =>
+      new Set(
+        annotations
+          .filter((a) => a.kind === 'cross-ref')
+          .map((a) => parseReference(a.reference ?? '')?.osis)
+          .filter((k): k is string => !!k),
+      ),
+    [annotations],
+  );
 
   const clearSelection = () => {
     setSelected([]);
@@ -130,15 +143,21 @@ export function ReaderShell({ study }: { study: Study }) {
     const a =
       kind === 'mark'
         ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, flag: 'confusing' })
-        : kind === 'note'
-          ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel })
-          : kind === 'ask'
-            ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel })
-            : makeAnnotation(newId(), { kind: 'cross-ref', verseIds: verseIdsSel });
+        : kind === 'ask'
+          ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel })
+          : makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel });
     addAnnotation(a);
   };
 
   const onAddFloating = () => addAnnotation(makeAnnotation(newId(), { kind: 'note', verseIds: [] }));
+
+  // Promote an inline @-mention (inside a note) to a cross-ref annotation anchored to the host's
+  // verses — this is what `projectForExport` turns into a printed Support passage. De-duped by OSIS.
+  const onPromoteMention = (host: Annotation, reference: string) => {
+    const key = parseReference(reference)?.osis;
+    if (key && promotedKeys.has(key)) return;
+    addAnnotation({ ...makeAnnotation(newId(), { kind: 'cross-ref', verseIds: host.verseIds }), reference });
+  };
 
   const onEditAnnotation = (id: string, patch: Partial<Annotation>) =>
     applyToCurrent((s) => ({
@@ -198,19 +217,6 @@ export function ReaderShell({ study }: { study: Study }) {
       case 'jump':
         onJump(action.verseId);
         break;
-      case 'insert-xref': {
-        const present = passage
-          ? new Set(allVerses(passage).filter((v) => v.present).map((v) => v.verseId))
-          : new Set<string>();
-        const verseIdsSel = selected.filter((id) => present.has(id));
-        clearSelection();
-        addAnnotation({
-          ...makeAnnotation(newId(), { kind: 'cross-ref', verseIds: verseIdsSel }),
-          reference: action.reference,
-        });
-        if (lens !== 'map') setLens('map');
-        break;
-      }
       case 'create':
         onAction(action.kind);
         break;
@@ -304,11 +310,14 @@ export function ReaderShell({ study }: { study: Study }) {
           annotations={annotations}
           litVerseId={hoveredVerse}
           focusAnnotationId={focusAnnotationId}
+          translationId={passage.translationId}
+          promotedKeys={promotedKeys}
           onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
           onEdit={onEditAnnotation}
           onRemove={onRemoveAnnotation}
           onJump={onJump}
           onAddFloating={onAddFloating}
+          onPromoteMention={onPromoteMention}
           onFocusHandled={clearFocusAnnotation}
         />
       ) : lens === 'read' ? (

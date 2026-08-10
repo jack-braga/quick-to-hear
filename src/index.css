@@ -212,6 +212,15 @@
   .qth-divbar:focus-visible span {
     background: var(--lapis-wash);
   }
+
+  /* Inline @-mention editor (v2 cross-references): a contenteditable note surface. The
+     placeholder is driven by a JS-toggled data-empty flag (contenteditable can hold a stray
+     <br>, so :empty is unreliable). Chip visuals live in the component's Tailwind classes. */
+  .qth-mention-editor[data-empty='true']::before {
+    content: attr(data-placeholder);
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
 }
 
 /* ---------------------------------------------------------------------------

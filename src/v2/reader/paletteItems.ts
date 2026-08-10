@@ -6,8 +6,9 @@ import type { LensId } from '@/v2/lenses';
  * The `/` command palette's item builder (v2.3) — pure, so the dialog stays a thin component and
  * the parsing is unit-tested (the house pattern). It turns the query + the reader's context into
  * an ordered, grouped list of actions: jump to a verse, jump to a reference already in the passage,
- * insert a cross-reference to another passage, switch the primary translation, create a
- * note/question/mark on the current selection, jump to a lens, or complete a book name.
+ * switch the primary translation, create a note/question/mark on the current selection, jump to a
+ * lens, or complete a book name. (A reference to *another* passage is not a palette action — you
+ * type an `@Malachi 4:5-6` mention inside a note.)
  *
  * A query is treated as a **reference** only when it contains a digit, so a bare book word that is
  * also a command (e.g. "mark" → the gospel vs. "mark confusing") stays a command + a book to pick.
@@ -17,7 +18,6 @@ export type PaletteCreateKind = 'note' | 'ask' | 'mark';
 
 export type PaletteAction =
   | { type: 'jump'; verseId: string }
-  | { type: 'insert-xref'; reference: string }
   | { type: 'create'; kind: PaletteCreateKind }
   | { type: 'switch-translation'; id: string }
   | { type: 'go-lens'; lens: LensId }
@@ -58,18 +58,18 @@ export function buildPaletteItems(query: string, ctx: PaletteContext): PaletteIt
       : [{ id: 'nojump', section: 'Go', icon: '↧', label: `No verse ${n} in this passage`, action: { type: 'fill', text: query } }];
   }
 
-  // A reference (only when the query carries a digit — see the note above).
+  // A reference (only when the query carries a digit — see the note above). We only *jump* to a
+  // reference that's already in the passage; a reference to another passage is an @-mention in a
+  // note, not a palette action, so an out-of-passage reference yields nothing here.
   if (/\d/.test(q)) {
     const ref = parseReference(q);
-    if (ref) {
-      const items: PaletteItem[] = [];
+    if (ref && ctx.passageVerseIds.includes(ref.start.verseId)) {
       const label = `${ref.start.book.shortName} ${ref.start.chapter}:${ref.start.verse}`;
-      if (ctx.passageVerseIds.includes(ref.start.verseId)) {
-        items.push({ id: 'jump-ref', section: 'Go', icon: '↧', label: `Jump to ${label}`, sub: ref.osis, action: { type: 'jump', verseId: ref.start.verseId } });
-      }
-      items.push({ id: 'xref', section: 'Reference', icon: '↗', label: `Insert cross-reference — ${ref.input}`, sub: ref.osis, action: { type: 'insert-xref', reference: ref.input } });
-      return items;
+      return [
+        { id: 'jump-ref', section: 'Go', icon: '↧', label: `Jump to ${label}`, sub: ref.osis, action: { type: 'jump', verseId: ref.start.verseId } },
+      ];
     }
+    if (ref) return [];
   }
 
   const items: PaletteItem[] = [];

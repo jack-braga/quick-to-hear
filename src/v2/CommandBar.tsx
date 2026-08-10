@@ -1,6 +1,6 @@
 /**
  * The bottom command bar (v2.1 shell). It opens the universal `/` command palette (v2.3) —
- * references, jumps, inserts, translation switch, and actions. `/` anywhere in the reader opens
+ * jumps, translation switch, create-on-selection, and go-to-lens. `/` anywhere in the reader opens
  * it too (unless you're typing in a field).
  */
 export function CommandBar({ onOpen }: { onOpen: () => void }) {
@@ -10,7 +10,7 @@ export function CommandBar({ onOpen }: { onOpen: () => void }) {
         <span className="grid size-[22px] place-items-center rounded-md bg-lapis font-mono text-[13px] font-semibold text-white dark:text-[#10131a]">
           /
         </span>
-        Reference a passage, jump to a verse, insert a cross-reference, or run a command.
+        Jump to a verse, switch translation, or run a command.
       </button>
       <button
         type="button"

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { allVerses, verseText, type ParsedText } from '@/types/passage';
 import type { Annotation } from '@/types/study';
 import { annotationMeta, anchoredAnnotations, floatingAnnotations, isQuestionReady, sortAnchored, toneFor } from '@/v2/annotations';
+import { MentionEditor } from '@/v2/reader/MentionEditor';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { TONE } from '@/v2/tones';
 
@@ -31,11 +32,16 @@ export interface MarginAnnotationsProps {
   annotations: Annotation[];
   litVerseId: string | null;
   focusAnnotationId: string | null;
+  /** Primary translation id — for the inline @-mention peek. */
+  translationId: string;
+  /** OSIS keys already promoted to a support passage (mutes those chips). */
+  promotedKeys: Set<string>;
   onHover: (a: Annotation | null) => void;
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
   onJump: (verseId: string) => void;
   onAddFloating: () => void;
+  onPromoteMention: (host: Annotation, reference: string) => void;
   onFocusHandled: () => void;
 }
 
@@ -161,6 +167,18 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
               onChange={(e) => props.onEdit(a.id, { returnQuestion: e.target.value })}
             />
           </div>
+        ) : a.kind === 'note' ? (
+          // Notes carry the inline @-mention editor — a reference to another passage lives *inside a
+          // note's content* (never in a question, whose text is the exported deliverable).
+          <MentionEditor
+            value={a.text}
+            onChange={(text) => props.onEdit(a.id, { text })}
+            placeholder={meta.placeholder}
+            translationId={props.translationId}
+            promotedKeys={props.promotedKeys}
+            onPromote={(reference) => props.onPromoteMention(a, reference)}
+            focusId={a.id}
+          />
         ) : (
           <textarea
             data-focus={a.id}
@@ -201,10 +219,10 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
       {anchored.length === 0 && (
         <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
           Select verses, then <b className="font-semibold text-ink">Note</b>,{' '}
-          <b className="font-semibold text-ink">Question</b>,{' '}
-          <b className="font-semibold text-ink">Mark confusing</b>, or{' '}
-          <b className="font-semibold text-ink">Cross-reference</b> — or hover between two verses to
-          divide the passage.
+          <b className="font-semibold text-ink">Question</b>, or{' '}
+          <b className="font-semibold text-ink">Mark confusing</b> — or hover between two verses to
+          divide the passage. Reference another passage by typing{' '}
+          <b className="font-mono text-[12px] text-lapis-ink">@Malachi 4:5-6</b> inside a note.
         </div>
       )}
 

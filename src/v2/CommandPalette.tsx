@@ -5,8 +5,8 @@ import { buildPaletteItems, type PaletteAction, type PaletteContext } from '@/v2
 
 /**
  * The universal `/` command palette (v2.3, ROADMAP-v2 §1) — references *and* actions. Over
- * `bcv_parser` + the bundled book list it resolves the query into jump / insert-cross-reference /
- * switch-translation / create-on-selection / go-to-lens, with book completion. Keyboard-first:
+ * `bcv_parser` + the bundled book list it resolves the query into jump / switch-translation /
+ * create-on-selection / go-to-lens, with book completion. Keyboard-first:
  * `↑ ↓` move, `↵` runs, `esc` closes; a `fill` item (a book pick) keeps the palette open.
  * The load-bearing parsing lives in the pure `paletteItems.ts`; this is a thin dialog over it.
  */
@@ -84,7 +84,7 @@ export function CommandPalette({
           <input
             ref={inputRef}
             className="flex-1 border-none bg-transparent font-mono text-[15px] text-ink outline-none placeholder:text-ink-faint"
-            placeholder="reference, jump, or a command…  e.g. Malachi 4:5-6, :20, note"
+            placeholder="jump, switch, or a command…  e.g. :20, note, ASV"
             value={query}
             autoComplete="off"
             spellCheck={false}

@@ -1,18 +1,17 @@
 import type { CSSProperties } from 'react';
 
 /**
- * The floating action bar over a live verse selection (ROADMAP-v2 §2). All four kinds are wired
- * (v2.4): a **Note**, a **Question** (the deliverable — keeps the expected-answer hard block), a
- * **Mark confusing** (a note flagged confusing), and a **Cross-reference** to another passage.
- * Each anchors to the selected verses and opens its card in the margin.
+ * The floating action bar over a live verse selection (ROADMAP-v2 §2). It anchors work to the
+ * **main passage**: a **Note**, a **Question** (the deliverable — keeps the expected-answer hard
+ * block), or a **Mark confusing** (a note flagged confusing). A reference to *another* passage is
+ * not an action here — you type an `@Malachi 4:5-6` mention inside a note (two gestures, not three).
  */
-export type ActionKind = 'note' | 'ask' | 'mark' | 'cross-ref';
+export type ActionKind = 'note' | 'ask' | 'mark';
 
 const ACTIONS: { kind: ActionKind; glyph: string; label: string }[] = [
   { kind: 'mark', glyph: '⚑', label: 'Mark confusing' },
   { kind: 'note', glyph: '✎', label: 'Note' },
   { kind: 'ask', glyph: '?', label: 'Question' },
-  { kind: 'cross-ref', glyph: '↗', label: 'Cross-reference' },
 ];
 
 export function ActionBar({

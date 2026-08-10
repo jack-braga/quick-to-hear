@@ -26,7 +26,8 @@ export function annotationMeta(a: Annotation): { tag: string; placeholder: strin
     return { tag: 'Question', placeholder: 'Draft a question anchored to these verses…' };
   }
   if (a.kind === 'cross-ref') {
-    return { tag: 'Cross-reference', placeholder: 'Why does this passage connect here?' };
+    // Created only by promoting an inline @-mention; it is what prints as a Support passage.
+    return { tag: 'Support passage', placeholder: 'Why does this passage connect here?' };
   }
   if (a.flag === 'confusing') {
     return { tag: 'Mark · confusing', placeholder: 'What confuses you here? (they’ll feel it too)' };

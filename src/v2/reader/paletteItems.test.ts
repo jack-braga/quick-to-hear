@@ -28,22 +28,21 @@ describe('buildPaletteItems', () => {
     expect(items[0]!.label).toMatch(/no verse 99/i);
   });
 
-  it('offers a jump for a reference inside the passage, plus insert-xref', () => {
+  it('offers a jump for a reference inside the passage', () => {
     const items = buildPaletteItems('Luke 1:8', ctx);
-    expect(items.map((i) => i.action.type)).toEqual(['jump', 'insert-xref']);
+    expect(items.map((i) => i.action.type)).toEqual(['jump']);
     expect(items[0]!.action).toEqual({ type: 'jump', verseId: 'LUKE.1.8' });
   });
 
-  it('offers only insert-xref for a reference outside the passage', () => {
-    const items = buildPaletteItems('Malachi 4:5-6', ctx);
-    expect(items).toHaveLength(1);
-    expect(items[0]!.action).toEqual({ type: 'insert-xref', reference: 'Malachi 4:5-6' });
+  it('offers nothing for a reference outside the passage (it belongs in an @-mention)', () => {
+    // Referencing another passage is a note @-mention, not a palette action.
+    expect(buildPaletteItems('Malachi 4:5-6', ctx)).toHaveLength(0);
   });
 
   it('treats a bare book word as a command/completion, not a reference', () => {
     // "mark" is the gospel AND the "mark confusing" command — no digit → not a reference.
     const items = buildPaletteItems('mark', { ...ctx, hasSelection: true });
-    expect(items.some((i) => i.action.type === 'insert-xref')).toBe(false);
+    expect(items.some((i) => i.action.type === 'jump')).toBe(false);
     expect(items.some((i) => i.action.type === 'create' && i.action.kind === 'mark')).toBe(true);
     expect(items.some((i) => i.action.type === 'fill')).toBe(true); // Mark (the book) to pick
   });

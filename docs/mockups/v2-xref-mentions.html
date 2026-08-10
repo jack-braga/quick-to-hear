@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — @mention cross-references (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92;
+        --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.1); --lapis-edge: rgba(40,70,138,0.32);
+        --amber: #b98a1e; --amber-wash: rgba(185,138,30,0.15); --amber-ink: #8a6a16;
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.1);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 12px 32px -12px rgba(30,27,20,0.22);
+        --peek-shadow: 0 2px 6px rgba(30,27,20,0.08), 0 22px 48px -16px rgba(30,27,20,0.34);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #131418; --leaf: #1c1e24; --panel: #20232b;
+        --ink: #e9e5db; --ink-soft: #9a958a; --ink-faint: #6b675d;
+        --line: #2b2e36;
+        --lapis: #86a6ea; --lapis-ink: #bcd0f6; --lapis-wash: rgba(124,160,230,0.16); --lapis-edge: rgba(124,160,230,0.4);
+        --amber: #d9b65b; --amber-wash: rgba(217,182,91,0.16); --amber-ink: #e2c877;
+        --rubric: #e0785f; --rubric-wash: rgba(224,120,95,0.16);
+        --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 18px 40px -14px rgba(0,0,0,0.6);
+        --peek-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 26px 54px -16px rgba(0,0,0,0.7);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; font-family: var(--font-ui);
+        background: var(--desk); color: var(--ink);
+        -webkit-font-smoothing: antialiased; line-height: 1.5;
+      }
+      button { font-family: inherit; cursor: pointer; }
+
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 34px 22px 80px; }
+
+      .head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 6px; }
+      .head h1 {
+        font-family: var(--font-scripture); font-weight: 600;
+        font-size: 27px; letter-spacing: 0.01em; margin: 0; flex: 1;
+      }
+      .kicker {
+        font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase;
+        letter-spacing: 0.18em; color: var(--ink-faint); margin: 0 0 3px;
+      }
+      .toggle {
+        border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft);
+        width: 34px; height: 34px; border-radius: 9px; font-size: 15px; display: grid; place-items: center;
+      }
+      .lede { color: var(--ink-soft); font-size: 14.5px; max-width: 74ch; margin: 10px 0 4px; }
+
+      /* the two-gesture model band */
+      .model {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        margin: 22px 0 34px;
+      }
+      @media (max-width: 720px) { .model { grid-template-columns: 1fr; } }
+      .model .g {
+        border: 1px solid var(--line); border-radius: var(--radius);
+        background: color-mix(in srgb, var(--leaf) 60%, var(--desk));
+        padding: 13px 15px;
+      }
+      .model .g b { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; color: var(--lapis-ink); text-transform: uppercase; }
+      .model .g p { margin: 5px 0 0; font-size: 13px; color: var(--ink-soft); }
+      .strike { text-decoration: line-through; text-decoration-color: var(--rubric); opacity: .6; }
+
+      .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+      @media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
+
+      .variant-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+      .variant-head .n {
+        font-family: var(--font-mono); font-size: 11px; color: #fff; background: var(--lapis);
+        border-radius: 5px; padding: 2px 7px; letter-spacing: .04em;
+      }
+      :root[data-theme='night'] .variant-head .n { color: #10131a; }
+      .variant-head h2 { font-size: 15px; margin: 0; font-family: var(--font-scripture); font-weight: 600; }
+      .variant-note { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 16px; min-height: 34px; }
+
+      /* the margin lane the cards live in */
+      .lane { background: var(--panel); border-radius: 14px; padding: 16px; border: 1px solid var(--line); }
+      .lane-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .18em; color: var(--ink-faint); margin: 0 2px 12px; }
+
+      /* an annotation card */
+      .card {
+        background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge);
+        border-radius: var(--radius); padding: 11px 13px; box-shadow: var(--shadow); margin-bottom: 12px;
+      }
+      .card.q { border-left-color: var(--amber); }
+      .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+      .anchor {
+        font-family: var(--font-mono); font-size: 11px; color: var(--lapis-ink);
+        background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px;
+      }
+      .tag { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+      .quote { font-family: var(--font-scripture); font-style: italic; font-size: 12.5px; color: var(--ink-faint); margin: 0 0 7px; }
+      .body { font-size: 13.5px; color: var(--ink); }
+
+      /* mention chip (shared) */
+      .mchip {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-family: var(--font-mono); font-size: 11.5px; line-height: 1;
+        color: var(--lapis-ink); background: var(--lapis-wash);
+        border: 1px solid var(--lapis-edge); border-radius: 6px;
+        padding: 3px 7px; white-space: nowrap; cursor: pointer;
+      }
+      .mchip .a { opacity: .8; }
+      .mchip.done { color: var(--ink-soft); background: color-mix(in srgb, var(--lapis-wash) 40%, transparent); }
+
+      /* variant A: chip strip beneath the note */
+      .strip { margin-top: 9px; padding-top: 9px; border-top: 1px dashed var(--line); }
+      .strip-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); margin-bottom: 6px; }
+      .strip-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+      .mini {
+        border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft);
+        border-radius: 6px; font-family: var(--font-mono); font-size: 10.5px; padding: 3px 7px;
+      }
+      .mini.promote { color: var(--lapis-ink); border-color: var(--lapis-edge); background: var(--lapis-wash); }
+
+      /* variant B: inline chip within the flowing text — nothing extra, chip sits in .body */
+
+      /* the peek popover */
+      .peek {
+        position: relative; margin-top: 12px;
+        background: var(--leaf); border: 1px solid var(--line); border-radius: var(--radius);
+        box-shadow: var(--peek-shadow); padding: 12px 13px 11px; max-width: 340px;
+      }
+      .peek::before {
+        content: ''; position: absolute; top: -7px; left: 26px; width: 12px; height: 12px;
+        background: var(--leaf); border-left: 1px solid var(--line); border-top: 1px solid var(--line);
+        transform: rotate(45deg);
+      }
+      .peek-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+      .peek-ref { font-family: var(--font-scripture); font-weight: 600; font-size: 15px; }
+      .peek-tr { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .06em; }
+      .peek-body { font-family: var(--font-scripture); font-size: 14.5px; line-height: 1.5; color: var(--ink); }
+      .peek-body sup { font-family: var(--font-mono); font-size: 9.5px; color: var(--lapis); font-weight: 600; margin-right: 2px; vertical-align: super; }
+      .peek-foot { display: flex; gap: 8px; margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--line); }
+      .btn {
+        font-family: var(--font-mono); font-size: 11px; border-radius: 7px; padding: 5px 9px; border: 1px solid var(--line);
+        background: var(--panel); color: var(--ink-soft);
+      }
+      .btn.primary { background: var(--lapis); color: #fff; border-color: var(--lapis); }
+      :root[data-theme='night'] .btn.primary { color: #10131a; }
+
+      .flow { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); text-align: center; margin: 10px 0 2px; }
+
+      /* shared promote result */
+      .result { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 22px; }
+      .result h3 { font-family: var(--font-scripture); font-weight: 600; font-size: 16px; margin: 0 0 4px; }
+      .result p.sub { font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 70ch; }
+      .support {
+        max-width: 420px; background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge);
+        border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow);
+      }
+      .support .support-tag { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--lapis-ink); }
+      .support .rq {
+        margin-top: 9px; border: 1px solid var(--line); background: var(--panel); border-radius: 7px;
+        padding: 7px 9px; font-size: 12.5px; color: var(--ink-soft);
+      }
+      .prints { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); margin-top: 8px; letter-spacing: .04em; }
+
+      .trade { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 8px; }
+      @media (max-width: 860px) { .trade { grid-template-columns: 1fr; } }
+      .trade .t b { font-size: 12.5px; }
+      .trade .t ul { margin: 6px 0 0; padding-left: 18px; }
+      .trade .t li { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 3px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="head">
+        <div style="flex:1">
+          <p class="kicker">Quick to Hear · v2 · cross-references</p>
+          <h1>@mention cross-references — two ways to render the chip</h1>
+        </div>
+        <button class="toggle" id="toggle" title="Toggle day / night">☾</button>
+      </div>
+
+      <p class="lede">
+        The model we agreed: <b>two referencing gestures, not three</b>. You either <b>anchor</b> a
+        Note/Question/Mark to verses <b>in the main passage</b>, or you <b>@mention</b> another passage
+        <b>inside a note's content</b>. The standalone “Cross-reference” card goes away.
+      </p>
+
+      <div class="model">
+        <div class="g">
+          <b>Gesture 1 · Anchor</b>
+          <p>Select verses in the passage → Note, Question, or Mark confusing. Lives against the main text.</p>
+        </div>
+        <div class="g">
+          <b>Gesture 2 · @mention</b>
+          <p>Type <code>@Malachi 4:5-6</code> in a note → a chip you can peek, open, and promote to a Support passage.</p>
+        </div>
+      </div>
+      <p class="lede" style="margin-top:-18px"><span class="strike">Gesture 3 · standalone Cross-reference card</span> — retired; a reference to another passage is an @mention, not a thing anchored to the main text.</p>
+
+      <div class="cols">
+        <!-- ===================== VARIANT A ===================== -->
+        <div>
+          <div class="variant-head"><span class="n">A</span><h2>Chip strip beneath the note</h2></div>
+          <p class="variant-note">The <code>@ref</code> stays as plain text you type in the box; detected references surface as chips in a strip under it. Keeps the ordinary textarea — low-risk.</p>
+
+          <div class="lane">
+            <p class="lane-label">In the margin</p>
+            <div class="card">
+              <div class="card-top">
+                <span class="anchor">Luke 1:17</span>
+                <span class="tag">Note</span>
+              </div>
+              <p class="quote">“…to turn the hearts of the fathers to the children…”</p>
+              <div class="body">Elijah motif — cf. @Malachi 4:5-6 on turning hearts. This is the promise John fulfils.</div>
+              <div class="strip">
+                <div class="strip-label">References in this note</div>
+                <div class="strip-row">
+                  <span class="mchip"><span class="a">↗</span> Mal 4:5–6</span>
+                  <button class="mini">peek</button>
+                  <button class="mini promote">⤴ promote</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="flow">hover / click the chip ↳</p>
+            <div class="peek" style="margin-left:8px">
+              <div class="peek-top"><span class="peek-ref">Malachi 4:5–6</span><span class="peek-tr">WEBBE</span></div>
+              <div class="peek-body"><sup>5</sup>Behold, I will send you Elijah the prophet before the great and terrible day of the Lord comes. <sup>6</sup>He will turn the hearts of the fathers to the children, and the hearts of the children to their fathers…</div>
+              <div class="peek-foot"><button class="btn primary">⤴ Promote to support passage</button><button class="btn">Open</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== VARIANT B ===================== -->
+        <div>
+          <div class="variant-head"><span class="n">B</span><h2>Inline chips in the text</h2></div>
+          <p class="variant-note">The <code>@ref</code> becomes a chip <em>within</em> the flowing text as you write. Richer, more “live” — but the note editor becomes contenteditable (heavier, more fragile).</p>
+
+          <div class="lane">
+            <p class="lane-label">In the margin</p>
+            <div class="card">
+              <div class="card-top">
+                <span class="anchor">Luke 1:17</span>
+                <span class="tag">Note</span>
+              </div>
+              <p class="quote">“…to turn the hearts of the fathers to the children…”</p>
+              <div class="body">Elijah motif — cf. <span class="mchip"><span class="a">↗</span> Mal 4:5–6</span> on turning hearts. This is the promise John fulfils.</div>
+            </div>
+
+            <p class="flow">hover the inline chip ↳</p>
+            <div class="peek" style="margin-left:56px">
+              <div class="peek-top"><span class="peek-ref">Malachi 4:5–6</span><span class="peek-tr">WEBBE</span></div>
+              <div class="peek-body"><sup>5</sup>Behold, I will send you Elijah the prophet before the great and terrible day of the Lord comes. <sup>6</sup>He will turn the hearts of the fathers to the children, and the hearts of the children to their fathers…</div>
+              <div class="peek-foot"><button class="btn primary">⤴ Promote to support passage</button><button class="btn">Open</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== shared result ===================== -->
+      <div class="result">
+        <h3>Either way, “Promote” makes the same thing → a Support passage</h3>
+        <p class="sub">The promoted @mention becomes a Support passage anchored to the note's verses. It prints in the participant handout (framed with a return-question) and in the leader's notes — the existing v1 support-passage model, unchanged.</p>
+        <div class="support">
+          <div class="card-top"><span class="anchor">Luke 1:17</span><span class="support-tag">Support passage</span></div>
+          <div class="peek-top" style="margin-bottom:4px"><span class="peek-ref" style="font-size:15px">Malachi 4:5–6</span><span class="peek-tr">WEBBE</span></div>
+          <div class="body" style="font-family:var(--font-scripture); font-size:13px; color:var(--ink-soft)">Behold, I will send you Elijah the prophet… He will turn the hearts of the fathers to the children…</div>
+          <div class="rq"><b style="color:var(--ink)">Return question:</b> What does Malachi lead us to expect of the one who comes “in the spirit of Elijah”?</div>
+          <div class="prints">▸ prints on handout + leader's notes</div>
+        </div>
+      </div>
+
+      <div class="result">
+        <h3>Trade-offs at a glance</h3>
+        <div class="trade">
+          <div class="t"><b>A · Chip strip</b>
+            <ul>
+              <li>Reuses the current textarea — small, safe change.</li>
+              <li>Chips grouped in one place; easy to scan a note's refs.</li>
+              <li>Ships this iteration; inline (B) can follow later.</li>
+              <li>Chip sits a little apart from the words it belongs to.</li>
+            </ul>
+          </div>
+          <div class="t"><b>B · Inline chips</b>
+            <ul>
+              <li>Reads most naturally — the ref is where you wrote it.</li>
+              <li>Feels the most “finished”.</li>
+              <li>Needs a contenteditable editor: caret, paste, undo, mobile quirks.</li>
+              <li>More surface area to get wrong; bigger test burden.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('toggle').addEventListener('click', () => {
+        const night = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', night ? 'day' : 'night');
+        document.getElementById('toggle').textContent = night ? '☾' : '☀';
+      });
+    </script>
+  </body>
+</html>

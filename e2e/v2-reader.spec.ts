@@ -115,7 +115,7 @@ test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persis
   );
 });
 
-test('v2 command palette: insert a cross-reference and switch translation', async ({ page }) => {
+test('v2 command palette: switch the primary translation', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
@@ -124,18 +124,48 @@ test('v2 command palette: insert a cross-reference and switch translation', asyn
   await page.getByRole('button', { name: /start mapping/i }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
-  const openPalette = () => page.getByRole('button', { name: /\/ command/ }).click();
-
-  // Insert a cross-reference to another passage.
-  await openPalette();
-  await page.getByRole('dialog').getByRole('textbox').fill('Malachi 4:5-6');
-  await page.getByRole('button', { name: /insert cross-reference/i }).click();
-  await expect(page.locator('input[placeholder="e.g. Malachi 4:5-6"]')).toHaveValue('Malachi 4:5-6');
-
-  // Switch the primary translation.
-  await openPalette();
+  await page.getByRole('button', { name: /\/ command/ }).click();
   await page.getByRole('button', { name: /switch to american standard/i }).click();
   await expect(page.getByText('ASV · public domain')).toBeVisible();
+});
+
+test('v2 @mention cross-reference: chip in a note → peek → promote → prints as a support passage', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /start mapping/i }).click();
+
+  // A note anchored to v17, with an inline @-mention of another passage.
+  await page.locator('[data-v="LUKE.1.17"]').click();
+  await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /note/i }).click();
+  const editor = page.locator('[data-mention-editor]');
+  await editor.click();
+  await editor.pressSequentially('cf. @Malachi 4:5-6 fulfils this.');
+
+  // The reference becomes an inline chip inside the note (typed char-by-char above).
+  const chip = page.locator('[data-raw="@Malachi 4:5-6"]');
+  await expect(chip).toBeVisible();
+  await expect(chip).toHaveText(/Mal 4:5/);
+
+  // Click it → the peek loads the referenced passage; promote it to a support passage.
+  await chip.click();
+  await expect(page.getByText(/send you Elijah the prophet/i)).toBeVisible();
+  await page.getByRole('button', { name: /promote to support passage/i }).click();
+  await expect(chip).toHaveAttribute('data-promoted', 'true');
+
+  // The promote closes to a Support-passage card in the margin.
+  await page.keyboard.press('Escape');
+  await expect(page.getByText('Support passage')).toBeVisible();
+
+  // It reaches the participant handout as a background box (reference + fetched passage text).
+  await page.waitForTimeout(1000);
+  const id = page.url().match(/study\/([^/]+)\//)![1];
+  await page.goto(`./#/print/${id}/handout`);
+  await expect(page.getByText(/Malachi 4:5/)).toBeVisible();
+  await expect(page.getByText(/send you Elijah the prophet/i)).toBeVisible();
 });
 
 test('v2 Build lens: questions order by verse, reorder, and persist', async ({ page }) => {
