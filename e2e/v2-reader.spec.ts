@@ -421,6 +421,30 @@ test('v2 Questions lens: a yes-or-no opener surfaces the soft question-craft war
   await expect(page.getByText(/may be a yes-or-no question/i)).toHaveCount(0);
 });
 
+test('v2 @mention: typing @Book Chapter is held (not chipped) until you finish the reference', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
+
+  await page.getByRole('button', { name: '＋ note' }).click();
+  const editor = page.locator('[data-mention-editor]');
+  await editor.click();
+  await editor.pressSequentially('see @Luke 1');
+
+  // '@Luke 1' must NOT grab the whole chapter mid-type — it's held as pending, editable text.
+  await expect(editor.locator('[data-raw]')).toHaveCount(0);
+  await expect(editor.locator('[data-pending]')).toHaveText('@Luke 1');
+
+  await editor.pressSequentially(':5');
+  await expect(editor.locator('[data-raw]')).toHaveCount(0); // still pending
+  // A space after the complete reference commits it to a chip.
+  await editor.pressSequentially(' done');
+  await expect(editor.locator('[data-raw="@Luke 1:5"]')).toBeVisible();
+});
+
 test('v2 Questions lens: start a question from a scaffolded formula (§3)', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();
