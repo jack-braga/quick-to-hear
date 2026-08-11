@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Quick to Hear — simplify the panel toggles (mockup)</title>
+    <title>Quick to Hear — simplify the panel toggles (interactive mockup)</title>
     <style>
       :root {
         --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
@@ -11,128 +11,224 @@
         --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
         --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
         --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
-        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
         --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
       }
       :root[data-theme='night'] {
         --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
         --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
-        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.2); --lapis-edge: rgba(144,176,239,0.42);
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.16); --lapis-edge: rgba(144,176,239,0.38);
+        --amber-wash: rgba(221,187,97,0.17); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.42);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.16); --rubric-edge: rgba(226,128,95,0.4);
         --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
       }
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; min-height: 100vh; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
       button { font-family: inherit; cursor: pointer; }
-      .top { display: flex; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid var(--line); background: var(--panel); }
-      .top h1 { font-size: 14px; margin: 0; }
-      .top p { margin: 0; font-size: 12px; color: var(--ink-soft); flex: 1; }
-      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; }
-      .wrap { display: flex; flex-wrap: wrap; gap: 22px; padding: 26px 22px; align-items: start; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto 1fr; }
 
-      /* a mini panel header for each option */
-      .opt { width: 320px; background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
-      .opt .hd { padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
-      .opt .hd .k { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--lapis-ink); }
-      .opt .hd .d { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
-      .opt .body { padding: 12px 13px; }
+      /* ---- approach chooser bar (the star of this mockup) ---- */
+      .chooser { border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 78%, var(--leaf)); padding: 11px 20px 12px; }
+      .chooser .line1 { display: flex; align-items: center; gap: 12px; }
+      .chooser h1 { font-size: 14px; margin: 0; }
+      .chooser .hint { margin: 0; font-size: 12px; color: var(--ink-soft); flex: 1; }
+      .chooser .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; flex: none; }
+      .picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .pick { display: inline-flex; flex-direction: column; gap: 1px; text-align: left; border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); border-radius: 9px; padding: 6px 11px; min-width: 132px; }
+      .pick .pk { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); }
+      .pick .pn { font-size: 12.5px; color: var(--ink); }
+      .pick:hover { border-color: var(--lapis-edge); }
+      .pick.on { border-color: var(--lapis-edge); background: var(--lapis-wash); }
+      .pick.on .pk { color: var(--lapis-ink); }
+      .pick .lean { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .06em; color: var(--amber-ink); text-transform: uppercase; }
+      .desc { margin-top: 9px; font-size: 12px; color: var(--ink-soft); max-width: 62rem; }
+      .desc b { color: var(--ink); }
 
-      .row { display: flex; align-items: center; gap: 8px; }
-      .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
-      .count { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
-      .chips { display: flex; gap: 5px; margin: 9px 0; }
+      /* ---- work area: passage + one live panel ---- */
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 380px; overflow: hidden; }
+      @media (max-width: 880px) { .work { grid-template-columns: 1fr; } }
+      .center { overflow-y: auto; display: flex; justify-content: center; padding: 24px 22px 60px; }
+      .leaf { width: 100%; max-width: 40rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 28px clamp(22px,3vw,44px) 44px; align-self: flex-start; }
+      .leaf h2 { font-family: var(--font-scripture); font-size: 25px; margin: 0 0 3px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+      .callout { margin-top: 14px; font-size: 11.5px; color: var(--ink-soft); background: var(--panel); border: 1px dashed var(--line); border-radius: 8px; padding: 7px 10px; }
+      .scripture { font-family: var(--font-scripture); font-size: 1.24rem; line-height: 1.72; color: var(--ink); margin-top: 18px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.58em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v { border-radius: 4px; padding: 1px 2px; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+      .v.amber { background: var(--amber-wash); }
+      .v.rubric { background: var(--rubric-wash); }
+      .v.multi { background: repeating-linear-gradient(45deg, var(--amber-wash) 0 7px, var(--lapis-wash) 7px 14px); }
+      .v.hot { box-shadow: inset 0 0 0 2px var(--lapis-edge); }
+
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+      .filters { border-bottom: 1px solid var(--line); padding: 12px 14px; }
+      .filters .row1 { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+      .filters .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .filters .count { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .chips { display: flex; flex-wrap: wrap; gap: 5px; }
       .chip { font-family: var(--font-mono); font-size: 10.5px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 999px; padding: 3px 9px; }
       .chip.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
 
-      /* current — two labelled switches */
-      .sw { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); background: none; border: none; padding: 3px 0; }
-      .pill { width: 28px; height: 16px; border-radius: 999px; background: var(--line); position: relative; flex: none; }
-      .pill.on { background: var(--lapis); }
-      .pill::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: left .12s; }
-      .pill.on::after { left: 14px; }
-      .switches { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+      /* control clusters (only the active approach's cluster shows) */
+      .control { margin-top: 11px; }
+      .control[hidden] { display: none; }
 
-      /* option: one focus toggle */
-      .focus { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; border: 1px solid var(--line); background: var(--leaf); border-radius: 999px; padding: 4px 10px 4px 6px; font-size: 12px; color: var(--ink-soft); }
+      /* Today — two labelled switches */
+      .switches { display: flex; flex-direction: column; gap: 3px; }
+      .opt { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-soft); }
+      .sw { width: 30px; height: 17px; border-radius: 999px; background: var(--line); position: relative; border: none; flex: none; }
+      .sw.on { background: var(--lapis); }
+      .sw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: #fff; transition: left .15s; }
+      .sw.on::after { left: 15px; }
+
+      /* A — one Focus chip */
+      .focus { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--leaf); border-radius: 999px; padding: 4px 12px 4px 9px; font-size: 12px; color: var(--ink-soft); }
       .focus.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
 
-      /* option: segmented */
-      .segm { display: inline-flex; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-      .segm button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 11.5px; padding: 4px 10px; }
+      /* B — segmented */
+      .segrow { display: flex; align-items: center; gap: 8px; }
+      .segm { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .segm button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 11.5px; padding: 4px 11px; }
       .segm button + button { border-left: 1px solid var(--line); }
       .segm button.on { background: var(--lapis); color: #fff; }
       :root[data-theme='night'] .segm button.on { color: #16181d; }
 
-      /* option: icon in the header */
-      .ibtn { width: 24px; height: 24px; border-radius: 7px; border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); font-size: 12px; display: grid; place-items: center; }
+      /* C — one icon on the header row */
+      .ibtn { width: 24px; height: 24px; border-radius: 7px; border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); font-size: 12px; display: grid; place-items: center; flex: none; }
       .ibtn.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .row1 .ibtn { margin-left: 8px; }
 
-      .card { margin-top: 9px; background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: 9px; padding: 8px 10px; font-size: 12px; color: var(--ink-soft); }
-      .card .an { font-family: var(--font-mono); font-size: 10px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; }
-      .note { margin-top: 8px; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
+      .behav { margin-top: 10px; font-size: 10.5px; color: var(--ink-faint); font-style: italic; line-height: 1.5; }
+
+      .cards { overflow-y: auto; padding: 14px; }
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow); margin-bottom: 10px; transition: opacity .12s, box-shadow .12s; }
+      .card.amber { border-left-color: var(--amber-edge); }
+      .card.rubric { border-left-color: var(--rubric-edge); }
+      .card.dim { opacity: .3; }
+      .card.gone { display: none; }
+      .card.hot { box-shadow: 0 0 0 2px var(--lapis-edge), var(--shadow); }
+      .card-top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+      .anchor { font-family: var(--font-mono); font-size: 10.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; }
+      .tag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+      .tag.amber { color: var(--amber-ink); }
+      .card .q { font-size: 13.5px; color: var(--ink); }
+      .card .src { margin-top: 6px; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); }
+      .empty { font-size: 12.5px; color: var(--ink-faint); text-align: center; padding: 22px 10px; }
     </style>
   </head>
   <body>
-    <div class="top">
-      <h1>Simplify the panel filter</h1>
-      <p>Today: two labelled switches ("Reveal only on hover", "Hide filtered-out") on top of the chips — the owner found it heavy. Options to slim it down. The <b>chips</b> stay in every version.</p>
-      <button class="toggle" id="themeBtn" title="Day / night">☾</button>
-    </div>
+    <div class="app">
+      <!-- The chooser is the point of this mockup: swap the APPROACH, feel it on the same live cards -->
+      <div class="chooser">
+        <div class="line1">
+          <h1>Simplify the panel filter</h1>
+          <p class="hint">Pick an approach — the <b>same live panel</b> on the right reacts to whichever control it gives you. Toggle the chips, and hover verse&nbsp;8 or&nbsp;13 in the passage to feel it.</p>
+          <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+        </div>
+        <div class="picker" id="picker">
+          <button class="pick" data-app="today"><span class="pk">Today</span><span class="pn">Two switches</span></button>
+          <button class="pick on" data-app="a"><span class="pk">A <span class="lean">· prev lean</span></span><span class="pn">One “Focus” toggle</span></button>
+          <button class="pick" data-app="b"><span class="pk">B</span><span class="pn">Segmented “Show”</span></button>
+          <button class="pick" data-app="c"><span class="pk">C</span><span class="pn">One header icon</span></button>
+          <button class="pick" data-app="d"><span class="pk">D</span><span class="pn">Just the chips</span></button>
+        </div>
+        <p class="desc" id="desc"></p>
+      </div>
 
-    <div class="wrap">
-      <!-- CURRENT -->
-      <div class="opt">
-        <div class="hd"><div class="k">Today · two switches</div><div class="d">Reveal-on-hover + Hide-vs-dim as separate labelled switches. Two decisions, lots of words.</div></div>
-        <div class="body">
-          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
-          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
-          <div class="switches">
-            <button class="sw"><span class="pill"></span> Reveal only on hover</button>
-            <button class="sw"><span class="pill on"></span> Hide filtered-out</button>
+      <div class="work">
+        <div class="center">
+          <div class="leaf">
+            <h2>Luke 1:5–25</h2>
+            <span class="meta">WEBBE · public domain</span>
+            <div class="callout">Six cards below are anchored to these verses (one is study-level, no anchor). Try the chips and hover a verse.</div>
+            <div class="scripture" id="scripture">
+              <span class="v" data-v="7"><sup>7</sup>But they had no child, because Elizabeth was barren, and they both were well advanced in years. </span>
+              <span class="v amber" data-v="8"><sup>8</sup>Now while he executed the priest's office before God in the order of his division, </span>
+              <span class="v amber" data-v="9"><sup>9</sup>his lot was to enter into the temple of the Lord and burn incense. </span>
+              <span class="v amber" data-v="10"><sup>10</sup>The whole multitude of the people were praying outside at the hour of incense. </span>
+              <span class="v rubric" data-v="11"><sup>11</sup>An angel of the Lord appeared to him, standing on the right side of the altar of incense. </span>
+              <span class="v" data-v="12"><sup>12</sup>Zacharias was troubled when he saw him, and fear fell upon him. </span>
+              <span class="v multi" data-v="13"><sup>13</sup>But the angel said to him, “Don't be afraid, Zacharias, because your request has been heard…” </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- A: one Focus toggle -->
-      <div class="opt">
-        <div class="hd"><div class="k">A · one "Focus" toggle</div><div class="d">A single chip-style toggle = reveal-on-hover. Drop hide-vs-dim (filtered-out are always hidden — the default). One decision.</div></div>
-        <div class="body">
-          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
-          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
-          <button class="focus">◎ Focus on hover</button>
-          <div class="note">Off = all cards show. On = cards appear only when you hover their verse.</div>
-        </div>
-      </div>
+        <div class="panel">
+          <div class="filters">
+            <div class="row1">
+              <span class="t">Show from step</span>
+              <span class="count" id="count">6 shown</span>
+              <!-- C · header icon lives here -->
+              <button class="ibtn control" data-app="c" id="ctlIcon" title="Focus: cards appear only while you hover their verse" hidden>◎</button>
+            </div>
+            <div class="chips" id="chips">
+              <button class="chip on" data-step="all">All</button>
+              <button class="chip on" data-step="map">Map</button>
+              <button class="chip on" data-step="coma">COMA</button>
+              <button class="chip on" data-step="theme">Theme</button>
+              <button class="chip on" data-step="build">Build</button>
+            </div>
 
-      <!-- B: segmented -->
-      <div class="opt">
-        <div class="hd"><div class="k">B · segmented "Show"</div><div class="d">One control, two states, no switch metaphor. Reads as a sentence.</div></div>
-        <div class="body">
-          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
-          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
-          <div class="row" style="gap:7px"><span class="t" style="letter-spacing:.1em">Show</span>
-            <div class="segm"><button class="on">All cards</button><button>On hover</button></div>
+            <!-- Today · two switches -->
+            <div class="control switches" data-app="today" hidden>
+              <label class="opt"><button class="sw" id="swHover"></button> Reveal only on hover</label>
+              <label class="opt"><button class="sw on" id="swHide"></button> Hide filtered-out <span style="color:var(--ink-faint)">(off = dim)</span></label>
+            </div>
+
+            <!-- A · one Focus chip -->
+            <div class="control" data-app="a" hidden>
+              <button class="focus" id="ctlFocus">◎ Focus on hover</button>
+            </div>
+
+            <!-- B · segmented -->
+            <div class="control segrow" data-app="b" hidden>
+              <span class="t" style="letter-spacing:.1em">Show</span>
+              <div class="segm" id="ctlSeg">
+                <button class="on" data-val="all">All cards</button>
+                <button data-val="hover">On hover</button>
+              </div>
+            </div>
+
+            <p class="behav" id="behav"></p>
           </div>
-        </div>
-      </div>
 
-      <!-- C: icon in header -->
-      <div class="opt">
-        <div class="hd"><div class="k">C · one icon in the header</div><div class="d">A single ◎ icon-button on the header row toggles hover-focus. Smallest footprint; needs a tooltip.</div></div>
-        <div class="body">
-          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span><button class="ibtn on" title="Focus: cards appear only on hover" style="margin-left:8px">◎</button></div>
-          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
-          <div class="card"><span class="an">Luke 1:8</span> &nbsp;A note carried forward…</div>
-        </div>
-      </div>
-
-      <!-- D: remove -->
-      <div class="opt">
-        <div class="hd"><div class="k">D · just the chips</div><div class="d">Remove both switches entirely. Chips are the only filter; no hover-reveal, no dim mode. Simplest — but you lose "reveal on hover".</div></div>
-        <div class="body">
-          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
-          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
-          <div class="card"><span class="an">Luke 1:8</span> &nbsp;A note carried forward…</div>
-          <div class="note">Cleanest header. Hover a card ↔ verse still two-way-highlights; you just can't hide-until-hover.</div>
+          <div class="cards" id="cards">
+            <div class="card rubric" data-step="map" data-anchor="11">
+              <div class="card-top"><span class="anchor">Luke 1:11</span><span class="tag">Unclear</span></div>
+              <div class="q">Why does an angel appear here specifically?</div>
+              <div class="src">▸ step 03 · Map</div>
+            </div>
+            <div class="card" data-step="coma" data-anchor="8 9 10">
+              <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag">COMA · Observation</span></div>
+              <div class="q">Ordinary temple duty and a praying crowd — faithfulness interrupted.</div>
+              <div class="src">▸ step 04 · COMA</div>
+            </div>
+            <div class="card amber" data-step="build" data-anchor="8 9 10">
+              <div class="card-top"><span class="anchor">Luke 1:8–10</span><span class="tag amber">Question · Observation</span></div>
+              <div class="q">What is Zechariah doing, and where are the people?</div>
+              <div class="src">▸ step 06 · Build</div>
+            </div>
+            <div class="card" data-step="map" data-anchor="13">
+              <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag">Note</span></div>
+              <div class="q">“Your request has been heard” — cf. <span style="font-family:var(--font-mono);font-size:11px;color:var(--lapis-ink)">↗ Mal 4:5–6</span></div>
+              <div class="src">▸ step 03 · Map</div>
+            </div>
+            <div class="card amber" data-step="build" data-anchor="13">
+              <div class="card-top"><span class="anchor">Luke 1:13</span><span class="tag amber">Question · Meaning</span></div>
+              <div class="q">Why does the angel say “your prayer has been heard”?</div>
+              <div class="src">▸ step 06 · Build</div>
+            </div>
+            <div class="card" data-step="theme" data-anchor="">
+              <div class="card-top"><span class="tag">Theme · study-level</span></div>
+              <div class="q">God keeps his covenant promise, answering long prayer in his own timing.</div>
+              <div class="src">▸ step 05 · Theme &amp; aim</div>
+            </div>
+            <div class="empty" id="empty" hidden></div>
+          </div>
         </div>
       </div>
     </div>
@@ -144,10 +240,137 @@
         root.setAttribute('data-theme', n ? 'day' : 'night');
         document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
       });
-      // little interactivity: clicking a focus/segment/icon toggles its on-state
-      document.querySelectorAll('.focus').forEach((el) => el.addEventListener('click', () => el.classList.toggle('on')));
-      document.querySelectorAll('.ibtn').forEach((el) => el.addEventListener('click', () => el.classList.toggle('on')));
-      document.querySelectorAll('.segm').forEach((s) => s.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { s.querySelectorAll('button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); })));
+
+      // ---- state: the two real behaviours every approach dresses up differently ----
+      const state = { app: 'a', onlyHover: false, hideOut: true };
+
+      // Which approaches expose which behaviour, plus copy for the chooser + caption.
+      const APPROACHES = {
+        today: {
+          hasHover: true, hasHideChoice: true,
+          desc: '<b>Today.</b> Two labelled switches sit above the chips: <b>Reveal only on hover</b> and <b>Hide filtered-out</b>. Two on/off decisions and a lot of words — the owner found it heavy.',
+          behav: 'Two switches. “Hide filtered-out” on = filtered cards disappear; off = they dim instead. “Reveal only on hover” = anchored cards stay hidden until you hover their verse.',
+        },
+        a: {
+          hasHover: true, hasHideChoice: false,
+          desc: '<b>A · one “Focus” toggle.</b> A single chip-style toggle = reveal-on-hover. Hide-vs-dim is dropped — filtered-out cards always just hide (the sensible default). One decision instead of two.',
+          behav: 'Filtered-out cards always hide. “Focus on hover” on = an anchored card shows only while you hover its verse.',
+        },
+        b: {
+          hasHover: true, hasHideChoice: false,
+          desc: '<b>B · segmented “Show”.</b> One control, two states, no on/off metaphor — it reads as a sentence: Show <b>all cards</b> / <b>on hover</b>. Filtered-out always hide.',
+          behav: 'A segmented control, not a switch. “On hover” = anchored cards appear only while you hover their verse. Filtered-out always hide.',
+        },
+        c: {
+          hasHover: true, hasHideChoice: false,
+          desc: '<b>C · one header icon.</b> A single ◎ icon-button on the panel header toggles hover-focus. Smallest footprint — but it leans on a tooltip to say what it does.',
+          behav: 'The ◎ button (top-right of the panel header) toggles hover-focus. On = anchored cards show only while you hover their verse. Filtered-out always hide.',
+        },
+        d: {
+          hasHover: false, hasHideChoice: false,
+          desc: '<b>D · just the chips.</b> Remove both switches entirely — the chips are the only filter. Cleanest header, but you lose “reveal on hover”. Hovering a verse still two-way-highlights its card.',
+          behav: 'No switches. Chips are the only filter; nothing hides-until-hover. Hovering a verse ↔ its card still highlights both ways.',
+        },
+      };
+
+      const cards = [...document.querySelectorAll('.card')];
+      const chips = [...document.querySelectorAll('.chip')];
+      const controls = [...document.querySelectorAll('.control')];
+      let hoverVerse = null;
+
+      function activeSteps() {
+        if (document.querySelector('.chip[data-step="all"]').classList.contains('on')) return 'all';
+        return new Set(chips.filter((c) => c.classList.contains('on') && c.dataset.step !== 'all').map((c) => c.dataset.step));
+      }
+
+      function apply() {
+        const steps = activeSteps();
+        let shown = 0, hiddenByHover = 0;
+        for (const card of cards) {
+          const stepOk = steps === 'all' || steps.has(card.dataset.step);
+          const anchors = (card.dataset.anchor || '').split(' ').filter(Boolean);
+          const isHot = !!hoverVerse && anchors.includes(hoverVerse);
+          // hover-focus only affects anchored cards; study-level (no anchor) always passes
+          const hoverOk = !state.onlyHover || anchors.length === 0 || isHot;
+          const visible = stepOk && hoverOk;
+          if (stepOk && !hoverOk) hiddenByHover++;
+          // hover-focus always hides non-matches; the chip filter hides (hideOut) or dims (else)
+          const gone = !hoverOk || (!stepOk && state.hideOut);
+          card.classList.toggle('gone', gone);
+          card.classList.toggle('dim', !gone && !stepOk && !state.hideOut);
+          card.classList.toggle('hot', isHot);
+          if (visible) shown++;
+        }
+        document.getElementById('count').textContent = shown + ' shown';
+        const empty = document.getElementById('empty');
+        if (shown === 0) {
+          empty.hidden = false;
+          empty.textContent = (state.onlyHover && hiddenByHover > 0 && !hoverVerse)
+            ? 'Focus on hover is on — hover a verse to reveal its cards.'
+            : 'Nothing from these steps touches the passage.';
+        } else {
+          empty.hidden = true;
+        }
+      }
+
+      function renderApproach() {
+        const a = APPROACHES[state.app];
+        // enforce this approach's capabilities
+        if (!a.hasHideChoice) state.hideOut = true;
+        if (!a.hasHover) state.onlyHover = false;
+        // show only this approach's control cluster
+        controls.forEach((el) => { el.hidden = el.dataset.app !== state.app; });
+        // reflect current onlyHover into whichever control is visible
+        document.getElementById('swHover').classList.toggle('on', state.onlyHover);
+        document.getElementById('swHide').classList.toggle('on', state.hideOut);
+        document.getElementById('ctlFocus').classList.toggle('on', state.onlyHover);
+        document.getElementById('ctlIcon').classList.toggle('on', state.onlyHover);
+        document.querySelectorAll('#ctlSeg button').forEach((b) =>
+          b.classList.toggle('on', (b.dataset.val === 'hover') === state.onlyHover));
+        // chooser highlight + copy
+        document.querySelectorAll('.pick').forEach((p) => p.classList.toggle('on', p.dataset.app === state.app));
+        document.getElementById('desc').innerHTML = a.desc;
+        document.getElementById('behav').textContent = a.behav;
+        apply();
+      }
+
+      // chooser
+      document.querySelectorAll('.pick').forEach((p) =>
+        p.addEventListener('click', () => { state.app = p.dataset.app; renderApproach(); }));
+
+      // chips
+      chips.forEach((c) => c.addEventListener('click', () => {
+        if (c.dataset.step === 'all') {
+          const on = !c.classList.contains('on');
+          chips.forEach((x) => x.classList.toggle('on', on));
+        } else {
+          c.classList.toggle('on');
+          document.querySelector('.chip[data-step="all"]').classList.toggle('on',
+            chips.filter((x) => x.dataset.step !== 'all').every((x) => x.classList.contains('on')));
+        }
+        apply();
+      }));
+
+      // controls
+      document.getElementById('swHover').addEventListener('click', () => { state.onlyHover = !state.onlyHover; renderApproach(); });
+      document.getElementById('swHide').addEventListener('click', () => { state.hideOut = !state.hideOut; renderApproach(); });
+      document.getElementById('ctlFocus').addEventListener('click', () => { state.onlyHover = !state.onlyHover; renderApproach(); });
+      document.getElementById('ctlIcon').addEventListener('click', () => { state.onlyHover = !state.onlyHover; renderApproach(); });
+      document.querySelectorAll('#ctlSeg button').forEach((b) =>
+        b.addEventListener('click', () => { state.onlyHover = b.dataset.val === 'hover'; renderApproach(); }));
+
+      // two-way highlight: verse -> cards (drives reveal) and card -> verses
+      document.querySelectorAll('.v[data-v]').forEach((v) => {
+        v.addEventListener('mouseenter', () => { hoverVerse = v.dataset.v; v.classList.add('hot'); apply(); });
+        v.addEventListener('mouseleave', () => { hoverVerse = null; v.classList.remove('hot'); apply(); });
+      });
+      cards.forEach((card) => {
+        const anchors = (card.dataset.anchor || '').split(' ').filter(Boolean);
+        card.addEventListener('mouseenter', () => anchors.forEach((n) => document.querySelector('.v[data-v="' + n + '"]')?.classList.add('hot')));
+        card.addEventListener('mouseleave', () => anchors.forEach((n) => document.querySelector('.v[data-v="' + n + '"]')?.classList.remove('hot')));
+      });
+
+      renderApproach();
     </script>
   </body>
 </html>
