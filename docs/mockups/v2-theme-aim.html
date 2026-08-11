@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — Theme &amp; aim rework (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --amber-wash: rgba(185,138,30,0.2); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.42);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.16); --rubric-edge: rgba(166,50,30,0.35);
+        --moss: #4f6b3a; --moss-wash: rgba(79,107,58,0.16); --moss-edge: rgba(79,107,58,0.4); --moss-ink: #3c5330;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.2); --lapis-edge: rgba(144,176,239,0.42);
+        --amber-wash: rgba(221,187,97,0.18); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.44);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.18); --rubric-edge: rgba(226,128,95,0.4);
+        --moss: #9fc27e; --moss-wash: rgba(159,194,126,0.18); --moss-edge: rgba(159,194,126,0.42); --moss-ink: #bcd6a3;
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button, input, textarea { font-family: inherit; }
+      button { cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto auto 1fr; }
+
+      .controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 9px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+      .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .13em; color: var(--ink-faint); }
+      .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .seg button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 12px; padding: 5px 11px; }
+      .seg button + button { border-left: 1px solid var(--line); }
+      .seg button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg button.on { color: #16181d; }
+      .desc { flex: 1 1 340px; min-width: 260px; font-size: 11.5px; color: var(--ink-soft); }
+      .desc b { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; }
+
+      .topbar { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .ref { font-family: var(--font-scripture); font-size: 17px; }
+      .grow { flex: 1; }
+      .lenses { display: flex; gap: 3px; }
+      .lens { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px; background: none; border: 1px solid transparent; color: var(--ink-faint); font-size: 13px; }
+      .lens.active { color: #fff; background: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #16181d; }
+
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 400px; overflow: hidden; }
+      .center { overflow-y: auto; display: flex; justify-content: center; padding: 24px 22px 60px; }
+      .leaf { width: 100%; max-width: 40rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 26px clamp(22px,3vw,44px) 40px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 25px; margin: 0 0 2px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.2rem; line-height: 1.72; margin-top: 18px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.56em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      /* the theme sits as a quiet dedication line over the passage, so the spine is visible while you read */
+      .themebar { margin: 4px 0 14px; border-left: 3px solid var(--moss-edge); background: var(--moss-wash); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; color: var(--ink-soft); }
+      .themebar b { color: var(--moss-ink); font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; display: block; margin-bottom: 2px; }
+      .themebar .t { font-family: var(--font-scripture); font-size: 15px; color: var(--ink); font-style: italic; }
+
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+      .phead { display: flex; align-items: center; gap: 8px; padding: 12px 14px 0; }
+      .phead .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .pbody { overflow-y: auto; padding: 12px 14px 20px; }
+
+      /* ---- shared field ---- */
+      .flabel { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+      .fval { font-family: var(--font-scripture); font-size: 13.5px; color: var(--ink); line-height: 1.5; }
+      .fval.empty { font-style: italic; color: var(--ink-faint); font-family: var(--font-ui); font-size: 12.5px; }
+      .i { width: 13px; height: 13px; border: 1px solid var(--line); border-radius: 50%; display: inline-grid; place-items: center; font-size: 8px; color: var(--ink-faint); }
+
+      /* ===== Option A — cards ===== */
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--moss-edge); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow); margin-bottom: 10px; }
+      .card.spine { border-left-color: var(--lapis-edge); }
+      .card.prayer { border-left-color: var(--amber-edge); }
+      .card .src { margin-top: 7px; font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); }
+      .kfd { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+      .kfd .card { margin-bottom: 0; }
+
+      /* ===== Option B — structured spine ===== */
+      .spineflow { position: relative; padding-left: 18px; }
+      .spineflow::before { content: ''; position: absolute; left: 5px; top: 6px; bottom: 22px; width: 2px; background: var(--line); }
+      .node { position: relative; margin-bottom: 16px; }
+      .node::before { content: ''; position: absolute; left: -16px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--leaf); border: 2px solid var(--lapis-edge); }
+      .node.aim::before { border-color: var(--moss-edge); }
+      .node.prayer::before { border-color: var(--amber-edge); }
+      .node .fval { border: 1px solid var(--line); background: var(--leaf); border-radius: 8px; padding: 7px 10px; }
+      .node .kfd { margin-top: 6px; }
+      .node .kfd .mini { border: 1px solid var(--line); background: var(--leaf); border-radius: 8px; padding: 6px 8px; }
+      .node .kfd .mini .flabel { margin-bottom: 3px; }
+      .node .kfd .mini .fval { border: none; padding: 0; font-size: 12px; }
+      .connector { font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); margin: -8px 0 8px 0; text-transform: uppercase; letter-spacing: .08em; }
+
+      .att { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 8px; font-size: 11px; color: var(--ink-faint); }
+      .att b { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="controls">
+        <span class="lbl">Theme &amp; aim layout</span>
+        <div class="seg" id="seg">
+          <button data-m="cards" class="on">A · Cards in the panel</button>
+          <button data-m="spine">B · Structured spine</button>
+        </div>
+        <p class="desc" id="desc"></p>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:46–55</span>
+        <nav class="lenses">
+          <button class="lens">⚙</button><button class="lens">◉</button><button class="lens">▤</button>
+          <button class="lens">▦</button><button class="lens active" title="Theme &amp; aim">◎</button>
+          <button class="lens">?</button><button class="lens">▥</button><button class="lens">✓</button>
+        </nav>
+        <div class="grow"></div>
+        <span class="lbl">the study's spine</span>
+      </div>
+
+      <div class="work">
+        <div class="center">
+          <div class="leaf">
+            <h1>Luke 1:46–55</h1>
+            <span class="meta">WEBBE · public domain</span>
+            <div class="themebar">
+              <b>Theme of the study</b>
+              <span class="t">God scatters the proud and lifts the lowly — covenant mercy that reorders the world.</span>
+            </div>
+            <div class="scripture">
+              <span><sup>46</sup>Mary said, “My soul magnifies the Lord. </span>
+              <span><sup>47</sup>My spirit has rejoiced in God my Saviour, </span>
+              <span><sup>48</sup>for he has looked at the humble state of his servant… </span>
+              <span><sup>51</sup>He has shown strength with his arm. He has scattered the proud in the imagination of their hearts. </span>
+              <span><sup>52</sup>He has put down princes from their thrones, and has exalted the lowly. </span>
+              <span><sup>53</sup>He has filled the hungry with good things. He has sent the rich away empty.</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="phead"><span class="t">Theme &amp; aim — the spine</span></div>
+          <div class="pbody" id="pbody"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+
+      const DATA = {
+        theme: 'God scatters the proud and lifts the lowly — covenant mercy that reorders the world.',
+        authorAim: 'Luke frames his Gospel with Mary’s song so his reader sees the whole story as God keeping his promise to the humble.',
+        groupAim: 'I want this group to stop measuring themselves by status and to rejoice that God’s mercy runs downhill.',
+        know: 'God actively reverses human hierarchies.',
+        feel: 'Relief and holy fear — he sees the lowly.',
+        do: 'Name one place I’m chasing status; let it go this week.',
+        christ: 'The mercy Mary sings arrives in the child in her womb — the Lord who is himself brought low to lift us.',
+        prayer: 'Pray that we would magnify the Lord from a low place, trusting his mercy over our standing.',
+      };
+      const field = (label, val, help, cls) =>
+        `<div class="flabel">${label}${help ? `<span class="i" title="${help}">i</span>` : ''}</div><div class="fval ${val ? '' : 'empty ' + (cls||'')}">${val || 'not written yet — your wording, not the tool’s'}</div>`;
+
+      const CARDS = () => `
+        <div class="card spine">${field('Theme — what the passage says', DATA.theme, 'The single claim the passage actually makes.')}<div class="src">▸ step 05 · Theme &amp; aim</div></div>
+        <div class="card">${field('The author’s aim — what he wanted to happen', DATA.authorAim)}<div class="src">▸ step 05 · Theme &amp; aim</div></div>
+        <div class="card">${field('Your aim for the group', DATA.groupAim)}<div class="src">▸ step 05 · Theme &amp; aim</div></div>
+        <div class="flabel" style="margin:2px 2px 6px">Break the aim into know · feel · do</div>
+        <div class="kfd">
+          <div class="card">${field('Know', DATA.know)}</div>
+          <div class="card">${field('Feel', DATA.feel)}</div>
+          <div class="card">${field('Do', DATA.do)}</div>
+        </div>
+        <div class="card" style="margin-top:10px;border-left-color:var(--lapis-edge)">${field('How this passage gets to Christ', DATA.christ, 'The honest route, not a bolted-on “Jesus bit”.')}</div>
+        <div class="card prayer">${field('Prayer point', DATA.prayer, 'Drawn from the passage — printed on both documents.')}</div>
+        <p class="att">Every card is an unanchored <b>Theme</b>-origin card — it shows in the panel filter like any other, and flows into the leader’s notes.</p>`;
+
+      const SPINE = () => `
+        <div class="spineflow">
+          <div class="node">${field('Theme — what the passage says', DATA.theme)}</div>
+          <div class="connector">↓ so the author aimed to…</div>
+          <div class="node aim">${field('The author’s aim', DATA.authorAim)}</div>
+          <div class="connector">↓ for this group, that becomes…</div>
+          <div class="node aim">${field('Your aim for the group', DATA.groupAim)}
+            <div class="kfd">
+              <div class="mini">${field('Know', DATA.know)}</div>
+              <div class="mini">${field('Feel', DATA.feel)}</div>
+              <div class="mini">${field('Do', DATA.do)}</div>
+            </div>
+          </div>
+          <div class="connector">↓ and it reaches Christ by…</div>
+          <div class="node">${field('The route to Christ', DATA.christ)}</div>
+          <div class="node prayer">${field('Prayer point', DATA.prayer)}</div>
+        </div>
+        <p class="att">One connected <b>spine</b> — the arrows show how theme → author’s aim → group aim → know/feel/do hang together. Not loose cards; a guided flow. Still exports the same fields.</p>`;
+
+      const DESC = {
+        cards: '<b>A · Cards in the panel.</b> Each part of the spine is an unanchored <b>Theme</b>-origin card, consistent with everything-is-a-card (Map/COMA/Questions). The theme also sits as a quiet band over the passage. Simple + uniform, but the parts read as independent.',
+        spine: '<b>B · Structured spine.</b> A single connected flow with arrows (theme → author aim → group aim → know/feel/do → Christ → prayer), so the <i>relationships</i> are visible — the whole point of the step. Richer, less "card-uniform".',
+      };
+
+      let model = 'cards';
+      function render() {
+        document.getElementById('desc').innerHTML = DESC[model];
+        for (const b of document.querySelectorAll('#seg button')) b.classList.toggle('on', b.dataset.m === model);
+        document.getElementById('pbody').innerHTML = model === 'cards' ? CARDS() : SPINE();
+      }
+      document.querySelectorAll('#seg button').forEach((b) => b.addEventListener('click', () => { model = b.dataset.m; render(); }));
+      render();
+    </script>
+  </body>
+</html>
