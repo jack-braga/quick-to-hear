@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — simplify the panel toggles (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.2); --lapis-edge: rgba(144,176,239,0.42);
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; min-height: 100vh; }
+      button { font-family: inherit; cursor: pointer; }
+      .top { display: flex; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid var(--line); background: var(--panel); }
+      .top h1 { font-size: 14px; margin: 0; }
+      .top p { margin: 0; font-size: 12px; color: var(--ink-soft); flex: 1; }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; }
+      .wrap { display: flex; flex-wrap: wrap; gap: 22px; padding: 26px 22px; align-items: start; }
+
+      /* a mini panel header for each option */
+      .opt { width: 320px; background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+      .opt .hd { padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+      .opt .hd .k { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--lapis-ink); }
+      .opt .hd .d { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+      .opt .body { padding: 12px 13px; }
+
+      .row { display: flex; align-items: center; gap: 8px; }
+      .t { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .count { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .chips { display: flex; gap: 5px; margin: 9px 0; }
+      .chip { font-family: var(--font-mono); font-size: 10.5px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 999px; padding: 3px 9px; }
+      .chip.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+
+      /* current — two labelled switches */
+      .sw { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); background: none; border: none; padding: 3px 0; }
+      .pill { width: 28px; height: 16px; border-radius: 999px; background: var(--line); position: relative; flex: none; }
+      .pill.on { background: var(--lapis); }
+      .pill::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: left .12s; }
+      .pill.on::after { left: 14px; }
+      .switches { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+
+      /* option: one focus toggle */
+      .focus { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; border: 1px solid var(--line); background: var(--leaf); border-radius: 999px; padding: 4px 10px 4px 6px; font-size: 12px; color: var(--ink-soft); }
+      .focus.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+
+      /* option: segmented */
+      .segm { display: inline-flex; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .segm button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 11.5px; padding: 4px 10px; }
+      .segm button + button { border-left: 1px solid var(--line); }
+      .segm button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .segm button.on { color: #16181d; }
+
+      /* option: icon in the header */
+      .ibtn { width: 24px; height: 24px; border-radius: 7px; border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); font-size: 12px; display: grid; place-items: center; }
+      .ibtn.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+
+      .card { margin-top: 9px; background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: 9px; padding: 8px 10px; font-size: 12px; color: var(--ink-soft); }
+      .card .an { font-family: var(--font-mono); font-size: 10px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; }
+      .note { margin-top: 8px; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <h1>Simplify the panel filter</h1>
+      <p>Today: two labelled switches ("Reveal only on hover", "Hide filtered-out") on top of the chips — the owner found it heavy. Options to slim it down. The <b>chips</b> stay in every version.</p>
+      <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+    </div>
+
+    <div class="wrap">
+      <!-- CURRENT -->
+      <div class="opt">
+        <div class="hd"><div class="k">Today · two switches</div><div class="d">Reveal-on-hover + Hide-vs-dim as separate labelled switches. Two decisions, lots of words.</div></div>
+        <div class="body">
+          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
+          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
+          <div class="switches">
+            <button class="sw"><span class="pill"></span> Reveal only on hover</button>
+            <button class="sw"><span class="pill on"></span> Hide filtered-out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- A: one Focus toggle -->
+      <div class="opt">
+        <div class="hd"><div class="k">A · one "Focus" toggle</div><div class="d">A single chip-style toggle = reveal-on-hover. Drop hide-vs-dim (filtered-out are always hidden — the default). One decision.</div></div>
+        <div class="body">
+          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
+          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
+          <button class="focus">◎ Focus on hover</button>
+          <div class="note">Off = all cards show. On = cards appear only when you hover their verse.</div>
+        </div>
+      </div>
+
+      <!-- B: segmented -->
+      <div class="opt">
+        <div class="hd"><div class="k">B · segmented "Show"</div><div class="d">One control, two states, no switch metaphor. Reads as a sentence.</div></div>
+        <div class="body">
+          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
+          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
+          <div class="row" style="gap:7px"><span class="t" style="letter-spacing:.1em">Show</span>
+            <div class="segm"><button class="on">All cards</button><button>On hover</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C: icon in header -->
+      <div class="opt">
+        <div class="hd"><div class="k">C · one icon in the header</div><div class="d">A single ◎ icon-button on the header row toggles hover-focus. Smallest footprint; needs a tooltip.</div></div>
+        <div class="body">
+          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span><button class="ibtn on" title="Focus: cards appear only on hover" style="margin-left:8px">◎</button></div>
+          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
+          <div class="card"><span class="an">Luke 1:8</span> &nbsp;A note carried forward…</div>
+        </div>
+      </div>
+
+      <!-- D: remove -->
+      <div class="opt">
+        <div class="hd"><div class="k">D · just the chips</div><div class="d">Remove both switches entirely. Chips are the only filter; no hover-reveal, no dim mode. Simplest — but you lose "reveal on hover".</div></div>
+        <div class="body">
+          <div class="row"><span class="t">Show from step</span><span class="count">3 shown</span></div>
+          <div class="chips"><span class="chip on">All</span><span class="chip on">Map</span><span class="chip on">COMA</span></div>
+          <div class="card"><span class="an">Luke 1:8</span> &nbsp;A note carried forward…</div>
+          <div class="note">Cleanest header. Hover a card ↔ verse still two-way-highlights; you just can't hide-until-hover.</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+      // little interactivity: clicking a focus/segment/icon toggles its on-state
+      document.querySelectorAll('.focus').forEach((el) => el.addEventListener('click', () => el.classList.toggle('on')));
+      document.querySelectorAll('.ibtn').forEach((el) => el.addEventListener('click', () => el.classList.toggle('on')));
+      document.querySelectorAll('.segm').forEach((s) => s.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { s.querySelectorAll('button').forEach((x) => x.classList.remove('on')); b.classList.add('on'); })));
+    </script>
+  </body>
+</html>
