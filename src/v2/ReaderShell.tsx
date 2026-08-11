@@ -84,7 +84,7 @@ export function ReaderShell({ study }: { study: Study }) {
   const [lastAnchor, setLastAnchor] = useState<string | null>(null);
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
   const [litAnnotation, setLitAnnotation] = useState<{ ids: string[]; tone: AnnotationTone } | null>(null);
-  const [flashVerse, setFlashVerse] = useState<string | null>(null);
+  const [flash, setFlash] = useState<{ verseId: string; tone: AnnotationTone } | null>(null);
   const [focusAnnotationId, setFocusAnnotationId] = useState<string | null>(null);
   const clearFocusAnnotation = useCallback(() => setFocusAnnotationId(null), []);
   const [focusSectionId, setFocusSectionId] = useState<string | null>(null);
@@ -284,21 +284,23 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const onReorder = (ids: string[]) => applyToCurrent((s) => ({ ...s, runningOrder: ids }));
 
-  const onJump = (verseId: string) => {
+  // Jump to a verse and flash it. The flash reads in `tone` — the jumped annotation's kind
+  // (rubric/amber/lapis) — so it matches the card you came from; a plain navigation jump uses lapis.
+  const onJump = (verseId: string, tone: AnnotationTone = 'lapis') => {
     const el = document.querySelector(`[data-v="${CSS.escape(verseId)}"]`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     // Start the flash only after the smooth scroll has settled, then let it run its 2s fade.
     window.setTimeout(() => {
-      setFlashVerse(verseId);
-      window.setTimeout(() => setFlashVerse((cur) => (cur === verseId ? null : cur)), 2000);
+      setFlash({ verseId, tone });
+      window.setTimeout(() => setFlash((cur) => (cur?.verseId === verseId ? null : cur)), 2000);
     }, 450);
   };
 
   // From the Build lens, jump to a question's verses to refine it: switch to the Questions lens (its
   // authoring home), then scroll once it mounts.
-  const jumpFromBuild = (verseId: string) => {
+  const jumpFromBuild = (verseId: string, tone: AnnotationTone) => {
     setLens('questions');
-    window.setTimeout(() => onJump(verseId), 60);
+    window.setTimeout(() => onJump(verseId, tone), 60);
   };
 
   // ---- the "/" command palette ------------------------------------------------------------
@@ -470,7 +472,8 @@ export function ReaderShell({ study }: { study: Study }) {
         lastAnchor={lastAnchor}
         verseTones={canvasTones}
         lit={litForCanvas}
-        flashVerseId={flashVerse}
+        flashVerseId={flash?.verseId ?? null}
+        flashTone={flash?.tone ?? 'lapis'}
         onSelect={handleSelect}
         capturing={capturingId != null}
         onVerseHover={setHoveredVerse}
@@ -493,7 +496,8 @@ export function ReaderShell({ study }: { study: Study }) {
         lastAnchor={lastAnchor}
         verseTones={canvasTones}
         lit={litForCanvas}
-        flashVerseId={flashVerse}
+        flashVerseId={flash?.verseId ?? null}
+        flashTone={flash?.tone ?? 'lapis'}
         focusSectionId={focusSectionId}
         onSelect={handleSelect}
         capturing={capturingId != null}

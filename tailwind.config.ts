@@ -132,11 +132,12 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
-        // A verse jump-flash (click a card's anchor). Only the rubric ring animates — the
-        // verse's resting tint stays, so it fades ring→nothing without a transparent gap or a
-        // snap back to the blue hover/selection colour.
+        // A verse jump-flash (jump to an annotation's anchor). The ring animates in the jumped
+        // card's tone via `--flash-color` (set inline on the verse; defaults to lapis for a plain
+        // navigation jump). The verse's resting tint stays, so it fades ring→nothing without a
+        // transparent gap or a snap back to the blue hover/selection colour.
         'verse-flash': {
-          '0%': { boxShadow: 'inset 0 0 0 2px var(--rubric)' },
+          '0%': { boxShadow: 'inset 0 0 0 2px var(--flash-color, var(--lapis))' },
           '100%': { boxShadow: 'inset 0 0 0 2px transparent' },
         },
       },

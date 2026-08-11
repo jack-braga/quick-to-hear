@@ -7,7 +7,7 @@ import type { AnnotationTone } from '@/v2/annotations';
 import type { ReaderBand, ReaderGroup, ReaderModel, ReaderVerse } from '@/v2/reader/model';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { useDragSelection } from '@/v2/reader/useDragSelection';
-import { TONE, multiToneGradient } from '@/v2/tones';
+import { TONE, TONE_EDGE, multiToneGradient } from '@/v2/tones';
 
 /**
  * The Scripture canvas (v2.2) — renders the {@link ReaderModel} as the passage-as-canvas, and
@@ -39,6 +39,8 @@ export interface ReaderCanvasProps {
   /** Verses lit by a hovered margin card, in that card's tone. */
   lit: { ids: Set<string>; tone: AnnotationTone } | null;
   flashVerseId: string | null;
+  /** The jumped annotation's tone — the flash ring reads in it (defaults to lapis). */
+  flashTone?: AnnotationTone;
   focusSectionId: string | null;
   onSelect: (r: { selected: string[]; lastAnchor: string | null }) => void;
   onVerseHover: (verseId: string | null) => void;
@@ -136,6 +138,14 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
     return gradient ? { backgroundImage: gradient } : undefined;
   };
 
+  // Merge the resting style with the jump-flash colour var when this verse is the flash target, so
+  // the `animate-verse-flash` ring reads in the jumped annotation's tone (`--flash-color`).
+  const styleFor = (v: ReaderVerse): CSSProperties | undefined => {
+    const base = verseStyle(v);
+    if (props.flashVerseId !== v.verseId) return base;
+    return { ...(base ?? {}), '--flash-color': TONE_EDGE[props.flashTone ?? 'lapis'] } as CSSProperties;
+  };
+
   const VerseNo = ({ v }: { v: ReaderVerse }) => (
     <sup
       className={cn(
@@ -197,7 +207,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
         <span key={v.verseId} className="qth-verse" onMouseEnter={enter} onMouseLeave={leave}>
           {showBefore && <DivideInline band={band} boundary={v.verseId} />}
           {v.present ? (
-            <span data-v={v.verseId} className={verseClass(v, false)} style={verseStyle(v)}>
+            <span data-v={v.verseId} className={verseClass(v, false)} style={styleFor(v)}>
               <VerseNo v={v} />
               {v.lines[0]?.frags.map((f, j) => <FragmentText key={j} text={f.text} wj={f.wj} />)}
             </span>
@@ -217,7 +227,7 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
       <div key={v.verseId} className="relative my-[3px]" onMouseEnter={enter} onMouseLeave={leave}>
         {showBefore && <DivideBar band={band} boundary={v.verseId} where="before" />}
         {v.present ? (
-          <div data-v={v.verseId} className={verseClass(v, true)} style={verseStyle(v)}>
+          <div data-v={v.verseId} className={verseClass(v, true)} style={styleFor(v)}>
             {v.lines.map((line, i) => (
               <div key={i} className={line.indent >= 1 ? INDENT[Math.min(line.indent, 3)] : undefined}>
                 {i === 0 && <VerseNo v={v} />}

@@ -9,7 +9,7 @@ import { ActionBar, type ActionKind } from '@/v2/reader/ActionBar';
 import { verseToLines, type ReaderBand, type ReaderModel } from '@/v2/reader/model';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { useDragSelection } from '@/v2/reader/useDragSelection';
-import { TONE, multiToneGradient } from '@/v2/tones';
+import { TONE, TONE_EDGE, multiToneGradient } from '@/v2/tones';
 
 const CELL_INDENT = ['', 'pl-4', 'pl-8', 'pl-12'] as const;
 
@@ -41,6 +41,8 @@ export interface ParallelCanvasProps {
   verseTones: Map<string, AnnotationTone[]>;
   lit: { ids: Set<string>; tone: AnnotationTone } | null;
   flashVerseId: string | null;
+  /** The jumped annotation's tone — the flash ring reads in it (defaults to lapis). */
+  flashTone?: AnnotationTone;
   onSelect: (r: { selected: string[]; lastAnchor: string | null }) => void;
   onVerseHover: (verseId: string | null) => void;
   onAction: (kind: ActionKind) => void;
@@ -174,6 +176,13 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
     return gradient ? { backgroundImage: gradient } : undefined;
   };
 
+  // Merge the flash-colour var onto the flash-target cell so the ring reads in the jumped tone.
+  const cellStyleFor = (id: string): CSSProperties | undefined => {
+    const base = cellStyle(id);
+    if (props.flashVerseId !== id) return base;
+    return { ...(base ?? {}), '--flash-color': TONE_EDGE[props.flashTone ?? 'lapis'] } as CSSProperties;
+  };
+
   const gridStyle = {
     gridTemplateColumns: `repeat(${translations.length}, minmax(0, 1fr))`,
     columnGap: 'clamp(18px,2.5vw,34px)',
@@ -226,7 +235,7 @@ export function ParallelCanvas(props: ParallelCanvasProps) {
                       key={i}
                       data-v={id}
                       className={cn(cellClass(id, present), i === 0 && 'relative')}
-                      style={cellStyle(id)}
+                      style={cellStyleFor(id)}
                       onPointerDownCapture={(e) => {
                         anchorCellRef.current = e.currentTarget;
                       }}

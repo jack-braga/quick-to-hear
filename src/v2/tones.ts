@@ -32,6 +32,14 @@ export const TONE: Record<
   },
 };
 
+/** The strong ring colour per tone, as a raw CSS value (matches `TONE[t].ring`). Used by the verse
+ *  jump-flash so the flash reads in the *jumped annotation's* tone rather than a generic colour. */
+export const TONE_EDGE: Record<AnnotationTone, string> = {
+  rubric: 'var(--rubric)',
+  amber: '#b98a1e',
+  lapis: 'var(--lapis)',
+};
+
 /** The wash colour per tone as a raw CSS value — for the diagonal multi-tone stripe a verse gets
  *  when it carries two or more tones (built inline as a repeating-linear-gradient). All three are
  *  theme-adaptive vars, so the stripe brightens/dims with light/dark like the flat washes. */

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { AimComponent, Annotation, QuestionType } from '@/types/study';
 import { Help } from '@/v2/Help';
-import { isQuestionReady } from '@/v2/annotations';
+import { isQuestionReady, toneFor, type AnnotationTone } from '@/v2/annotations';
 import { moveBefore, moveBy, orderedQuestions, QUESTION_TYPE_OPTIONS } from '@/v2/build';
 import { formatVerseIds } from '@/v2/reader/selection';
 
@@ -32,7 +32,7 @@ export function BuildLens({
   onReorder: (ids: string[]) => void;
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
-  onJump: (verseId: string) => void;
+  onJump: (verseId: string, tone: AnnotationTone) => void;
 }) {
   const [filter, setFilter] = useState<QuestionType | 'all'>('all');
   const [dragId, setDragId] = useState<string | null>(null);
@@ -148,7 +148,7 @@ export function BuildLens({
                     {a.verseIds.length > 0 && (
                       <button
                         type="button"
-                        onClick={() => onJump(a.verseIds[0]!)}
+                        onClick={() => onJump(a.verseIds[0]!, toneFor(a))}
                         title="Jump to these verses"
                         className="rounded-[5px] bg-lapis-wash px-1.5 py-0.5 font-mono text-[11px] text-lapis-ink hover:underline"
                       >

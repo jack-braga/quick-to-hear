@@ -193,9 +193,12 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
   **[fixed]** — a verse carrying 2+ tones renders the 45° multi-tone stripe (as many colours as
   present) via the shared pure `multiToneGradient` in `tones.ts`: single-column `eb57bae`, parallel
   `bd0ae7a`. NB the owner saw it "missing" on live prod = a **deploy lag** (redeploy to ship it).
-- **Note-anchor jump animation should match the note's tone (msg#1999).** Clicking a note's anchor
-  snaps to the verse correctly, but the flash should be the colour/style of *that note's kind*, not a
-  generic lapis. **[open]**
+- ~~**Note-anchor jump animation should match the note's tone (msg#1999).**~~ **[done 2026-08-11]**
+  The verse jump-flash now reads in the *jumped annotation's* tone (rubric/amber/lapis) instead of a
+  generic ring: the `verse-flash` keyframe uses an overridable `--flash-color`, `onJump(verseId, tone)`
+  threads the tone, the Build lens passes `toneFor(question)` (→ amber), and both canvases set the var
+  inline on the flash target. A plain navigation jump (the `/` palette) defaults to lapis. New
+  `TONE_EDGE` map. Verified live (Build-lens jump flashes amber).
 - ~~**`/` command palette rework (msg#2128).**~~ **[done 2026-08-11 — #7]** Slimmed to **quick-jump
   only**: type a verse number (`:20`) or a reference in the passage to scroll there. The
   switch-translation / create-on-selection / go-to-lens / book-completion commands were retired (all
