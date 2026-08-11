@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { comaContent, comaSetsForGenres } from '@/lib/content';
 import { cn } from '@/lib/utils';
-import type { Annotation, QuestionType, Study } from '@/types/study';
+import type { Annotation, MentionMeta, QuestionType, Study } from '@/types/study';
+import { MentionEditor } from '@/v2/reader/MentionEditor';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { Help } from '@/v2/Help';
 
@@ -33,11 +34,6 @@ const SHORT_GENRE: Record<string, string> = {
   apocalyptic: 'Apocalyptic',
 };
 
-function autoGrow(el: HTMLTextAreaElement | null) {
-  if (!el) return;
-  el.style.height = 'auto';
-  el.style.height = `${el.scrollHeight}px`;
-}
 
 export interface ComaPanelProps {
   study: Study;
@@ -45,11 +41,15 @@ export interface ComaPanelProps {
   focusAnnotationId: string | null;
   /** The answer-card currently in anchor-capture (its ⌖ chip is the trigger), or null. */
   capturingId: string | null;
+  /** Primary translation id — for the answer-card's inline @-mention peek. */
+  translationId: string;
   onAddComaAnswer: (comaType: QuestionType, prompt: string) => void;
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
   onStartCapture: (id: string) => void;
   onEndCapture: () => void;
+  /** Set a mention's include-for-group / return-question metadata on the host answer note. */
+  onMentionMeta: (host: Annotation, osis: string, patch: Partial<MentionMeta>) => void;
   onFocusHandled: () => void;
 }
 
@@ -134,17 +134,14 @@ export function ComaPanel(props: ComaPanelProps) {
             ✕
           </button>
         </div>
-        <textarea
-          data-focus={a.id}
-          ref={autoGrow}
-          rows={2}
-          className="w-full resize-none border-none bg-transparent p-0 font-sans text-[13px] leading-[1.5] text-ink outline-none placeholder:text-ink-faint"
+        <MentionEditor
           value={a.text}
-          placeholder="Write what the text gives…"
-          onChange={(e) => {
-            props.onEdit(a.id, { text: e.target.value });
-            autoGrow(e.currentTarget);
-          }}
+          onChange={(text) => props.onEdit(a.id, { text })}
+          placeholder="Write what the text gives… (@ another passage to reference it)"
+          translationId={props.translationId}
+          mentions={a.mentions}
+          onMentionMeta={(osis, patch) => props.onMentionMeta(a, osis, patch)}
+          focusId={a.id}
         />
       </div>
     );

@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 
-import { loadReading } from '@/lib/bible';
+import { crossRefTranslationId, findTranslation, loadReading } from '@/lib/bible';
 import { parseReference } from '@/lib/verse';
 import { parseVerseId } from '@/lib/verse/ids';
 import { allVerses, verseText, type ParsedText } from '@/types/passage';
 
 /**
- * The peek body for an `@`-mention (ROADMAP-v2 §2) — loads the referenced passage in the study's
- * **primary** translation and renders it read-only, so the leader can see what a cross-reference
- * says without leaving the note. Bundled books are fetched + memory-cached by `loadReading` (the
- * same offline-safe path the main passage uses); a missing book degrades to a quiet notice.
+ * The peek body for an `@`-mention (ROADMAP-v2 §2) — loads the referenced passage read-only, so the
+ * leader can see what a cross-reference says without leaving the note. It loads in a **bundled**
+ * translation: the primary when it's bundled, else WEBBE (a pasted/user translation is only the one
+ * passage the user pasted, so a reference to *another* passage has no source in it — see
+ * `crossRefTranslationId`). When the shown translation differs from the primary, a small tag says so.
+ * Bundled books are fetched + memory-cached by `loadReading`; a missing book degrades to a notice.
  */
 
 const cache = new Map<string, Promise<ParsedText>>();
@@ -40,10 +42,14 @@ export function MentionPeek({
   translationId: string;
 }) {
   const [state, setState] = useState<PeekState>({ status: 'loading' });
+  // Load in a bundled translation — the primary if it's bundled, else WEBBE (a pasted primary has
+  // no full Bible for another passage). Tag it when it differs from the primary the user chose.
+  const shownId = crossRefTranslationId(translationId);
+  const fallbackLabel = shownId !== translationId ? (findTranslation(shownId)?.shortName ?? shownId) : null;
 
   useEffect(() => {
     let alive = true;
-    const p = loadPeek(translationId, reference);
+    const p = loadPeek(shownId, reference);
     if (!p) {
       setState({ status: 'error' });
       return;
@@ -55,7 +61,7 @@ export function MentionPeek({
     return () => {
       alive = false;
     };
-  }, [reference, translationId]);
+  }, [reference, shownId]);
 
   if (state.status === 'error') {
     return (
@@ -79,6 +85,12 @@ export function MentionPeek({
           {verseText(v)}{' '}
         </span>
       ))}
+      {fallbackLabel && (
+        <span className="ml-1 whitespace-nowrap font-sans text-[10.5px] not-italic text-ink-faint">
+          — shown in {fallbackLabel} (public domain); your pasted translation covers only the main
+          passage.
+        </span>
+      )}
     </div>
   );
 }

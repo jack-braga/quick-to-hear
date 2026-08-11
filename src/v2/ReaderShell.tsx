@@ -544,11 +544,13 @@ export function ReaderShell({ study }: { study: Study }) {
           annotations={annotations}
           focusAnnotationId={focusAnnotationId}
           capturingId={capturingId}
+          translationId={passage.translationId}
           onAddComaAnswer={onAddComaAnswer}
           onEdit={onEditAnnotation}
           onRemove={onRemoveAnnotation}
           onStartCapture={startCapture}
           onEndCapture={endCapture}
+          onMentionMeta={onSetMentionMeta}
           onFocusHandled={clearFocusAnnotation}
         />
       ) : (
