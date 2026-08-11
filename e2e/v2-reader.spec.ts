@@ -310,18 +310,20 @@ test('v2 parallel sectioning: divide the passage on the primary column while par
   await expect(page.getByRole('button', { name: 'Luke 1:11–25' })).toBeVisible();
 });
 
-test('v2 command palette: switch the primary translation', async ({ page }) => {
+test('v2 command palette (slimmed, #7): quick-jump to a verse', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
-  await page.getByRole('button', { name: '+ ASV' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
+  // The palette is now jump-only: type a verse number and it scrolls there. The old
+  // switch-translation / create / go-lens commands were retired (dedicated UI now).
   await page.getByRole('button', { name: /\/ command/ }).click();
-  await page.getByRole('button', { name: /switch to american standard/i }).click();
-  await expect(page.getByText('ASV · public domain')).toBeVisible();
+  await page.getByRole('dialog', { name: /command palette/i }).getByRole('textbox').fill(':20');
+  await page.getByRole('button', { name: /jump to verse 20/i }).click();
+  await expect(page.locator('[data-v="LUKE.1.20"]')).toBeInViewport();
 });
 
 test('v2 @mention cross-reference: chip in a note → peek → promote → prints as a support passage', async ({

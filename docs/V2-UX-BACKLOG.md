@@ -172,10 +172,13 @@ loaders already exist in `src/lib/content/method.ts`).
 
 Ordered roughly by how concrete + how recently raised. Source msg in brackets.
 
-- **`@`-mention over-eager parse (raised twice — msg#1999, #2749).** Typing `@Matthew 1:5` cuts off at
-  `@Matthew 1` and references the whole chapter. Also wants a **search dropdown** while typing a
-  mention. Fix `longestReference` in `src/v2/reader/mentions.ts` so it extends to the `:verse` (and
-  ranges) before falling back to the chapter. **[open]**
+- **`@`-mention over-eager parse (raised twice — msg#1999, #2749).** ~~Typing `@Matthew 1:5` cuts off
+  at `@Matthew 1`.~~ **[parse fixed + regression-locked 2026-08-11]** — verified live (char-by-char
+  typing of `@Matthew 1:5` chips the whole verse, not the chapter): `longestReference` already tries
+  the longest valid form first and the `MentionEditor` re-chips on each signature change, so the
+  `:verse` (and ranges) are kept. Locked by two cases in `mentions.test.ts`. **Still deferred:** the
+  **search dropdown** while typing a mention (an autocomplete over the book list + chapter/verse — a
+  feature, not a fix; needs its own small design). **[dropdown open]**
 - ~~**Sectioning disabled in parallel (msg#2304, #2749).**~~ **[fixed `148caa7`]** — `ParallelCanvas`
   renders full-width section band headers (name/range/merge) + a "＋ divide here" pill on the primary
   column (reuses ReaderShell's section handlers; takes the primary reader `model`).
@@ -189,7 +192,11 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
 - **Note-anchor jump animation should match the note's tone (msg#1999).** Clicking a note's anchor
   snaps to the verse correctly, but the flash should be the colour/style of *that note's kind*, not a
   generic lapis. **[open]**
-- **`/` command palette rework (msg#2128).** Owner "not 100% on it" — revisit its scope + UX. **[open]**
+- ~~**`/` command palette rework (msg#2128).**~~ **[done 2026-08-11 — #7]** Slimmed to **quick-jump
+  only**: type a verse number (`:20`) or a reference in the passage to scroll there. The
+  switch-translation / create-on-selection / go-to-lens / book-completion commands were retired (all
+  covered by dedicated UI now — the Aa Text menu, verse action bar, header lens tracker). Pure
+  `paletteItems.ts` + tests trimmed; e2e updated to the jump flow.
 - **Set-Up UX once-over (msg#1999, #2128).** Make the study Set-Up page sleek and tidy; consider doing
   step 1 in the right panel (except the initial translation load). **[open]**
 - ~~**Questions appearing in the Map phase? (msg#2749).**~~ **[resolved `bb34d46`]** — confirmed:

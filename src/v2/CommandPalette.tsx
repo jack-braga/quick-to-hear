@@ -4,10 +4,9 @@ import { cn } from '@/lib/utils';
 import { buildPaletteItems, type PaletteAction, type PaletteContext } from '@/v2/reader/paletteItems';
 
 /**
- * The universal `/` command palette (v2.3, ROADMAP-v2 §1) — references *and* actions. Over
- * `bcv_parser` + the bundled book list it resolves the query into jump / switch-translation /
- * create-on-selection / go-to-lens, with book completion. Keyboard-first:
- * `↑ ↓` move, `↵` runs, `esc` closes; a `fill` item (a book pick) keeps the palette open.
+ * The `/` quick-jump palette (v2.3, **slimmed** per owner decision #7). Type a verse number (`:20`)
+ * or a reference already in the passage (`Luke 1:8`) to scroll there — nothing else (translation /
+ * lens / create commands moved to their own UI). Keyboard-first: `↑ ↓` move, `↵` runs, `esc` closes.
  * The load-bearing parsing lives in the pure `paletteItems.ts`; this is a thin dialog over it.
  */
 export function CommandPalette({
@@ -39,13 +38,7 @@ export function CommandPalette({
 
   if (!open) return null;
 
-  const mode = /^:?\s*\d/.test(query.trim())
-    ? 'jump'
-    : /\d/.test(query)
-      ? 'reference'
-      : query.trim()
-        ? 'search'
-        : 'command';
+  const mode = /^:?\s*\d/.test(query.trim()) ? 'jump' : /\d/.test(query) ? 'reference' : 'jump';
 
   const choose = (i: number) => {
     const it = items[i];
@@ -84,7 +77,7 @@ export function CommandPalette({
           <input
             ref={inputRef}
             className="flex-1 border-none bg-transparent font-mono text-[15px] text-ink outline-none placeholder:text-ink-faint"
-            placeholder="jump, switch, or a command…  e.g. :20, note, ASV"
+            placeholder="jump to a verse or reference…  e.g. :20 or Luke 1:8"
             value={query}
             autoComplete="off"
             spellCheck={false}
@@ -111,7 +104,9 @@ export function CommandPalette({
         <div className="max-h-[46vh] overflow-y-auto p-1.5">
           {groups.length === 0 && (
             <div className="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
-              No match — keep typing a reference or a command
+              {query.trim()
+                ? 'No verse to jump to — try :20 or a reference in this passage'
+                : 'Type a verse number (:20) or a reference in this passage'}
             </div>
           )}
           {groups.map((g) => (

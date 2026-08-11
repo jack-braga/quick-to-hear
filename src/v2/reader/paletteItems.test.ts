@@ -4,18 +4,9 @@ import { buildPaletteItems, type PaletteContext } from '@/v2/reader/paletteItems
 
 const ctx: PaletteContext = {
   passageVerseIds: ['LUKE.1.5', 'LUKE.1.6', 'LUKE.1.7', 'LUKE.1.8'],
-  hasSelection: false,
-  translations: [
-    { id: 'webbe', name: 'World English Bible British Edition', shortName: 'WEBBE', isPrimary: true },
-    { id: 'asv', name: 'American Standard Version (1901)', shortName: 'ASV', isPrimary: false },
-  ],
-  lenses: [
-    { id: 'map', name: 'Map' },
-    { id: 'read', name: 'Read' },
-  ],
 };
 
-describe('buildPaletteItems', () => {
+describe('buildPaletteItems (slimmed to quick-jump — #7)', () => {
   it('jumps by a bare number / :N to the matching verse', () => {
     const items = buildPaletteItems(':7', ctx);
     expect(items).toHaveLength(1);
@@ -39,27 +30,12 @@ describe('buildPaletteItems', () => {
     expect(buildPaletteItems('Malachi 4:5-6', ctx)).toHaveLength(0);
   });
 
-  it('treats a bare book word as a command/completion, not a reference', () => {
-    // "mark" is the gospel AND the "mark confusing" command — no digit → not a reference.
-    const items = buildPaletteItems('mark', { ...ctx, hasSelection: true });
-    expect(items.some((i) => i.action.type === 'jump')).toBe(false);
-    expect(items.some((i) => i.action.type === 'create' && i.action.kind === 'mark')).toBe(true);
-    expect(items.some((i) => i.action.type === 'fill')).toBe(true); // Mark (the book) to pick
-  });
-
-  it('completes a book name', () => {
-    const items = buildPaletteItems('luk', ctx);
-    expect(items[0]!.action).toEqual({ type: 'fill', text: 'Luke ' });
-  });
-
-  it('shows create commands only with a selection', () => {
-    expect(buildPaletteItems('', ctx).some((i) => i.action.type === 'create')).toBe(false);
-    expect(buildPaletteItems('', { ...ctx, hasSelection: true }).some((i) => i.action.type === 'create')).toBe(true);
-  });
-
-  it('offers switching to a non-primary translation and jumping to lenses', () => {
-    const items = buildPaletteItems('', ctx);
-    expect(items.some((i) => i.action.type === 'switch-translation' && i.action.id === 'asv')).toBe(true);
-    expect(items.some((i) => i.action.type === 'go-lens' && i.action.lens === 'read')).toBe(true);
+  it('no longer surfaces create / translation / lens / book-completion commands', () => {
+    // Those all moved to dedicated UI; a non-jump query yields nothing.
+    expect(buildPaletteItems('mark', ctx)).toHaveLength(0);
+    expect(buildPaletteItems('note', ctx)).toHaveLength(0);
+    expect(buildPaletteItems('ASV', ctx)).toHaveLength(0);
+    expect(buildPaletteItems('luk', ctx)).toHaveLength(0);
+    expect(buildPaletteItems('', ctx)).toHaveLength(0);
   });
 });

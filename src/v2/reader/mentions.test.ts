@@ -64,6 +64,14 @@ describe('parseMentions', () => {
     // "John 3 and Paul" must chip "John 3", leaving " and Paul" as text.
     expect(shape('read @John 3 and Paul')).toEqual(['T:read ', 'M:John 3', 'T: and Paul']);
   });
+
+  // Regression (#5a): "@Matthew 1:5" must chip the whole verse, not cut off at the chapter
+  // ("@Matthew 1"). longestReference tries the longest valid form first, so the `:verse` (and a
+  // range) is kept before falling back to the chapter.
+  it('extends a mention to the :verse and range, not just the chapter', () => {
+    expect(shape('see @Matthew 1:5 here')).toEqual(['T:see ', 'M:Matthew 1:5', 'T: here']);
+    expect(shape('@Matthew 1:5-6')).toEqual(['M:Matthew 1:5-6']);
+  });
 });
 
 describe('mentionLabel', () => {

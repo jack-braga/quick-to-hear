@@ -314,23 +314,7 @@ export function ReaderShell({ study }: { study: Study }) {
   };
 
   // ---- the "/" command palette ------------------------------------------------------------
-  const paletteCtx: PaletteContext = useMemo(
-    () => ({
-      passageVerseIds: pvIds,
-      hasSelection: selected.length > 0,
-      translations: translationOrder(study.passage).map((id) => {
-        const tr = findTranslation(id);
-        return {
-          id,
-          name: tr?.name ?? id,
-          shortName: tr?.shortName ?? id,
-          isPrimary: id === study.passage.primaryId,
-        };
-      }),
-      lenses: LENSES.map((l) => ({ id: l.id, name: l.name })),
-    }),
-    [pvIds, selected.length, study.passage],
-  );
+  const paletteCtx: PaletteContext = useMemo(() => ({ passageVerseIds: pvIds }), [pvIds]);
 
   // Switching among loaded translations only re-designates the primary — every translation is
   // kept (the old primary becomes a comparison text), so the parallel view swaps columns rather
@@ -405,15 +389,6 @@ export function ReaderShell({ study }: { study: Study }) {
     switch (action.type) {
       case 'jump':
         onJump(action.verseId);
-        break;
-      case 'create':
-        onAction(action.kind);
-        break;
-      case 'switch-translation':
-        onSetPrimary(action.id);
-        break;
-      case 'go-lens':
-        setLens(action.lens);
         break;
       case 'fill':
         break; // handled inside the palette
