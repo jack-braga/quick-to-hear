@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — cross-ref collapse (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.42);
+        --moss: #4f6b3a; --moss-wash: rgba(79,107,58,0.16); --moss-edge: rgba(79,107,58,0.4); --moss-ink: #3c5330;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --pop-shadow: 0 2px 6px rgba(30,27,20,0.08), 0 22px 48px -16px rgba(30,27,20,0.34);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.2); --lapis-edge: rgba(144,176,239,0.42);
+        --amber-wash: rgba(221,187,97,0.18); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.44);
+        --moss: #9fc27e; --moss-wash: rgba(159,194,126,0.18); --moss-edge: rgba(159,194,126,0.42); --moss-ink: #bcd6a3;
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+        --pop-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 24px 50px -16px rgba(0,0,0,0.6);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button, input, textarea { font-family: inherit; }
+      button { cursor: pointer; }
+      .app { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+      .top { display: flex; align-items: center; gap: 12px; padding: 11px 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 80%, var(--leaf)); }
+      .top h1 { font-size: 14px; margin: 0; }
+      .top p { margin: 0; font-size: 12px; color: var(--ink-soft); flex: 1; }
+      .top p b { color: var(--ink); }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; flex: none; }
+
+      .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 26px 22px 60px; align-items: start; max-width: 1120px; margin: 0 auto; width: 100%; }
+      @media (max-width: 820px) { .wrap { grid-template-columns: 1fr; } }
+      .colhd { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); margin: 0 2px 10px; }
+
+      /* --- the note card with an inline @-mention --- */
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 12px 13px; box-shadow: var(--shadow); }
+      .card .anchor { font-family: var(--font-mono); font-size: 10.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; }
+      .card .tag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); margin-left: 7px; }
+      .card .note { margin-top: 9px; font-size: 13.5px; color: var(--ink); line-height: 1.55; }
+      .chip { display: inline-flex; align-items: center; white-space: nowrap; border: 1px solid var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); border-radius: 6px; padding: 1px 6px; font-family: var(--font-mono); font-size: 11.5px; cursor: pointer; }
+      .chip.printed { border-color: var(--moss-edge); background: var(--moss-wash); color: var(--moss-ink); }
+
+      /* --- the peek popover (inline controls, no 'promote' button) --- */
+      .peek { margin-top: 12px; border: 1px solid var(--lapis-edge); border-radius: 12px; background: var(--leaf); box-shadow: var(--pop-shadow); overflow: hidden; }
+      .peek .hd { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+      .peek .hd .r { font-family: var(--font-scripture); font-size: 14.5px; font-weight: 600; }
+      .peek .hd .tr { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
+      .peek .body { padding: 10px 12px; }
+      .peek .verses { font-family: var(--font-scripture); font-size: 13px; line-height: 1.55; color: var(--ink-soft); max-height: 108px; overflow-y: auto; }
+      .peek .verses sup { font-family: var(--font-mono); font-size: 0.62em; color: var(--ink-faint); margin-right: 2px; }
+      .ctl { border-top: 1px solid var(--line); padding: 10px 12px; }
+      .row { display: flex; align-items: flex-start; gap: 9px; }
+      .row + .row { margin-top: 11px; }
+      .sw { width: 32px; height: 18px; border-radius: 999px; background: var(--line); position: relative; border: none; flex: none; margin-top: 1px; }
+      .sw.on { background: var(--moss); }
+      .sw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left .15s; }
+      .sw.on::after { left: 16px; }
+      .lbl { font-size: 12.5px; color: var(--ink); }
+      .lbl .sub { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 1px; }
+      .rq { flex: 1; }
+      .rq input { width: 100%; margin-top: 4px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); padding: 5px 8px; font-size: 12.5px; color: var(--ink); outline: none; }
+      .rq input:focus { border-color: var(--lapis-edge); }
+      .rq.off { opacity: .45; }
+      .qmark { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--lapis-edge); color: var(--lapis-ink); font-size: 10px; display: grid; place-items: center; flex: none; margin-top: 1px; }
+
+      .old { margin-top: 16px; font-size: 11.5px; color: var(--ink-faint); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; }
+      .old b { color: var(--ink-soft); }
+      .old s { color: var(--ink-faint); }
+
+      /* --- print preview --- */
+      .paper { background: var(--leaf); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; }
+      .paper + .paper { margin-top: 16px; }
+      .paper .doc { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); margin-bottom: 10px; }
+      .paper .q { font-family: var(--font-scripture); font-size: 15px; color: var(--ink); }
+      .paper .exp { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+      .box { margin-top: 10px; border-left: 3px solid var(--moss-edge); background: var(--moss-wash); border-radius: 8px; padding: 9px 11px; }
+      .box .h { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: var(--moss-ink); margin-bottom: 3px; }
+      .box .t { font-family: var(--font-scripture); font-size: 12.5px; color: var(--ink); line-height: 1.5; }
+      .box .rqp { margin-top: 7px; font-size: 12px; color: var(--ink); font-style: italic; }
+      .box .rqp b { font-style: normal; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); display: block; }
+      .prep { margin-top: 10px; font-size: 11.5px; font-style: italic; color: var(--ink-faint); }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="top">
+        <h1>Cross-reference collapse</h1>
+        <p>The decided model: <b>no standalone “Support passage” card.</b> A reference to another passage is only an <b>@-mention inside a note</b>, carrying two inline toggles. Flip <b>Include for the group</b> to see the print change.</p>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="wrap">
+        <!-- LEFT: the note + the mention peek with inline controls -->
+        <div>
+          <p class="colhd">In the study — a note with an @-mention</p>
+          <div class="card">
+            <div><span class="anchor">Luke 1:17</span><span class="tag">Note · Map</span></div>
+            <div class="note">The angel echoes the last words of the OT — “turn the hearts of the fathers to the children.” See <span class="chip" id="chip">↗ Mal 4:5–6</span> for the promise he’s invoking.</div>
+
+            <div class="peek">
+              <div class="hd"><span class="r">Malachi 4:5–6</span><span class="tr">WEBBE</span></div>
+              <div class="body">
+                <div class="verses">
+                  <sup>5</sup>Behold, I will send you Elijah the prophet before the great and terrible day of the LORD comes. <sup>6</sup>He will turn the hearts of the fathers to the children, and the hearts of the children to their fathers, lest I come and strike the earth with a curse.
+                </div>
+              </div>
+              <div class="ctl">
+                <div class="row">
+                  <button class="sw" id="incl" aria-pressed="false"></button>
+                  <span class="lbl">Include for the group
+                    <span class="sub" id="inclSub">Prep-only — you peek here; the group never sees it. Turn on to print the passage in the handout + leader’s notes.</span>
+                  </span>
+                </div>
+                <div class="row rq off" id="rqRow">
+                  <span class="qmark">↩</span>
+                  <span class="rq lbl">Return question
+                    <span class="sub">The follow-up that steers the group back to the main passage after you send them here.</span>
+                    <input id="rq" placeholder="e.g. So what is the angel promising Zechariah?" />
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="old">Replaces the old flow: a mention’s peek had a <b><s>⤴ Promote to support passage</s></b> button that spawned a separate <s>Support-passage card</s>. Now the mention <b>is</b> the object — the toggles live on it, so there’s one thing to manage, not two.</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: how it prints -->
+        <div>
+          <p class="colhd">How it prints</p>
+          <div class="paper">
+            <div class="doc">Participant handout</div>
+            <div class="q">3. What is the angel promising Zechariah, and why does it matter?</div>
+            <div id="handoutExtra">
+              <p class="prep" id="handoutPrep">Mal 4:5–6 is prep-only — it won’t appear on the handout.</p>
+            </div>
+          </div>
+          <div class="paper">
+            <div class="doc">Leader’s notes</div>
+            <div class="q">3. What is the angel promising Zechariah, and why does it matter?</div>
+            <div class="exp">Expected: he’s invoking Malachi’s Elijah promise — the forerunner who turns hearts before the Lord comes.</div>
+            <div id="leaderExtra">
+              <p class="prep" id="leaderPrep">Mal 4:5–6 is prep-only — it won’t appear in the leader’s notes either.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+
+      const MAL = 'Behold, I will send you Elijah the prophet… He will turn the hearts of the fathers to the children, and the hearts of the children to their fathers.';
+      const incl = document.getElementById('incl');
+      const rqRow = document.getElementById('rqRow');
+      const rqInput = document.getElementById('rq');
+      const chip = document.getElementById('chip');
+      let included = false;
+
+      function box(doc) {
+        const rq = rqInput.value.trim();
+        return `<div class="box"><div class="h">Support passage · Malachi 4:5–6</div>`
+          + `<div class="t">${MAL}</div>`
+          + (rq ? `<div class="rqp"><b>Return question</b>${rq}</div>` : '')
+          + `</div>`;
+      }
+      function render() {
+        incl.classList.toggle('on', included);
+        incl.setAttribute('aria-pressed', String(included));
+        chip.classList.toggle('printed', included);
+        rqRow.classList.toggle('off', !included);
+        rqInput.disabled = !included;
+        document.getElementById('inclSub').textContent = included
+          ? 'Printed — Malachi 4:5–6 appears in the handout + leader’s notes (with the return question, if set).'
+          : 'Prep-only — you peek here; the group never sees it. Turn on to print the passage in the handout + leader’s notes.';
+        document.getElementById('handoutExtra').innerHTML = included ? box('handout')
+          : '<p class="prep">Mal 4:5–6 is prep-only — it won’t appear on the handout.</p>';
+        document.getElementById('leaderExtra').innerHTML = included ? box('leader')
+          : '<p class="prep">Mal 4:5–6 is prep-only — it won’t appear in the leader’s notes either.</p>';
+      }
+      incl.addEventListener('click', () => { included = !included; render(); });
+      rqInput.addEventListener('input', render);
+      render();
+    </script>
+  </body>
+</html>
