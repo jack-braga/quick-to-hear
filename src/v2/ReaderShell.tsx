@@ -9,7 +9,7 @@ import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Annotation, AnnotationKind, AnnotationOrigin, NoteFlag, QuestionType, Section, Study } from '@/types/study';
+import type { Annotation, AnnotationKind, AnnotationOrigin, MentionMeta, NoteFlag, QuestionType, Section, Study } from '@/types/study';
 import { annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
@@ -109,18 +109,6 @@ export function ReaderShell({ study }: { study: Study }) {
   }, []);
   const verseToneSets = useMemo(() => verseTonesByVerse(annotations), [annotations]);
   const pvIds = useMemo(() => (passage ? verseIds(passage) : []), [passage]);
-  // OSIS keys of references already promoted to a support passage — mutes those inline chips and
-  // guards against promoting the same reference twice.
-  const promotedKeys = useMemo(
-    () =>
-      new Set(
-        annotations
-          .filter((a) => a.kind === 'cross-ref')
-          .map((a) => parseReference(a.reference ?? '')?.osis)
-          .filter((k): k is string => !!k),
-      ),
-    [annotations],
-  );
 
   // Persist the parallel view (viewed translations) per-study so it survives a reload.
   useEffect(() => {
@@ -250,19 +238,19 @@ export function ReaderShell({ study }: { study: Study }) {
       comaPrompt: prompt,
     });
 
-  // Promote an inline @-mention (inside a note) to a cross-ref annotation anchored to the host's
-  // verses — this is what `projectForExport` turns into a printed Support passage. De-duped by OSIS.
-  const onPromoteMention = (host: Annotation, reference: string) => {
-    const key = parseReference(reference)?.osis;
-    if (key && promotedKeys.has(key)) return;
-    addAnnotation({ ...makeAnnotation(newId(), { kind: 'cross-ref', verseIds: host.verseIds }), reference });
-  };
-
   const onEditAnnotation = (id: string, patch: Partial<Annotation>) =>
     applyToCurrent((s) => ({
       ...s,
       annotations: s.annotations.map((a) => (a.id === id ? { ...a, ...patch } : a)),
     }));
+
+  // Set a mention's include-for-group / return-question metadata on its host note (cross-ref
+  // collapse — the reference is an inline @-mention, not a standalone card). Keyed by OSIS; what
+  // `projectForExport` reads to print an included reference as a Support passage.
+  const onSetMentionMeta = (host: Annotation, osis: string, patch: Partial<MentionMeta>) => {
+    const prev = host.mentions?.[osis] ?? { includeForGroup: false };
+    onEditAnnotation(host.id, { mentions: { ...host.mentions, [osis]: { ...prev, ...patch } } });
+  };
 
   const onRemoveAnnotation = (id: string) =>
     applyToCurrent((s) => ({ ...s, annotations: s.annotations.filter((a) => a.id !== id) }));
@@ -526,7 +514,6 @@ export function ReaderShell({ study }: { study: Study }) {
         litVerseId={hoveredVerse}
         focusAnnotationId={focusAnnotationId}
         translationId={passage.translationId}
-        promotedKeys={promotedKeys}
         lensOrigin={origin}
         onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
         onEdit={onEditAnnotation}
@@ -536,7 +523,7 @@ export function ReaderShell({ study }: { study: Study }) {
         onEndCapture={endCapture}
         onAdd={onAddCard}
         onMakeQuestion={makeQuestion}
-        onPromoteMention={onPromoteMention}
+        onMentionMeta={onSetMentionMeta}
         onFocusHandled={clearFocusAnnotation}
       />
     );

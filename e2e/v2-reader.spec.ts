@@ -326,7 +326,7 @@ test('v2 command palette (slimmed, #7): quick-jump to a verse', async ({ page })
   await expect(page.locator('[data-v="LUKE.1.20"]')).toBeInViewport();
 });
 
-test('v2 @mention cross-reference: chip in a note → peek → promote → prints as a support passage', async ({
+test('v2 @mention cross-ref collapse: chip → peek → include-for-group → prints as a support passage', async ({
   page,
 }) => {
   await page.goto('./');
@@ -347,18 +347,18 @@ test('v2 @mention cross-reference: chip in a note → peek → promote → print
   const chip = page.locator('[data-raw="@Malachi 4:5-6"]');
   await expect(chip).toBeVisible();
   await expect(chip).toHaveText(/Mal 4:5/);
+  // Prep-only by default — nothing to promote, no standalone card.
+  await expect(chip).toHaveAttribute('data-included', 'false');
 
-  // Click it → the peek loads the referenced passage; promote it to a support passage.
+  // Click it → the peek loads the referenced passage; the toggle lives inline on the mention.
   await chip.click();
   await expect(page.getByText(/send you Elijah the prophet/i)).toBeVisible();
-  await page.getByRole('button', { name: /promote to support passage/i }).click();
-  await expect(chip).toHaveAttribute('data-promoted', 'true');
+  await page.getByRole('button', { name: /include for the group/i }).click();
+  // Now the chip reads as "printed" (no separate Support-passage card exists anymore).
+  await expect(chip).toHaveAttribute('data-included', 'true');
+  await expect(page.getByText('Support passage')).toHaveCount(0);
 
-  // The promote closes to a Support-passage card in the margin.
-  await page.keyboard.press('Escape');
-  await expect(page.getByText('Support passage')).toBeVisible();
-
-  // It reaches the participant handout as a background box (reference + fetched passage text).
+  // It reaches the participant handout as a box (reference + fetched passage text).
   await page.waitForTimeout(1000);
   const id = page.url().match(/study\/([^/]+)\//)![1];
   await page.goto(`./#/print/${id}/handout`);

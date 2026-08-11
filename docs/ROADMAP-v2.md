@@ -134,6 +134,26 @@ manuscript that answers to a command line*. Full day/night.
 
 ## 5. Progress log
 
+### 2026-08-11 — Cross-reference collapse: mention carries the toggles, no standalone card
+
+**Shipped + verified (unit + e2e + live, 0 console errors).** Killed the standalone cross-ref /
+"Support passage" card. A reference to another passage is now **only** an inline `@`-mention in a
+note, and its two toggles live in the mention's peek:
+- **Model:** added `note.mentions: Record<osis, { includeForGroup, returnQuestion }>` (additive,
+  `MentionMetaSchema`); **removed** the `cross-ref` annotation kind, the `reference`/`returnQuestion`
+  annotation fields, the `⤴ Promote to support passage` flow, and `promotedKeys`.
+- **Editor:** `MentionEditor`'s peek now shows an **Include for the group** toggle (prep-only ↔
+  printed) + a **Return question** field; an included chip reads moss (`data-included`) instead of
+  lapis. `MarginAnnotations` lost its cross-ref card branch; `ReaderShell.onSetMentionMeta` writes the
+  map.
+- **Export:** `projectForExport` reads each note's included mentions → `build.supportPassages`
+  (attached to a question sharing the note's verses = *quoted*, else *background*), de-duped by OSIS;
+  a prep-only mention prints nothing. Print docs unchanged.
+- Clean break: no migration (a persisted `cross-ref` annotation won't load — no users, per policy).
+
+Gate: typecheck + lint + test (305) + e2e (19) + build; verified live (peek toggle → chip moss →
+return question → persists across reload → prints ref+text in the handout).
+
 ### 2026-08-11 — Feedback-batch design items shipped: COMA accordion (#3), Theme spine (#4), panel = just chips (#7)
 
 **Shipped + verified (live app, Playwright MCP; 0 console errors).** Three design items the owner

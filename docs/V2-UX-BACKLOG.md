@@ -126,9 +126,13 @@ source line, two-way verse↔card hover, and the diagonal gradient for shared ve
 
 ## 2. Confirmed design decisions — not yet built
 
-- **Cross-reference collapse (confirmed — msg#2128, #2415).** Kill standalone cross-ref / support
-  passages as first-class objects. A reference to another passage is **only** an `@`-mention inside a
-  note. Two toggles on a mention:
+- ~~**Cross-reference collapse (confirmed — msg#2128, #2415).**~~ **[built 2026-08-11 — mockup
+  `docs/mockups/v2-xref-collapse.html`]** Killed the standalone cross-ref / support-passage card:
+  a reference is **only** an `@`-mention inside a note, carrying the two toggles below in its peek.
+  Model: `note.mentions: Record<osis, {includeForGroup, returnQuestion}>` (additive); the old
+  `cross-ref` kind + `⤴ Promote` flow are gone; `projectForExport` reads notes' included mentions →
+  `build.supportPassages` (attached to a question sharing the note's verses, else a background box).
+  The two toggles:
   - **"Include for the group"** — normally an `@`-mention is prep-only (you peek; the group never
     sees it). This toggle prints the referenced passage in the participant handout (a box with its
     text) and in the leader's notes. Prep-only ↔ printed-for-everyone.

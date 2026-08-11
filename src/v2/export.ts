@@ -1,6 +1,7 @@
 import { downloadHandoutMarkdown, downloadLeaderMarkdown } from '@/lib/export';
 import { emptyStudyBuild, type Question, type Study, type SupportPassage } from '@/types/study';
 import { orderedQuestions } from '@/v2/build';
+import { parseMentions } from '@/v2/reader/mentions';
 
 /**
  * Export adapter (v2.7) — project a v2 study onto the v1 export **model** so the whole tested
@@ -11,8 +12,9 @@ import { orderedQuestions } from '@/v2/build';
  * `build` from the v2 data:
  *  - question annotations → `build.questions` in the running order (missing type/weight get sane
  *    defaults; the expected answer carries the SPEC-6e discipline into the leader's notes);
- *  - cross-reference annotations → `build.supportPassages`, attached to a question that shares
- *    their verses (so they print at that question's point of need), else kept as a background box;
+ *  - a note's inline `@`-mentions marked **include-for-group** → `build.supportPassages`, attached to
+ *    a question that shares the note's verses (so they print at its point of need), else a background
+ *    box; a prep-only mention (the default) prints nothing (cross-ref collapse — no standalone card);
  *  - an optional study **title** becomes the document heading.
  *
  * Theme/aim, intro, and the prayer point arrive with the Theme & aim lens; until then they're
@@ -33,20 +35,30 @@ export function projectForExport(study: Study): Study {
     ...(a.aimComponent ? { aimComponent: a.aimComponent } : {}),
   }));
 
-  const crossRefs = study.annotations.filter(
-    (a) => a.kind === 'cross-ref' && (a.reference ?? '').trim().length > 0,
-  );
-  const supportPassages: SupportPassage[] = crossRefs.map((a) => {
-    const host = ordered.find((q) => q.verseIds.some((v) => a.verseIds.includes(v)));
-    return {
-      id: a.id,
-      reference: (a.reference ?? '').trim(),
-      type: host ? ('quoted' as const) : ('background' as const),
-      text: null,
-      ...(host ? { attachedToQuestionId: host.id } : {}),
-      ...(a.returnQuestion?.trim() ? { returnQuestion: a.returnQuestion.trim() } : {}),
-    };
-  });
+  // A reference is an inline @-mention inside a note; it prints only when that mention is marked
+  // include-for-group. Attach it to a question sharing the host note's verses (its point of need),
+  // else a background box. De-duped by OSIS so the same passage prints once.
+  const supportPassages: SupportPassage[] = [];
+  const seenOsis = new Set<string>();
+  for (const note of study.annotations) {
+    if (note.kind !== 'note' || !note.mentions) continue;
+    const host = ordered.find((q) => q.verseIds.some((v) => note.verseIds.includes(v)));
+    for (const seg of parseMentions(note.text)) {
+      if (seg.type !== 'mention') continue;
+      const osis = seg.ref.osis;
+      const meta = note.mentions[osis];
+      if (!meta?.includeForGroup || seenOsis.has(osis)) continue;
+      seenOsis.add(osis);
+      supportPassages.push({
+        id: `${note.id}:${osis}`,
+        reference: seg.reference,
+        type: host ? ('quoted' as const) : ('background' as const),
+        text: null,
+        ...(host ? { attachedToQuestionId: host.id } : {}),
+        ...(meta.returnQuestion?.trim() ? { returnQuestion: meta.returnQuestion.trim() } : {}),
+      });
+    }
+  }
 
   return {
     ...study,

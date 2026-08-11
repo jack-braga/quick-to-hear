@@ -137,15 +137,27 @@ export type StudyMap = z.infer<typeof MapSchema>;
 // Annotations (v2.4) — the unified anchored-annotation surface (ROADMAP-v2 §2)
 // ---------------------------------------------------------------------------
 
-/** The three annotation kinds. A "Mark = confusing" and a "Comment" are just **notes** with a
- *  `flag`; a **question** is the deliverable (keeps the expected-answer hard block); a
- *  **cross-ref** points at another passage. */
-export const ANNOTATION_KINDS = ['note', 'question', 'cross-ref'] as const;
+/** The two annotation kinds. A "Mark = confusing" and a "Comment" are just **notes** with a
+ *  `flag`; a **question** is the deliverable (keeps the expected-answer hard block). A reference to
+ *  another passage is not its own kind — it is an inline `@`-mention inside a note's text (see
+ *  {@link MentionMetaSchema}). */
+export const ANNOTATION_KINDS = ['note', 'question'] as const;
 export const AnnotationKindSchema = z.enum(ANNOTATION_KINDS);
 export type AnnotationKind = z.infer<typeof AnnotationKindSchema>;
 
 export const NoteFlagSchema = z.enum(['confusing', 'comment']);
 export type NoteFlag = z.infer<typeof NoteFlagSchema>;
+
+/** Per-mention metadata (v2 cross-ref collapse), keyed on the mention's OSIS in a note's
+ *  `mentions` map. A mention is **prep-only** (you peek; the group never sees it) until
+ *  `includeForGroup` — then the referenced passage prints in the handout + leader's notes, with an
+ *  optional `returnQuestion` to steer the group back to the main passage. This replaces the old
+ *  standalone cross-ref / "Support passage" card. */
+export const MentionMetaSchema = z.object({
+  includeForGroup: z.boolean().default(false),
+  returnQuestion: z.string().optional(),
+});
+export type MentionMeta = z.infer<typeof MentionMetaSchema>;
 
 /** Which lens a card was made in — its **origin** (v2 Layout-B: everything is a card with an
  *  origin + optional anchors). Drives the panel's chip filter + the source-step line. Optional +
@@ -158,7 +170,8 @@ export type AnnotationOrigin = z.infer<typeof AnnotationOriginSchema>;
  * A v2 annotation. It anchors to **main-passage verses** by canonical id (translation-
  * independent — no reconcile needed); an empty `verseIds` is a **floating / study-level** note
  * (theme, aim, prayer, notes-to-self). Kept flat (not a strict discriminated union) so per-kind
- * fields stay additive-optional. Recycle-forward + promote-to-support land with the Build lens.
+ * fields stay additive-optional. A note's inline `@`-mentions carry their own metadata in
+ * `mentions` (keyed by OSIS — see {@link MentionMetaSchema}).
  */
 export const AnnotationSchema = z.object({
   id: z.string(),
@@ -183,9 +196,9 @@ export const AnnotationSchema = z.object({
   loadBearing: z.boolean().optional(),
   gospelPlain: z.boolean().optional(),
   aimComponent: AimComponentSchema.optional(),
-  // cross-reference — the other passage + an optional bring-them-back question.
-  reference: z.string().optional(),
-  returnQuestion: z.string().optional(),
+  // note — inline @-mention metadata, keyed by the mention's OSIS (the reference text lives in
+  // `text`). Only present once a mention is given include-for-group / a return question.
+  mentions: z.record(z.string(), MentionMetaSchema).optional(),
 });
 export type Annotation = z.infer<typeof AnnotationSchema>;
 

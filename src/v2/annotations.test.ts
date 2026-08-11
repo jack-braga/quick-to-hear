@@ -29,7 +29,6 @@ describe('toneFor', () => {
     expect(toneFor(note({ flag: 'confusing' }))).toBe('rubric');
     expect(toneFor(note({ kind: 'question', expectedAnswer: '' }))).toBe('amber');
     expect(toneFor(note())).toBe('lapis');
-    expect(toneFor(note({ kind: 'cross-ref', reference: 'Malachi 4:5' }))).toBe('lapis');
     expect(toneFor(note({ flag: 'comment' }))).toBe('lapis');
   });
 });
@@ -135,11 +134,6 @@ describe('makeAnnotation', () => {
     expect(makeAnnotation('2', { kind: 'question', verseIds: ['LUKE.1.5'] })).toMatchObject({
       kind: 'question',
       expectedAnswer: '',
-    });
-    expect(makeAnnotation('3', { kind: 'cross-ref', verseIds: ['LUKE.1.5'] })).toMatchObject({
-      kind: 'cross-ref',
-      reference: '',
-      returnQuestion: '',
     });
   });
 });

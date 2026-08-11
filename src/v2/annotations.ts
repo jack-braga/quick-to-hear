@@ -96,10 +96,6 @@ export function annotationMeta(a: Annotation): { tag: string; placeholder: strin
   if (a.kind === 'question') {
     return { tag: 'Question', placeholder: 'Draft a question anchored to these verses…' };
   }
-  if (a.kind === 'cross-ref') {
-    // Created only by promoting an inline @-mention; it is what prints as a Support passage.
-    return { tag: 'Support passage', placeholder: 'Why does this passage connect here?' };
-  }
   if (a.flag === 'confusing') {
     return { tag: 'Mark · confusing', placeholder: 'What confuses you here? (they’ll feel it too)' };
   }
@@ -165,7 +161,6 @@ export interface MakeAnnotationInput {
 export function makeAnnotation(id: string, input: MakeAnnotationInput): Annotation {
   const base: Annotation = { id, kind: input.kind, verseIds: input.verseIds, text: '' };
   if (input.origin) base.origin = input.origin;
-  if (input.kind === 'note') return { ...base, flag: input.flag };
   if (input.kind === 'question') return { ...base, expectedAnswer: '' };
-  return { ...base, reference: '', returnQuestion: '' }; // cross-ref
+  return { ...base, flag: input.flag }; // note
 }

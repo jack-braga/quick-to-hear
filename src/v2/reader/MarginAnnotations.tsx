@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { parseReference } from '@/lib/verse';
 import { cn } from '@/lib/utils';
 import { allVerses, verseText, type ParsedText } from '@/types/passage';
 import {
@@ -8,6 +7,7 @@ import {
   type Annotation,
   type AnnotationKind,
   type AnnotationOrigin,
+  type MentionMeta,
   type NoteFlag,
 } from '@/types/study';
 import {
@@ -78,8 +78,6 @@ export interface MarginAnnotationsProps {
   focusAnnotationId: string | null;
   /** Primary translation id — for the inline @-mention peek. */
   translationId: string;
-  /** OSIS keys already promoted to a support passage (mutes those chips). */
-  promotedKeys: Set<string>;
   onHover: (a: Annotation | null) => void;
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
@@ -98,7 +96,9 @@ export interface MarginAnnotationsProps {
   /** Recycle-forward (Questions lens only): seed a question at a prior card's anchor. When set, every
    *  non-question card shows a **→ make a question**. */
   onMakeQuestion?: (source: Annotation) => void;
-  onPromoteMention: (host: Annotation, reference: string) => void;
+  /** Set a mention's include-for-group / return-question metadata on the host note (cross-ref
+   *  collapse — the reference lives inline, no standalone card). */
+  onMentionMeta: (host: Annotation, osis: string, patch: Partial<MentionMeta>) => void;
   onFocusHandled: () => void;
 }
 
@@ -224,59 +224,23 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
         </div>
 
         {/* context quote for anchored notes/questions */}
-        {anchoredCard && a.kind !== 'cross-ref' && (
+        {anchoredCard && (
           <p className="mb-1.5 line-clamp-2 font-scripture text-[12.5px] italic leading-snug text-ink-faint">
             “{contextOf(a)}”
           </p>
         )}
 
-        {/* cross-reference: the other passage + return question */}
-        {a.kind === 'cross-ref' ? (
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[13px] text-lapis">→</span>
-              <input
-                data-focus={a.id}
-                className={SUB_INPUT}
-                value={a.reference ?? ''}
-                placeholder="e.g. Malachi 4:5-6"
-                onChange={(e) => props.onEdit(a.id, { reference: e.target.value })}
-              />
-              {(a.reference ?? '').trim() &&
-                (parseReference(a.reference ?? '') ? (
-                  <span className="font-mono text-[11px] text-lapis" title="Recognised reference">✓</span>
-                ) : (
-                  <span className="font-mono text-[11px] text-ink-faint" title="Not recognised yet">…</span>
-                ))}
-            </div>
-            <textarea
-              ref={autoGrow}
-              rows={2}
-              className={NOTE_INPUT}
-              value={a.text}
-              placeholder={meta.placeholder}
-              onChange={(e) => {
-                props.onEdit(a.id, { text: e.target.value });
-                autoGrow(e.currentTarget);
-              }}
-            />
-            <input
-              className={SUB_INPUT}
-              value={a.returnQuestion ?? ''}
-              placeholder="Bring them back: “What does this help us see here?”"
-              onChange={(e) => props.onEdit(a.id, { returnQuestion: e.target.value })}
-            />
-          </div>
-        ) : a.kind === 'note' ? (
+        {a.kind === 'note' ? (
           // Notes carry the inline @-mention editor — a reference to another passage lives *inside a
-          // note's content* (never in a question, whose text is the exported deliverable).
+          // note's content* (never in a question, whose text is the exported deliverable). Each
+          // mention's include-for-group / return-question toggles live on it (cross-ref collapse).
           <MentionEditor
             value={a.text}
             onChange={(text) => props.onEdit(a.id, { text })}
             placeholder={meta.placeholder}
             translationId={props.translationId}
-            promotedKeys={props.promotedKeys}
-            onPromote={(reference) => props.onPromoteMention(a, reference)}
+            mentions={a.mentions}
+            onMentionMeta={(osis, patch) => props.onMentionMeta(a, osis, patch)}
             focusId={a.id}
           />
         ) : (

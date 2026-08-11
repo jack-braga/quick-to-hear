@@ -20,7 +20,22 @@ const anns: Annotation[] = [
   { id: 'q2', kind: 'question', verseIds: ['LUKE.1.13'], text: 'Why is Zechariah silenced?', expectedAnswer: 'For unbelief.', questionType: 'meaning' },
   { id: 'q1', kind: 'question', verseIds: ['LUKE.1.8'], text: 'What was his role?', expectedAnswer: '', questionType: 'observation' },
   { id: 'n1', kind: 'note', verseIds: ['LUKE.1.8'], text: 'a note', flag: 'confusing' },
-  { id: 'x1', kind: 'cross-ref', verseIds: ['LUKE.1.8'], text: 'echoes', reference: 'Malachi 4:5-6', returnQuestion: 'What does Malachi add?' },
+  // a note on v8 whose inline @-mention is marked include-for-group → prints as a support passage
+  {
+    id: 'n2',
+    kind: 'note',
+    verseIds: ['LUKE.1.8'],
+    text: 'echoes @Malachi 4:5-6',
+    mentions: { 'Mal.4.5-Mal.4.6': { includeForGroup: true, returnQuestion: 'What does Malachi add?' } },
+  },
+  // a prep-only mention (not included) must NOT print
+  {
+    id: 'n3',
+    kind: 'note',
+    verseIds: ['LUKE.1.13'],
+    text: 'cf. @Genesis 1:1',
+    mentions: { 'Gen.1.1': { includeForGroup: false } },
+  },
 ];
 
 describe('projectForExport', () => {
@@ -42,15 +57,16 @@ describe('projectForExport', () => {
     expect(projected.build.order).toEqual(['q2', 'q1']);
   });
 
-  it('attaches a cross-reference to the question sharing its verses', () => {
+  it('prints an included @-mention as a support passage (prep-only ones are skipped)', () => {
     const projected = projectForExport(studyWith(anns));
     if (projected.build.format !== 'study') return;
     const sp = projected.build.supportPassages;
+    // only the include-for-group mention prints; the prep-only Genesis mention does not.
     expect(sp).toHaveLength(1);
     expect(sp[0]).toMatchObject({
       reference: 'Malachi 4:5-6',
       type: 'quoted',
-      attachedToQuestionId: 'q1', // the v8 question
+      attachedToQuestionId: 'q1', // the v8 question (host note is anchored to v8)
       returnQuestion: 'What does Malachi add?',
     });
   });
