@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { litmusForQuestionType } from '@/lib/content';
 import { cn } from '@/lib/utils';
 import type { AimComponent, Annotation, QuestionType } from '@/types/study';
 import { Help } from '@/v2/Help';
@@ -195,6 +196,15 @@ export function BuildLens({
                       ✕
                     </button>
                   </div>
+                  {/* per-type litmus (§3): once the type is set, the authored test for that type. */}
+                  {a.questionType && litmusForQuestionType(a.questionType) && (
+                    <p className="rounded-md border border-lapis-edge/50 bg-lapis-wash/40 px-2 py-1 text-[11.5px] leading-snug text-ink-soft">
+                      <span className="mr-1 font-mono text-[9px] uppercase tracking-[0.08em] text-lapis-ink">
+                        ✓ test
+                      </span>
+                      {litmusForQuestionType(a.questionType)!.text}
+                    </p>
+                  )}
                   {a.expectedAnswer?.trim() ? (
                     <p className="rounded-md border border-line bg-panel/40 px-2 py-1 text-[13px] leading-snug text-ink-soft">
                       <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-ink-faint">Expected · </span>

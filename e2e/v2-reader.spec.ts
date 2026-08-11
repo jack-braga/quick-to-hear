@@ -401,6 +401,30 @@ test('v2 @mention autocomplete: @book → chapter → verse dropdowns build the 
   await expect(chip).toHaveText(/Mal 4:5/);
 });
 
+test('v2 Theme & aim: the "Sharpen it" tools surface litmus, the four traps, and Goldsworthy (§3)', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: /theme & aim/i }).click();
+
+  // Test-your-theme litmus opens on demand.
+  await page.getByRole('button', { name: /Test your theme/i }).click();
+  await expect(page.getByText(/Would the author recognise your theme/i)).toBeVisible();
+
+  // The four Goldsworthy traps, with the required in-app attribution (Inviolable rule 8).
+  await page.getByRole('button', { name: /Watch for the four traps/i }).click();
+  await expect(page.getByText('Moralism.')).toBeVisible();
+  await expect(page.getByText('Flattening.')).toBeVisible();
+  await expect(page.getByText(/Goldsworthy, Preaching the Whole Bible/i)).toBeVisible();
+
+  // A trap can be acknowledged (ticked) and it persists in the theme model.
+  const moralism = page.getByRole('checkbox').first();
+  await moralism.check();
+  await expect(moralism).toBeChecked();
+});
+
 test('v2 Questions lens: a yes-or-no opener surfaces the soft question-craft warning (§3)', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

@@ -170,15 +170,19 @@ v2's Build + Theme lenses are genuinely thinner than v1's Phase 5/6. This is cor
 prompts/tests that *are* the discipline), not polish. Re-surface it into the v2 lenses (the pure
 loaders already exist in `src/lib/content/method.ts`).
 
-**Progress (2026-08-12) — in flight:**
-- ✅ **Soft warnings** now surface in the **Questions lens**: a question card shows the yes-no /
-  leading / double-barrelled advisories live as you type (detection `detectWarnings` in
-  `src/lib/questions.ts`, wording from `warnings.yaml` via `warningById`). Advisory only, never a
-  block (rule 3). e2e-locked.
-- ⬜ **Still to surface:** question **formulas** (seed the Questions lens), **litmus tests** (Theme +
-  per-question-type), **traps** (Theme guidance), **stuck helpers** (Theme "feeling stuck?"). All
-  loaders exist (`formulaGroups`, `litmusThemeTests`/`litmusForQuestionType`, `trapsContent`,
-  `stuckHelpers`); zero other `src/v2` usage yet.
+**[done 2026-08-12] — the authored method content is now surfaced across the v2 lenses:**
+- ✅ **Soft warnings** (Questions lens) — a question card shows the yes-no / leading / double-barrelled
+  advisories live as you type (`detectWarnings` + `warnings.yaml`/`warningById`). Advisory, never a
+  block (rule 3).
+- ✅ **Question formulas** (Questions lens) — a "from a formula" picker seeds a question from the ~20
+  scaffolded stems (`formulaGroups`).
+- ✅ **Theme litmus + traps + stuck** (Theme & aim lens, a collapsible "Sharpen it" block) — the 5
+  theme litmus tests + the 4 Goldsworthy traps as acknowledgeable checks (persisted via the existing
+  `litmusAcks`/`trapAcks`), the 5 "feeling stuck?" helpers on demand. Goldsworthy attribution renders
+  (rule 8). Loaders: `litmusThemeTests`, `trapsContent`, `stuckHelpers`.
+- ✅ **Per-question litmus** (Build lens) — once a question's type is set, its authored test shows
+  (`litmusForQuestionType`).
+- All e2e-locked. This closes the §3 "missing v1 value" gap.
 
 ---
 

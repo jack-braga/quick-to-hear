@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
+import { litmusThemeTests, stuckHelpers, trapsContent } from '@/lib/content';
 import { cn } from '@/lib/utils';
 import { useStudyStore } from '@/store/study';
 import type { Study, ThemeAim } from '@/types/study';
@@ -110,6 +111,16 @@ export function ThemeAimLens({ study }: { study: Study }) {
   const setThemeAim = (patch: Partial<ThemeAim>) =>
     applyToCurrent((s) => ({ ...s, themeAim: { ...s.themeAim, ...patch } }));
   const setPrayer = (v: string) => applyToCurrent((s) => ({ ...s, prayerPoint: v }));
+  const setAck = (map: 'litmusAcks' | 'trapAcks', id: string, on: boolean) =>
+    setThemeAim({ [map]: { ...ta[map], [id]: on } } as Partial<ThemeAim>);
+
+  // Phase-5 sharpening tools (backlog §3) — the theme litmus tests, the four Goldsworthy traps, and
+  // the on-demand "stuck" helpers, all authored in content/method/*.yaml. Available, never forced.
+  const litmus = litmusThemeTests();
+  const traps = trapsContent();
+  const stuck = stuckHelpers();
+  const [openCheck, setOpenCheck] = useState<'litmus' | 'traps' | 'stuck' | null>(null);
+  const toggleCheck = (k: 'litmus' | 'traps' | 'stuck') => setOpenCheck((o) => (o === k ? null : k));
 
   return (
     <div>
@@ -191,6 +202,96 @@ export function ThemeAimLens({ study }: { study: Study }) {
           />
         </Node>
       </div>
+
+      {/* Sharpen it — the Phase-5 tools: test the theme, check the four traps, get unstuck (§3). */}
+      <div className="mx-1 mt-5 space-y-1.5 border-t border-line pt-4">
+        <div className="mb-1 font-mono text-[9px] uppercase tracking-[0.13em] text-ink-faint">
+          Sharpen it — optional
+        </div>
+
+        <CheckSection open={openCheck === 'litmus'} onToggle={() => toggleCheck('litmus')} icon="✓" title="Test your theme">
+          {litmus.map((t) => (
+            <AckRow key={t.id} checked={!!ta.litmusAcks[t.id]} onChange={(on) => setAck('litmusAcks', t.id, on)}>
+              {t.text}
+            </AckRow>
+          ))}
+        </CheckSection>
+
+        <CheckSection open={openCheck === 'traps'} onToggle={() => toggleCheck('traps')} icon="⚠" title="Watch for the four traps">
+          {traps.items.map((tr) => (
+            <AckRow key={tr.id} checked={!!ta.trapAcks[tr.id]} onChange={(on) => setAck('trapAcks', tr.id, on)}>
+              <b className="font-semibold text-ink">{tr.name}.</b> {tr.looksLike}{' '}
+              <span className="italic text-ink-faint">— {tr.check}</span>
+            </AckRow>
+          ))}
+          {traps.attribution && (
+            <p className="mt-1.5 text-[10px] italic leading-snug text-ink-faint">{traps.attribution}</p>
+          )}
+        </CheckSection>
+
+        <CheckSection open={openCheck === 'stuck'} onToggle={() => toggleCheck('stuck')} icon="?" title="Feeling stuck?">
+          {stuck.map((s) => (
+            <div key={s.id} className="py-0.5">
+              <div className="text-[12px] font-semibold text-ink">{s.name}</div>
+              <p className="text-[11px] leading-snug text-ink-soft">{s.text}</p>
+            </div>
+          ))}
+        </CheckSection>
+      </div>
     </div>
+  );
+}
+
+/** A collapsible "Sharpen it" section (litmus / traps / stuck). */
+function CheckSection({
+  open,
+  onToggle,
+  icon,
+  title,
+  children,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  icon: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-md border border-line">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2 px-2 py-1.5 text-left"
+      >
+        <span className="text-[11px] text-ink-faint">{icon}</span>
+        <span className="text-[12px] font-medium text-ink">{title}</span>
+        <span className="ml-auto font-mono text-[11px] text-ink-faint">{open ? '−' : '+'}</span>
+      </button>
+      {open && <div className="space-y-2 border-t border-line px-2.5 py-2">{children}</div>}
+    </div>
+  );
+}
+
+/** An acknowledgeable check — a checkbox + its text (struck through once ticked). */
+function AckRow({
+  checked,
+  onChange,
+  children,
+}: {
+  checked: boolean;
+  onChange: (on: boolean) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="flex items-start gap-2 text-[11.5px] leading-snug text-ink-soft">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 accent-moss"
+      />
+      <span className={cn(checked && 'text-ink-faint line-through')}>{children}</span>
+    </label>
   );
 }
