@@ -6,6 +6,39 @@
 > `docs/ROADMAP-v2.md` instead.** This file below is the v1 build log — keep it only as the crib
 > the v2 prompt points to.
 
+---
+
+## v2 — latest (2026-08-11)
+
+> **The v2 progress log lives in `docs/ROADMAP-v2.md` §5 (full detail per item); the durable owner
+> feedback + open items are in `docs/V2-UX-BACKLOG.md`.** This is just the pointer so a fresh session
+> sees the most recent arc. To resume v2: **`docs/V2-SESSION-PROMPT.md` → `ROADMAP-v2.md` (§4 build
+> order, §5 log) → `V2-UX-BACKLOG.md` (open items).**
+
+**Shipped this arc (picking up the context-limited "v2-con" session), newest first — all verified
+live + gated (`typecheck && lint && test (308) && e2e (20) && build`, 0 console errors):**
+
+- **Versification-aware `@`-mention autocomplete** (`4c62a84`, `cfa5eb1`) — typing `@<book>` opens a
+  keyboard-driven dropdown that walks **book → chapter → verse** (KJV-accurate counts from
+  `chapterCount`/`verseCount` in `@/lib/verse`); picking builds the reference and forms the chip.
+- **Verse jump-flash reads in the jumped annotation's tone** (`0bc5e53`) — rubric/amber/lapis via an
+  overridable `--flash-color`, not a fixed ring (new `TONE_EDGE`).
+- **Cross-reference collapse** (`a83455e`, mockup `c07abbc`) — no standalone Support-passage card; a
+  reference is only an inline `@`-mention carrying **Include-for-group** + **Return-question** toggles
+  in its peek. Model: `note.mentions: Record<osis,{includeForGroup,returnQuestion}>`; the `cross-ref`
+  annotation kind + promote flow were **removed**; `projectForExport` reads notes' included mentions.
+- **`/` palette slimmed to quick-jump** (`5f65731`) + **`@`-mention parse fix regression-locked**.
+- **COMA accordion (#3), Theme & aim structured spine (#4, in the passage+panel shell), panel = just
+  chips (#7)** (`543fb4c`; panel-toggle mockup `35abe5f`) — plus a shared **`moss`** colour token.
+
+**Next up (recommended):** the biggest open v2 gap is **`V2-UX-BACKLOG.md §3 — missing v1 value**: the
+question formulas, litmus tests, traps, and soft warnings exist only in `content/method/*.yaml` and are
+**unused by v2** (loaders already in `src/lib/content/method.ts`). Also still open in §4/§1: Set-Up UX
+once-over, card-naming convention, and the "add prior card-types in a later lens" question. Nothing from
+the just-finished feedback batch is left hanging.
+
+---
+
 > **This is the first file to read in any session.** It records where the build
 > actually is. Update it at the end of every stage (and any time you stop
 > mid-stage): mark what's done, note deviations, say what the next session should
