@@ -30,6 +30,13 @@ export const TONE: Record<
     cardLit:
       '-translate-x-[3px] border-lapis bg-lapis-wash shadow-[0_0_0_2px_var(--lapis),0_8px_20px_-8px_rgba(40,70,138,0.4)]',
   },
+  moss: {
+    wash: 'bg-moss-wash',
+    ring: 'bg-moss-wash shadow-[inset_0_0_0_2px_var(--moss)]',
+    borderL: 'border-l-moss',
+    cardLit:
+      '-translate-x-[3px] border-moss bg-moss-wash shadow-[0_0_0_2px_var(--moss),0_8px_20px_-8px_rgba(79,107,58,0.4)]',
+  },
 };
 
 /** The strong ring colour per tone, as a raw CSS value (matches `TONE[t].ring`). Used by the verse
@@ -38,6 +45,7 @@ export const TONE_EDGE: Record<AnnotationTone, string> = {
   rubric: 'var(--rubric)',
   amber: '#b98a1e',
   lapis: 'var(--lapis)',
+  moss: 'var(--moss)',
 };
 
 /** The wash colour per tone as a raw CSS value — for the diagonal multi-tone stripe a verse gets
@@ -47,6 +55,7 @@ export const TONE_WASH: Record<AnnotationTone, string> = {
   rubric: 'var(--rubric-wash)',
   amber: 'var(--amber-wash)',
   lapis: 'var(--lapis-wash)',
+  moss: 'var(--moss-wash)',
 };
 
 /**

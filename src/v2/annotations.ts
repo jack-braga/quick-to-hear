@@ -14,20 +14,23 @@ import {
  * `verseIds` marks a floating (study-level) note.
  */
 
-/** The accent a kind reads in: confusing = rubric (red), question = amber, everything else = lapis. */
-export type AnnotationTone = 'rubric' | 'lapis' | 'amber';
+/** The accent a kind reads in: confusing = rubric (red), question = amber, a COMA answer = moss
+ *  (green — distinct from a Map note), everything else = lapis. */
+export type AnnotationTone = 'rubric' | 'lapis' | 'amber' | 'moss';
 
 export function toneFor(a: Annotation): AnnotationTone {
   if (a.kind === 'question') return 'amber';
   if (a.kind === 'note' && a.flag === 'confusing') return 'rubric';
+  // A COMA answer-card reads in moss so it's distinct from a Map note (both are plain notes).
+  if (annotationOrigin(a) === 'coma') return 'moss';
   return 'lapis';
 }
 
 /** Priority when a verse carries several annotations: the resting tint shows the most notable. */
-const TONE_PRIORITY: Record<AnnotationTone, number> = { rubric: 3, amber: 2, lapis: 1 };
+const TONE_PRIORITY: Record<AnnotationTone, number> = { rubric: 4, amber: 3, moss: 2, lapis: 1 };
 
 /** Tones highest-priority first — the stable order the diagonal multi-tone stripe cycles through. */
-const TONES_BY_PRIORITY: AnnotationTone[] = ['rubric', 'amber', 'lapis'];
+const TONES_BY_PRIORITY: AnnotationTone[] = ['rubric', 'amber', 'moss', 'lapis'];
 
 // --- Origin (which lens a card was made in) — v2 Layout-B "everything is a card" ---------------
 

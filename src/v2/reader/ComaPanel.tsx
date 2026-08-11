@@ -98,7 +98,7 @@ export function ComaPanel(props: ComaPanelProps) {
       <div
         key={a.id}
         className={cn(
-          'group mt-1.5 rounded-lg border border-line border-l-[3px] border-l-lapis bg-leaf p-2.5 transition-shadow',
+          'group mt-1.5 rounded-lg border border-line border-l-[3px] border-l-moss bg-leaf p-2.5 transition-shadow',
           capturing && 'shadow-[0_0_0_2px_var(--lapis-edge)]',
         )}
       >
