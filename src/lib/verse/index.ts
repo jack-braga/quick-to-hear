@@ -14,4 +14,10 @@ export {
   verseSortKey,
   type ParsedVerseId,
 } from './ids';
-export { parseReference, type ParsedReference, type RefEndpoint } from './reference';
+export {
+  chapterCount,
+  parseReference,
+  verseCount,
+  type ParsedReference,
+  type RefEndpoint,
+} from './reference';

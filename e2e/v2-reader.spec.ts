@@ -366,7 +366,7 @@ test('v2 @mention cross-ref collapse: chip → peek → include-for-group → pr
   await expect(page.getByText(/send you Elijah the prophet/i)).toBeVisible();
 });
 
-test('v2 @mention autocomplete: type @<book> → pick from the dropdown → the chip forms', async ({ page }) => {
+test('v2 @mention autocomplete: @book → chapter → verse dropdowns build the reference', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();
   await page.fill('#v2-reference', 'Luke 1:5-25');
@@ -380,15 +380,23 @@ test('v2 @mention autocomplete: type @<book> → pick from the dropdown → the 
   await editor.click();
   await editor.pressSequentially('see @mal');
 
-  // The book autocomplete appears with Malachi; Enter accepts it, inserting "@Malachi ".
   const suggest = page.getByTestId('mention-suggest');
+  // 1) Book list — Enter accepts Malachi → "@Malachi ".
+  await expect(suggest).toHaveAttribute('data-mode', 'book');
   await expect(suggest.getByRole('option', { name: /Malachi/ })).toBeVisible();
   await page.keyboard.press('Enter');
-  await expect(suggest).toHaveCount(0);
 
-  // Finishing the reference forms the chip (the pure parser + editor recombine).
-  await editor.pressSequentially('4:5-6');
-  const chip = page.locator('[data-raw="@Malachi 4:5-6"]');
+  // 2) Chapter grid, versification-aware: Malachi has 4 chapters (no 5th).
+  await expect(suggest).toHaveAttribute('data-mode', 'chapter');
+  await expect(suggest.getByRole('option', { name: '5', exact: true })).toHaveCount(0);
+  await suggest.getByRole('option', { name: '4', exact: true }).click();
+
+  // 3) Verse grid: Malachi 4 has 6 verses (no 7th). Pick v5 → the chip forms.
+  await expect(suggest).toHaveAttribute('data-mode', 'verse');
+  await expect(suggest.getByRole('option', { name: '7', exact: true })).toHaveCount(0);
+  await suggest.getByRole('option', { name: '5', exact: true }).click();
+
+  const chip = page.locator('[data-raw="@Malachi 4:5"]');
   await expect(chip).toBeVisible();
   await expect(chip).toHaveText(/Mal 4:5/);
 });

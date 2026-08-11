@@ -181,11 +181,13 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
   typing of `@Matthew 1:5` chips the whole verse, not the chapter): `longestReference` already tries
   the longest valid form first and the `MentionEditor` re-chips on each signature change, so the
   `:verse` (and ranges) are kept. Locked by two cases in `mentions.test.ts`. **Search dropdown
-  [done 2026-08-11]:** typing `@<letters>` at a word boundary opens a keyboard-navigable book
-  autocomplete (↑/↓ · Enter/Tab · Esc); picking inserts `@Book ` so you type the chapter:verse, which
-  forms the chip. The boundary check skips emails; logic in `computeMentionQuery` (`MentionEditor.tsx`),
-  e2e-locked. *(Book-name search only — versification-aware chapter/verse suggestions would be a
-  further follow-up.)*
+  [done 2026-08-11]:** typing `@<letters>` at a word boundary opens a keyboard-navigable autocomplete
+  (↑/↓ · Enter/Tab · Esc) that walks **book → chapter → verse**: pick a book → a
+  **versification-aware chapter grid** (KJV counts, e.g. Malachi 1–4) → pick a chapter → a
+  **verse grid** (e.g. Malachi 4:1–6) → pick a verse and the chip forms. Counts come from
+  `chapterCount`/`verseCount` in `@/lib/verse` (KJV via `parseReference`, so they match what chips —
+  3 John ends at 14, not 15). The boundary check skips emails; logic in `computeMentionSuggest`
+  (`MentionEditor.tsx`), unit- + e2e-locked.
 - ~~**Sectioning disabled in parallel (msg#2304, #2749).**~~ **[fixed `148caa7`]** — `ParallelCanvas`
   renders full-width section band headers (name/range/merge) + a "＋ divide here" pill on the primary
   column (reuses ReaderShell's section handlers; takes the primary reader `model`).

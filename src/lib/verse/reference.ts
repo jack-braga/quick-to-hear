@@ -85,3 +85,22 @@ export function parseReference(input: string): ParsedReference | null {
     extraPassages: matches.length > 1 || segments.length > 1,
   };
 }
+
+/**
+ * Versification lookups (KJV — the numbering we ship), for the `@`-mention chapter/verse
+ * autocomplete. They reuse `parseReference` — with `book_alone_strategy:'full'` a bare book expands
+ * to its last chapter and a bare chapter to its last verse — so they're the *same* authority as
+ * parsing (e.g. KJV 3 John has 14 verses, not 15). Return `null` for an unrecognised / out-of-range
+ * input.
+ */
+export function chapterCount(book: string): number | null {
+  const ref = parseReference(book);
+  return ref && ref.singleBook && ref.start.chapter === 1 ? ref.end.chapter : null;
+}
+
+export function verseCount(book: string, chapter: number): number | null {
+  const ref = parseReference(`${book} ${chapter}`);
+  return ref && ref.singleBook && ref.start.chapter === chapter && ref.end.chapter === chapter
+    ? ref.end.verse
+    : null;
+}

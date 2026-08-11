@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseReference } from '@/lib/verse/reference';
+import { chapterCount, parseReference, verseCount } from '@/lib/verse/reference';
 
 describe('parseReference (bcv_parser @ kjv)', () => {
   it('parses a simple verse range', () => {
@@ -51,5 +51,28 @@ describe('parseReference (bcv_parser @ kjv)', () => {
     expect(parseReference('')).toBeNull();
     expect(parseReference('   ')).toBeNull();
     expect(parseReference('not a reference at all')).toBeNull();
+  });
+});
+
+describe('chapterCount / verseCount (KJV versification)', () => {
+  it('counts chapters per book', () => {
+    expect(chapterCount('Malachi')).toBe(4);
+    expect(chapterCount('Genesis')).toBe(50);
+    expect(chapterCount('Psalms')).toBe(150);
+    expect(chapterCount('Jude')).toBe(1);
+  });
+
+  it('counts verses per chapter, clamped to KJV', () => {
+    expect(verseCount('Malachi', 4)).toBe(6);
+    expect(verseCount('Genesis', 1)).toBe(31);
+    expect(verseCount('Psalm', 119)).toBe(176);
+    // KJV numbering: 3 John ends at v14 (not the default system's 15).
+    expect(verseCount('3 John', 1)).toBe(14);
+    expect(verseCount('Revelation', 12)).toBe(17);
+  });
+
+  it('returns null for an unrecognised book or an out-of-range chapter', () => {
+    expect(chapterCount('Nowhere')).toBeNull();
+    expect(verseCount('Malachi', 9)).toBeNull();
   });
 });
