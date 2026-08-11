@@ -366,6 +366,33 @@ test('v2 @mention cross-ref collapse: chip → peek → include-for-group → pr
   await expect(page.getByText(/send you Elijah the prophet/i)).toBeVisible();
 });
 
+test('v2 @mention autocomplete: type @<book> → pick from the dropdown → the chip forms', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '03 Map' }).click();
+
+  await page.locator('[data-v="LUKE.1.17"]').click();
+  await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /note/i }).click();
+  const editor = page.locator('[data-mention-editor]');
+  await editor.click();
+  await editor.pressSequentially('see @mal');
+
+  // The book autocomplete appears with Malachi; Enter accepts it, inserting "@Malachi ".
+  const suggest = page.getByTestId('mention-suggest');
+  await expect(suggest.getByRole('option', { name: /Malachi/ })).toBeVisible();
+  await page.keyboard.press('Enter');
+  await expect(suggest).toHaveCount(0);
+
+  // Finishing the reference forms the chip (the pure parser + editor recombine).
+  await editor.pressSequentially('4:5-6');
+  const chip = page.locator('[data-raw="@Malachi 4:5-6"]');
+  await expect(chip).toBeVisible();
+  await expect(chip).toHaveText(/Mal 4:5/);
+});
+
 test('v2 Build lens: questions order by verse, reorder, and persist', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

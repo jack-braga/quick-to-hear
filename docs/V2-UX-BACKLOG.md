@@ -180,9 +180,12 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
   at `@Matthew 1`.~~ **[parse fixed + regression-locked 2026-08-11]** — verified live (char-by-char
   typing of `@Matthew 1:5` chips the whole verse, not the chapter): `longestReference` already tries
   the longest valid form first and the `MentionEditor` re-chips on each signature change, so the
-  `:verse` (and ranges) are kept. Locked by two cases in `mentions.test.ts`. **Still deferred:** the
-  **search dropdown** while typing a mention (an autocomplete over the book list + chapter/verse — a
-  feature, not a fix; needs its own small design). **[dropdown open]**
+  `:verse` (and ranges) are kept. Locked by two cases in `mentions.test.ts`. **Search dropdown
+  [done 2026-08-11]:** typing `@<letters>` at a word boundary opens a keyboard-navigable book
+  autocomplete (↑/↓ · Enter/Tab · Esc); picking inserts `@Book ` so you type the chapter:verse, which
+  forms the chip. The boundary check skips emails; logic in `computeMentionQuery` (`MentionEditor.tsx`),
+  e2e-locked. *(Book-name search only — versification-aware chapter/verse suggestions would be a
+  further follow-up.)*
 - ~~**Sectioning disabled in parallel (msg#2304, #2749).**~~ **[fixed `148caa7`]** — `ParallelCanvas`
   renders full-width section band headers (name/range/merge) + a "＋ divide here" pill on the primary
   column (reuses ReaderShell's section handlers; takes the primary reader `model`).
