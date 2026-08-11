@@ -229,6 +229,14 @@ export function ReaderShell({ study }: { study: Study }) {
   const onMakeQuestion = (source: Annotation) =>
     addAnnotation(makeAnnotation(newId(), { kind: 'question', verseIds: [...source.verseIds], origin: 'questions' }));
 
+  // Questions lens: seed a new question from a formula stem (SPEC 6c). The tool scaffolds the
+  // question; the user fills the `____` blanks + writes the expected answer.
+  const onAddFromFormula = (stem: string) => {
+    const id = newId();
+    addAnnotation({ ...makeAnnotation(id, { kind: 'question', verseIds: [], origin: 'questions' }), text: stem });
+    setFocusAnnotationId(id);
+  };
+
   // COMA answer-on-demand (#4b): ✎ Answer spawns an empty answer-card (origin 'coma') tagged with
   // its heading + the prompt it answers; the user writes the answer, then anchors it via capture.
   const onAddComaAnswer = (comaType: QuestionType, prompt: string) =>
@@ -527,6 +535,7 @@ export function ReaderShell({ study }: { study: Study }) {
         onEndCapture={endCapture}
         onAdd={onAddCard}
         onMakeQuestion={makeQuestion}
+        onAddFromFormula={origin === 'questions' ? onAddFromFormula : undefined}
         onMentionMeta={onSetMentionMeta}
         onFocusHandled={clearFocusAnnotation}
       />

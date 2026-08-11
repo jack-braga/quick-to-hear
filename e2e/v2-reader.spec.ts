@@ -421,6 +421,24 @@ test('v2 Questions lens: a yes-or-no opener surfaces the soft question-craft war
   await expect(page.getByText(/may be a yes-or-no question/i)).toHaveCount(0);
 });
 
+test('v2 Questions lens: start a question from a scaffolded formula (§3)', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '06 Questions' }).click();
+
+  await page.getByRole('button', { name: /from a formula/i }).click();
+  await expect(page.getByText('Start from a formula')).toBeVisible();
+  await page.getByRole('button', { name: /Count or list/ }).click();
+
+  // The formula seeds a new question with its scaffolded stem (blanks for the leader to fill).
+  await expect(page.locator('textarea[data-focus]')).toHaveValue(/List every place .* appears/i);
+  // The picker closes after picking.
+  await expect(page.getByText('Start from a formula')).toHaveCount(0);
+});
+
 test('v2 Build lens: questions order by verse, reorder, and persist', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

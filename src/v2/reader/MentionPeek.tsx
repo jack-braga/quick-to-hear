@@ -86,7 +86,7 @@ export function MentionPeek({
         </span>
       ))}
       {fallbackLabel && (
-        <span className="ml-1 whitespace-nowrap font-sans text-[10.5px] not-italic text-ink-faint">
+        <span className="mt-1 block font-sans text-[10.5px] not-italic leading-snug text-ink-faint">
           — shown in {fallbackLabel} (public domain); your pasted translation covers only the main
           passage.
         </span>

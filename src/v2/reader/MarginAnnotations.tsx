@@ -23,6 +23,7 @@ import {
   toneFor,
 } from '@/v2/annotations';
 import { LENSES } from '@/v2/lenses';
+import { FormulaPicker } from '@/v2/reader/FormulaPicker';
 import { MentionEditor } from '@/v2/reader/MentionEditor';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { TONE } from '@/v2/tones';
@@ -98,6 +99,8 @@ export interface MarginAnnotationsProps {
   /** Recycle-forward (Questions lens only): seed a question at a prior card's anchor. When set, every
    *  non-question card shows a **→ make a question**. */
   onMakeQuestion?: (source: Annotation) => void;
+  /** Questions lens: seed a new question from a formula stem (SPEC 6c). */
+  onAddFromFormula?: (stem: string) => void;
   /** Set a mention's include-for-group / return-question metadata on the host note (cross-ref
    *  collapse — the reference lives inline, no standalone card). */
   onMentionMeta: (host: Annotation, osis: string, patch: Partial<MentionMeta>) => void;
@@ -109,6 +112,7 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
   const byId = useMemo(() => new Map(allVerses(passage).map((v) => [v.verseId, v])), [passage]);
 
   const [hidden, setHidden] = useState<Set<AnnotationOrigin>>(loadHidden);
+  const [formulasOpen, setFormulasOpen] = useState(false);
   useEffect(() => {
     try {
       localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hidden]));
@@ -316,14 +320,32 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
       </div>
       <div className="mx-1 mb-3 flex justify-end gap-1.5">
         {props.lensOrigin === 'questions' ? (
-          <button
-            type="button"
-            onClick={() => props.onAdd('question')}
-            title="Add a question (anchor it to verses later)"
-            className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
-          >
-            ＋ question
-          </button>
+          <>
+            {props.onAddFromFormula && (
+              <button
+                type="button"
+                onClick={() => setFormulasOpen((v) => !v)}
+                aria-expanded={formulasOpen}
+                title="Start a question from a scaffolded formula (you fill in the blanks)"
+                className={cn(
+                  'rounded-md border px-2 py-0.5 font-mono text-[11px]',
+                  formulasOpen
+                    ? 'border-lapis-edge bg-lapis-wash text-lapis-ink'
+                    : 'border-line bg-panel text-ink-soft hover:border-lapis-edge hover:text-ink',
+                )}
+              >
+                ✎ from a formula
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => props.onAdd('question')}
+              title="Add a question (anchor it to verses later)"
+              className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
+            >
+              ＋ question
+            </button>
+          </>
         ) : (
           <>
             <button
@@ -345,6 +367,16 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           </>
         )}
       </div>
+
+      {formulasOpen && props.onAddFromFormula && (
+        <FormulaPicker
+          onPick={(stem) => {
+            props.onAddFromFormula!(stem);
+            setFormulasOpen(false);
+          }}
+          onClose={() => setFormulasOpen(false)}
+        />
+      )}
 
       {present.length > 0 && (
         <div className="mx-1 mb-2.5 flex flex-wrap gap-1.5">
