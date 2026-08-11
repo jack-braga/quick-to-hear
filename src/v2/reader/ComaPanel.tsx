@@ -99,19 +99,8 @@ export function ComaPanel(props: ComaPanelProps) {
           capturing && 'shadow-[0_0_0_2px_var(--lapis-edge)]',
         )}
       >
-        <textarea
-          data-focus={a.id}
-          ref={autoGrow}
-          rows={2}
-          className="w-full resize-none border-none bg-transparent p-0 font-sans text-[13px] leading-[1.5] text-ink outline-none placeholder:text-ink-faint"
-          value={a.text}
-          placeholder="Write what the text gives…"
-          onChange={(e) => {
-            props.onEdit(a.id, { text: e.target.value });
-            autoGrow(e.currentTarget);
-          }}
-        />
-        <div className="mt-2 flex items-center gap-2">
+        {/* top row — anchor chip (top-left) + delete, matching the Map/Questions cards */}
+        <div className="mb-1.5 flex items-center gap-2">
           <button
             type="button"
             onClick={onAnchorClick}
@@ -142,6 +131,18 @@ export function ComaPanel(props: ComaPanelProps) {
             ✕
           </button>
         </div>
+        <textarea
+          data-focus={a.id}
+          ref={autoGrow}
+          rows={2}
+          className="w-full resize-none border-none bg-transparent p-0 font-sans text-[13px] leading-[1.5] text-ink outline-none placeholder:text-ink-faint"
+          value={a.text}
+          placeholder="Write what the text gives…"
+          onChange={(e) => {
+            props.onEdit(a.id, { text: e.target.value });
+            autoGrow(e.currentTarget);
+          }}
+        />
       </div>
     );
   };

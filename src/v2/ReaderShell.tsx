@@ -51,6 +51,21 @@ function loadReadingMode(): ReadingMode {
  *  tones/highlights (and its margin is the pray-and-read panel, not cards). */
 const NO_TONES: Map<string, AnnotationTone[]> = new Map();
 
+/** The parallel view (which non-primary translations are ticked to read side-by-side) persists
+ *  per-study in the browser, so it survives a reload — like the reading mode. */
+function viewedKey(studyId: string): string {
+  return `qth2/viewed/${studyId}`;
+}
+function loadViewed(studyId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(viewedKey(studyId));
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? new Set(parsed.filter((x): x is string => typeof x === 'string')) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
 export function ReaderShell({ study }: { study: Study }) {
   const applyToCurrent = useStudyStore((s) => s.applyToCurrent);
   const setPassage = useStudyStore((s) => s.setPassage);
@@ -62,9 +77,9 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const [lens, setLens] = useState<LensId>(passage ? 'map' : 'setup');
   const [readingMode, setReadingMode] = useState<ReadingMode>(loadReadingMode);
-  // Which non-primary translations are ticked to view side-by-side (v2.9). Transient reading state;
-  // the primary itself is always shown, and the primary switch persists to the study.
-  const [viewedSet, setViewedSet] = useState<Set<string>>(new Set());
+  // Which non-primary translations are ticked to view side-by-side (v2.9). Persisted per-study so the
+  // parallel view survives a reload; the primary itself is always shown (its switch persists to the study).
+  const [viewedSet, setViewedSet] = useState<Set<string>>(() => loadViewed(study.id));
   const [selected, setSelected] = useState<string[]>([]);
   const [lastAnchor, setLastAnchor] = useState<string | null>(null);
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
@@ -106,6 +121,15 @@ export function ReaderShell({ study }: { study: Study }) {
       ),
     [annotations],
   );
+
+  // Persist the parallel view (viewed translations) per-study so it survives a reload.
+  useEffect(() => {
+    try {
+      localStorage.setItem(viewedKey(study.id), JSON.stringify([...viewedSet]));
+    } catch {
+      /* storage unavailable — the view still applies for this session */
+    }
+  }, [viewedSet, study.id]);
 
   const clearSelection = () => {
     setSelected([]);
