@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — Deepen + Weigh (split, Option B) mockup</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.4);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
+        --moss: #4f6b3a; --moss-wash: rgba(79,107,58,0.16); --moss-edge: rgba(79,107,58,0.4); --moss-ink: #3c5330;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.16); --lapis-edge: rgba(144,176,239,0.38);
+        --amber-wash: rgba(221,187,97,0.17); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.42);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.16); --rubric-edge: rgba(226,128,95,0.4);
+        --moss: #9fc27e; --moss-wash: rgba(159,194,126,0.18); --moss-edge: rgba(159,194,126,0.42); --moss-ink: #bcd6a3;
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button, input, textarea { font-family: inherit; }
+      button { cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto auto 1fr; }
+
+      /* header + 10-lens tracker */
+      .topbar { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; white-space: nowrap; }
+      .ref { font-family: var(--font-scripture); font-size: 18px; white-space: nowrap; }
+      .grow { flex: 1; }
+      .lenses { display: flex; gap: 2px; }
+      .lens { position: relative; min-width: 27px; height: 27px; padding: 0 5px; display: grid; place-items: center; border-radius: 7px; background: none; border: 1px solid transparent; color: var(--ink-faint); font-size: 12px; }
+      .lens small { font-family: var(--font-mono); font-size: 8px; }
+      .lens.done { color: var(--ink-soft); }
+      .lens.active { color: #fff; background: var(--lapis); border-color: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #16181d; }
+      .lens.newstep { border-color: var(--moss-edge); color: var(--moss-ink); background: var(--moss-wash); }
+      .lens.newstep.active { background: var(--moss); color: #fff; border-color: var(--moss); }
+      :root[data-theme='night'] .lens.newstep.active { color: #16181d; }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; }
+
+      /* chooser / flow bar */
+      .chooser { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 10px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+      .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-faint); }
+      .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .seg button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 12px; padding: 5px 12px; }
+      .seg button + button { border-left: 1px solid var(--line); }
+      .seg button.on { background: var(--moss); color: #fff; }
+      :root[data-theme='night'] .seg button.on { color: #16181d; }
+      .flow { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); flex: 1; min-width: 320px; }
+      .flow b { color: var(--moss-ink); background: var(--moss-wash); border: 1px solid var(--moss-edge); border-radius: 5px; padding: 1px 6px; }
+      .flow span.sep { color: var(--ink-faint); }
+
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 400px; overflow: hidden; }
+      .center { overflow-y: auto; display: flex; justify-content: center; padding: 24px 22px 60px; }
+      .leaf { width: 100%; max-width: 40rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 26px clamp(22px,3vw,44px) 40px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 24px; margin: 0 0 2px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.18rem; line-height: 1.72; margin-top: 16px; }
+      .scripture sup { font-family: var(--font-mono); font-size: 0.56em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .v.amber { background: var(--amber-wash); border-radius: 4px; }
+      .v.rubric { background: var(--rubric-wash); border-radius: 4px; }
+      .v.moss { background: var(--moss-wash); border-radius: 4px; }
+
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); overflow-y: auto; }
+      .pbody { padding: 14px 15px 40px; }
+      .phead { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); }
+      .lede { margin: 6px 0 14px; font-size: 12.5px; color: var(--ink-soft); }
+      .lede b { color: var(--ink); }
+
+      /* deepen cards */
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 10px 12px; box-shadow: var(--shadow); margin-bottom: 12px; }
+      .card.rubric { border-left-color: var(--rubric-edge); }
+      .card.moss { border-left-color: var(--moss-edge); }
+      .ctop { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+      .anchor { font-family: var(--font-mono); font-size: 10.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 6px; }
+      .tag { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); }
+      .tag.rubric { color: var(--rubric); }
+      .tag.moss { color: var(--moss-ink); }
+      .first { font-size: 13px; color: var(--ink); }
+      .firstlbl { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); }
+      .add { margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; border: 1px dashed var(--moss-edge); background: none; color: var(--moss-ink); border-radius: 7px; padding: 3px 9px; font-size: 11.5px; }
+      .add:hover { background: var(--moss-wash); }
+      .resolve { margin-top: 8px; border-left: 3px solid var(--moss-edge); background: var(--moss-wash); border-radius: 8px; padding: 8px 10px; }
+      .resolve .rl { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--moss-ink); margin-bottom: 4px; }
+      .resolve textarea { width: 100%; border: none; background: none; resize: none; font-family: var(--font-scripture); font-size: 13px; color: var(--ink); outline: none; line-height: 1.5; }
+      .fwd { margin-top: 6px; font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); }
+      .fwd b { color: var(--moss-ink); }
+      .hidden { display: none; }
+
+      /* weigh view */
+      .banner { border: 1px solid var(--amber-edge); background: var(--amber-wash); border-radius: 10px; padding: 11px 13px; font-size: 12.5px; color: var(--ink); }
+      .banner b { color: var(--amber-ink); }
+      .recap { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--leaf); padding: 11px 12px; }
+      .recap .rl { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); margin-bottom: 3px; }
+      .recap .tv { font-family: var(--font-scripture); font-size: 13.5px; color: var(--ink); line-height: 1.5; }
+      .recap + .recap { margin-top: 8px; }
+      .field { margin-top: 14px; }
+      .field .fl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); margin-bottom: 4px; display: block; }
+      .field input, .field textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 6px 9px; font-size: 13px; color: var(--ink); outline: none; font-family: var(--font-ui); }
+      .field textarea { resize: vertical; min-height: 54px; line-height: 1.5; }
+      .field input:focus, .field textarea:focus { border-color: var(--lapis-edge); }
+      .loopback { margin-top: 14px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); border-radius: 8px; padding: 6px 11px; font-size: 12.5px; }
+      .foot { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 10.5px; font-style: italic; color: var(--ink-faint); line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <div class="grow"></div>
+        <nav class="lenses" id="lenses" aria-label="Study phases">
+          <button class="lens done">⚙<small>01</small></button>
+          <button class="lens done">◉<small>02</small></button>
+          <button class="lens done">▤<small>03</small></button>
+          <button class="lens done">▦<small>04</small></button>
+          <button class="lens newstep" data-view="deepen">⊕<small>05</small></button>
+          <button class="lens done">◎<small>06</small></button>
+          <button class="lens newstep" data-view="weigh">⚖<small>07</small></button>
+          <button class="lens">?<small>08</small></button>
+          <button class="lens">▥<small>09</small></button>
+          <button class="lens">✓<small>10</small></button>
+        </nav>
+        <div class="grow"></div>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="chooser">
+        <span class="lbl">Option B · the split</span>
+        <div class="seg" id="seg">
+          <button data-view="deepen" class="on">05 · Deepen</button>
+          <button data-view="weigh">07 · Weigh a commentary</button>
+        </div>
+        <div class="flow">
+          COMA <span class="sep">→</span> <b>Deepen</b> <span class="sep">→</span> Theme&nbsp;&amp;&nbsp;aim <span class="sep">→</span> <b>Weigh</b> <span class="sep">→</span> Questions
+        </div>
+      </div>
+
+      <div class="work">
+        <div class="center">
+          <div class="leaf">
+            <h1>Luke 1:5–25</h1>
+            <span class="meta">WEBBE · public domain</span>
+            <div class="scripture">
+              <span class="v moss"><sup>8</sup>Now while he executed the priest's office before God in the order of his division, </span>
+              <span class="v moss"><sup>9</sup>his lot was to enter into the temple of the Lord and burn incense. </span>
+              <span class="v moss"><sup>10</sup>The whole multitude of the people were praying outside at the hour of incense. </span>
+              <span class="v rubric"><sup>11</sup>An angel of the Lord appeared to him, standing on the right side of the altar of incense. </span>
+              <span><sup>12</sup>Zacharias was troubled when he saw him, and fear fell upon him. </span>
+              <span><sup>13</sup>But the angel said to him, “Don't be afraid, Zacharias, because your request has been heard…” </span>
+              <span><sup>17</sup>He will go before him in the spirit and power of Elijah… </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 05 · DEEPEN ===== -->
+        <div class="panel" id="deepen">
+          <div class="pbody">
+            <div class="phead">Deepen — resolve &amp; deepen · your own work</div>
+            <p class="lede">Go back over what you wrote in <b>Map</b> and <b>COMA</b>. <b>Answer what you marked
+              confusing</b> and add what you now understand — <b>from the text first</b>. Your first-pass
+              words are kept; you're adding a layer, not replacing one. <i>No commentaries yet.</i></p>
+
+            <!-- confusion mark -->
+            <div class="card rubric">
+              <div class="ctop"><span class="anchor">Luke 1:11</span><span class="tag rubric">✱ Marked confusing · Map</span></div>
+              <div class="firstlbl">First pass</div>
+              <div class="first">Why does an angel appear <i>here</i> specifically?</div>
+              <button class="add" data-target="r1">＋ answer it (from the text)</button>
+              <div class="resolve hidden" id="r1">
+                <div class="rl">What I now see</div>
+                <textarea rows="2" placeholder="Answer what puzzled you…">The incense hour = the people's prayers ascending (v10); the angel answers a prayer “heard” (v13). The place is the point.</textarea>
+                <div class="fwd">→ a resolved confusion prints as a <b>background box</b> (“tell them, don't ask”).</div>
+              </div>
+            </div>
+
+            <!-- COMA observation -->
+            <div class="card moss">
+              <div class="ctop"><span class="anchor">Luke 1:8–10</span><span class="tag moss">COMA · Observation</span></div>
+              <div class="firstlbl">First pass</div>
+              <div class="first">Ordinary temple duty and a praying crowd — faithfulness interrupted.</div>
+              <button class="add" data-target="r2">＋ what I now see</button>
+              <div class="resolve hidden" id="r2">
+                <div class="rl">What I now see</div>
+                <textarea rows="2" placeholder="Deepen it with what you've learned…">“His lot” (v9) — even the timing is God's, not Zechariah's. The interruption is arranged.</textarea>
+                <div class="fwd">→ a deepened observation is a <b>stronger seed for a question</b>.</div>
+              </div>
+            </div>
+
+            <!-- a plain note -->
+            <div class="card">
+              <div class="ctop"><span class="anchor">Luke 1:13</span><span class="tag">Note · Map</span></div>
+              <div class="firstlbl">First pass</div>
+              <div class="first">“Your request has been heard” — cf. the long barrenness (v7).</div>
+              <button class="add" data-target="r3">＋ what I now see</button>
+              <div class="resolve hidden" id="r3">
+                <div class="rl">What I now see</div>
+                <textarea rows="2" placeholder="Deepen it…"></textarea>
+                <div class="fwd">→ carries forward with your other work.</div>
+              </div>
+            </div>
+
+            <p class="foot">Own work first — this is still <i>you</i> on the text. You'll check it against a
+              commentary two steps on, at <b>Weigh</b>, once you've committed a theme &amp; aim.</p>
+          </div>
+        </div>
+
+        <!-- ===== 07 · WEIGH ===== -->
+        <div class="panel hidden" id="weigh">
+          <div class="pbody">
+            <div class="phead">Weigh — check your reading · after your own work</div>
+            <div class="banner" style="margin-top:8px">
+              You've committed a <b>theme &amp; aim</b>. <b>Now — and only now — open a commentary</b> to confirm
+              or correct it. This is a check, not a gate: keep what holds up, revise what doesn't.
+            </div>
+
+            <div class="recap" style="margin-top:16px">
+              <div class="rl">Your theme (step 06)</div>
+              <div class="tv">God keeps his covenant promise, answering long prayer in his own timing.</div>
+            </div>
+            <div class="recap">
+              <div class="rl">Your aim</div>
+              <div class="tv">For this group, to trust God's timing where they've prayed long and heard nothing.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl">Commentary consulted</label>
+              <input placeholder="e.g. France, Luke (TNTC); Bock, Luke (BECNT)…" />
+            </div>
+            <div class="field">
+              <label class="fl">What it confirmed — or corrected</label>
+              <textarea placeholder="Where it backed your reading, and where it pulled you up…">Confirmed the prayer↔incense link. Pulled me up: v17's “Elijah” is the frame — my theme underplays the forerunner note. Widen the aim.</textarea>
+            </div>
+
+            <button class="loopback">↩ Revise your theme &amp; aim (step 06)</button>
+
+            <p class="foot">Reserve <b>substantive</b> commentary work for here. A <i>light</i> lookup — a name, a
+              place, a date — belongs back in Context/Map, exactly as COMA itself allows.<br />
+              <span style="opacity:.85">Own work first, commentaries as a check — Simeon Trust / Helm. Check
+              before the questions harden — Goldsworthy. It stays <b>before Questions</b>, so your expected
+              answers rest on a checked reading.</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+
+      function show(view) {
+        document.getElementById('deepen').classList.toggle('hidden', view !== 'deepen');
+        document.getElementById('weigh').classList.toggle('hidden', view !== 'weigh');
+        for (const b of document.querySelectorAll('#seg button')) b.classList.toggle('on', b.dataset.view === view);
+        for (const l of document.querySelectorAll('#lenses .newstep')) l.classList.toggle('active', l.dataset.view === view);
+      }
+      document.querySelectorAll('#seg button, #lenses .newstep').forEach((b) =>
+        b.addEventListener('click', () => show(b.dataset.view)));
+
+      // expand a resolution field
+      document.querySelectorAll('.add').forEach((b) =>
+        b.addEventListener('click', () => {
+          document.getElementById(b.dataset.target).classList.remove('hidden');
+          b.classList.add('hidden');
+          document.querySelector('#' + b.dataset.target + ' textarea').focus();
+        }));
+
+      show('deepen');
+    </script>
+  </body>
+</html>
