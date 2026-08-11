@@ -19,7 +19,7 @@ const cache = new Map<string, Promise<ParsedText>>();
 function loadPeek(translationId: string, reference: string): Promise<ParsedText> | null {
   const ref = parseReference(reference);
   if (!ref) return null;
-  const key = `${translationId}|${ref.osis}`;
+  const key = `${translationId}|${ref.osisAll}`;
   let hit = cache.get(key);
   if (!hit) {
     hit = loadReading(translationId, ref);

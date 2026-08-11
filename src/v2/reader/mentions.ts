@@ -1,4 +1,4 @@
-import { parseReference, type ParsedReference } from '@/lib/verse';
+import { parseReference, type ParsedReference, type RefEndpoint } from '@/lib/verse';
 
 /**
  * `@`-mention parsing for the inline cross-reference layer (ROADMAP-v2 §2 "reference paradigm").
@@ -21,11 +21,15 @@ export type MentionSegment =
 const MAX_REF = 48;
 
 /**
- * A reference-shaped prefix: an optional leading book number (1–3), one or more letter words, then
- * a chapter, an optional `:verse`, and an optional `-verse` range. Whitespace-tolerant. This only
- * *proposes* a candidate; `parseReference` is the authority on whether it's real.
+ * A reference-shaped prefix: an optional leading book number (1–3), one or more letter words, then a
+ * chapter/verse span and any number of comma-separated further spans — a verse list like
+ * `Luke 1:1,16-17,32`. Whitespace-tolerant. This only *proposes* a candidate; `parseReference` is
+ * the authority on whether it's real.
  */
-const REF_SHAPE = /^([1-3]\s?)?[A-Za-z][A-Za-z.]*(?:\s+[A-Za-z][A-Za-z.]*)*\s+\d+(?::\d+)?(?:\s*[–-]\s*\d+(?::\d+)?)?/;
+const SPAN = String.raw`\d+(?::\d+)?(?:\s*[–-]\s*\d+(?::\d+)?)?`;
+const REF_SHAPE = new RegExp(
+  String.raw`^([1-3]\s?)?[A-Za-z][A-Za-z.]*(?:\s+[A-Za-z][A-Za-z.]*)*\s+${SPAN}(?:\s*,\s*${SPAN})*`,
+);
 
 /** The longest reference `bcv_parser` accepts at the start of `rest`, or null. */
 function longestReference(rest: string): { reference: string; ref: ParsedReference; len: number } | null {
@@ -65,16 +69,33 @@ export function parseMentions(text: string): MentionSegment[] {
   return segs;
 }
 
-/** The stable identity of a reference (its compact OSIS), for de-duping promotes. */
+/** The stable identity of a reference — its full multi-span OSIS, so a verse list is one key. */
 export function mentionKey(ref: ParsedReference): string {
-  return ref.osis;
+  return ref.osisAll;
 }
 
-/** A compact chip label, e.g. `Mal 4:5–6` (or `Mal 4:5` for a single verse / cross-chapter). */
-export function mentionLabel(ref: ParsedReference): string {
-  const { start, end, singleBook } = ref;
-  const head = `${start.book.shortName} ${start.chapter}:${start.verse}`;
-  if (!singleBook || end.verseId === start.verseId) return head;
+/** One span's label relative to the previous chapter: `16–17`, `32`, or `2:3` when the chapter
+ *  changes. `4:5–6` for a same-chapter range that opens a fresh chapter. */
+function spanLabel(span: { start: RefEndpoint; end: RefEndpoint }, showChapter: boolean): string {
+  const { start, end } = span;
+  const head = showChapter ? `${start.chapter}:${start.verse}` : `${start.verse}`;
+  if (end.verseId === start.verseId) return head;
   if (end.chapter === start.chapter) return `${head}–${end.verse}`;
   return `${head}–${end.chapter}:${end.verse}`;
+}
+
+/** A compact chip label. Simple: `Mal 4:5–6`. Verse list: `Luke 1:1, 16–17, 32, +3` (first few
+ *  spans, chapter shown only when it changes, the rest summed as `+N`). */
+export function mentionLabel(ref: ParsedReference): string {
+  const segs = ref.segments;
+  const book = segs[0]!.start.book.shortName;
+  const parts: string[] = [];
+  let prevChapter = -1;
+  for (const s of segs) {
+    parts.push(spanLabel(s, s.start.chapter !== prevChapter));
+    prevChapter = s.end.chapter;
+  }
+  const shown = parts.slice(0, 3).join(', ');
+  const extra = parts.length > 3 ? `, +${parts.length - 3}` : '';
+  return `${book} ${shown}${extra}`;
 }

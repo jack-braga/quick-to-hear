@@ -1,7 +1,7 @@
 import { downloadHandoutMarkdown, downloadLeaderMarkdown } from '@/lib/export';
 import { emptyStudyBuild, type Question, type Study, type SupportPassage } from '@/types/study';
 import { orderedQuestions } from '@/v2/build';
-import { parseMentions } from '@/v2/reader/mentions';
+import { mentionKey, parseMentions } from '@/v2/reader/mentions';
 
 /**
  * Export adapter (v2.7) — project a v2 study onto the v1 export **model** so the whole tested
@@ -45,7 +45,7 @@ export function projectForExport(study: Study): Study {
     const host = ordered.find((q) => q.verseIds.some((v) => note.verseIds.includes(v)));
     for (const seg of parseMentions(note.text)) {
       if (seg.type !== 'mention') continue;
-      const osis = seg.ref.osis;
+      const osis = mentionKey(seg.ref); // the full multi-span identity (matches the metadata key)
       const meta = note.mentions[osis];
       if (!meta?.includeForGroup || seenOsis.has(osis)) continue;
       seenOsis.add(osis);

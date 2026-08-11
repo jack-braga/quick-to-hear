@@ -65,6 +65,17 @@ describe('parseMentions', () => {
     expect(shape('read @John 3 and Paul')).toEqual(['T:read ', 'M:John 3', 'T: and Paul']);
   });
 
+  it('captures a verse list as one multi-span mention', () => {
+    const segs = parseMentions('cf @Luke 1:1,16-17,32 here');
+    expect(segs.map((s) => s.type)).toEqual(['text', 'mention', 'text']);
+    const m = segs[1]!;
+    if (m.type === 'mention') {
+      expect(m.reference).toBe('Luke 1:1,16-17,32');
+      expect(m.ref.segments).toHaveLength(3);
+      expect(m.ref.osisAll).toBe('Luke.1.1,Luke.1.16-Luke.1.17,Luke.1.32');
+    }
+  });
+
   // Regression (#5a): "@Matthew 1:5" must chip the whole verse, not cut off at the chapter
   // ("@Matthew 1"). longestReference tries the longest valid form first, so the `:verse` (and a
   // range) is kept before falling back to the chapter.
@@ -87,5 +98,9 @@ describe('mentionLabel', () => {
 
   it('renders a single verse without a range', () => {
     expect(label('@John 3:16')).toBe('John 3:16');
+  });
+
+  it('renders a verse list compactly (first spans + a count)', () => {
+    expect(label('@Luke 1:1,16-17,32,37,54-55,69-79')).toBe('Luke 1:1, 16–17, 32, +3');
   });
 });

@@ -19,11 +19,16 @@ export interface ExtractOptions {
   startId: string;
   endId: string;
   reference: string;
+  /** Optional discontiguous spans (a verse list, e.g. `Luke 1:1,16-17,32`). When present, a verse
+   *  is kept iff it falls in **any** span; `startId`/`endId` are ignored. */
+  ranges?: { startId: string; endId: string }[];
 }
 
 export function extractReading(book: BuiltBook, opts: ExtractOptions): ParsedText {
-  const { startId, endId } = opts;
-  const inRange = (id: string) => verseIdInRange(id, startId, endId);
+  const { startId, endId, ranges } = opts;
+  const inRange = ranges
+    ? (id: string) => ranges.some((r) => verseIdInRange(id, r.startId, r.endId))
+    : (id: string) => verseIdInRange(id, startId, endId);
 
   const blocks: Block[] = [];
   const noteIds = new Set<string>();

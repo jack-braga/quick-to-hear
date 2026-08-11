@@ -32,10 +32,17 @@ export interface RefEndpoint {
 export interface ParsedReference {
   /** The raw text the user typed. */
   input: string;
-  /** Compact OSIS for the first passage, e.g. `Luke.1.5-Luke.1.25`. */
+  /** Compact OSIS for the first span, e.g. `Luke.1.5-Luke.1.25`. */
   osis: string;
+  /** Compact OSIS for **all** spans of the first match, e.g. `Luke.1.1,Luke.1.16-Luke.1.17`. The
+   *  stable identity of a (possibly multi-span) cross-reference. */
+  osisAll: string;
+  /** The first span's endpoints (kept for the single-passage callers). */
   start: RefEndpoint;
   end: RefEndpoint;
+  /** Every contiguous span of the first match, in order. One entry for a simple reference; several
+   *  for a verse list like `Luke 1:1,16-17,32` (each `,`-separated part). */
+  segments: { start: RefEndpoint; end: RefEndpoint }[];
   /** True when start/end share a book (the M1-supported case). */
   singleBook: boolean;
   /** True when the input contained more than one distinct passage (we use the first). */
@@ -66,23 +73,31 @@ export function parseReference(input: string): ParsedReference | null {
   const matches = bcv.parse(trimmed).osis_and_indices();
   if (matches.length === 0) return null;
 
-  // A single match can still be a comma-joined *sequence* (e.g. "Luke 1; John 3" →
-  // "Luke.1.1-Luke.1.80,John.3.1-John.3.36"). We use the first passage of the first
-  // match and flag the rest so the UI can note it.
-  const segments = matches[0]!.osis.split(',');
-  const osis = segments[0]!;
-  const [startPart, endPart] = osis.split('-');
-  const start = endpoint(startPart!);
-  const end = endpoint(endPart ?? startPart!);
-  if (!start || !end) return null;
+  // A single match can be a comma-joined *sequence* of spans — a verse list ("Luke 1:1,16-17,32")
+  // or distinct passages ("Luke 1; John 3" → "Luke.1.1-Luke.1.80,John.3.1-John.3.36"). We keep every
+  // span (`segments`/`osisAll`) but expose the first as `start`/`end`/`osis` for single-passage callers.
+  const osisAll = String(matches[0]!.osis);
+  const spans: string[] = osisAll.split(',');
+  const segments = spans
+    .map((span) => {
+      const [s, e] = span.split('-');
+      const start = endpoint(s!);
+      const end = endpoint(e ?? s!);
+      return start && end ? { start, end } : null;
+    })
+    .filter((seg): seg is { start: RefEndpoint; end: RefEndpoint } => seg != null);
+  if (segments.length === 0) return null;
+  const first = segments[0]!;
 
   return {
     input: trimmed,
-    osis,
-    start,
-    end,
-    singleBook: start.book.id === end.book.id,
-    extraPassages: matches.length > 1 || segments.length > 1,
+    osis: spans[0]!,
+    osisAll,
+    start: first.start,
+    end: first.end,
+    segments,
+    singleBook: first.start.book.id === first.end.book.id,
+    extraPassages: matches.length > 1 || spans.length > 1,
   };
 }
 

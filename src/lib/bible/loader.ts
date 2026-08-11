@@ -44,10 +44,17 @@ export async function loadReading(
   ref: ParsedReference,
 ): Promise<ParsedText> {
   const book = await loadBook(translationId, ref.start.book.id);
+  // A verse list (multiple spans, all in the start book) extracts the union of its spans; a simple
+  // reference extracts one contiguous range (clamped to the start book for a cross-book range).
+  const ranges =
+    ref.segments.length > 1 && ref.segments.every((s) => s.start.book.id === ref.start.book.id)
+      ? ref.segments.map((s) => ({ startId: s.start.verseId, endId: s.end.verseId }))
+      : undefined;
   return extractReading(book, {
     startId: ref.start.verseId,
     endId: ref.singleBook ? ref.end.verseId : lastVerseIdOf(book),
     reference: ref.input,
+    ranges,
   });
 }
 
