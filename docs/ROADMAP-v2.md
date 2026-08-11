@@ -134,6 +134,36 @@ manuscript that answers to a command line*. Full day/night.
 
 ## 5. Progress log
 
+### 2026-08-11 — Feedback-batch design items shipped: COMA accordion (#3), Theme spine (#4), panel = just chips (#7)
+
+**Shipped + verified (live app, Playwright MCP; 0 console errors).** Three design items the owner
+picked after reacting to the mockups (`docs/mockups/v2-coma-collapse.html`, `v2-theme-aim.html`,
+`v2-panel-toggles.html` — the last rebuilt as one interactive live panel so the choice could be felt).
+
+- **#7 Panel filter → "just the chips"** (`MarginAnnotations.tsx`). Removed both panel switches
+  ("Reveal only on hover" + "Hide filtered-out"), their `localStorage` keys (`panel-only-hover`,
+  `panel-hide-filtered`), and the `Switch` component. The **origin chips are now the only filter**;
+  filtered-out cards simply don't render (no dim mode). The two-way verse↔card hover highlight stays.
+- **#3 COMA → accordion (one open)** (`ComaPanel.tsx`). Each heading (Context/Observation/Meaning/
+  Application) is now a collapsible bar — caret + name + a `N✓ · M prompts` count (answered tally in
+  **moss**). **Exactly one open at a time** (default Context; clicking the open one collapses it).
+  Genre chips, ✎ Answer / answer-again, and the Helm attribution all unchanged.
+- **#4 Theme & aim → structured spine, full fidelity** (`ThemeAimLens.tsx` + `ReaderShell.tsx` +
+  `ReaderCanvas.tsx`). Theme moved **out of the full-canvas editor into the passage+panel shell**: the
+  passage is centered (read-only, no verse tones) with a quiet **"Theme of the study"** moss band over
+  it (new `ReaderCanvas` `banner` slot + exported `ThemeBand`), and the fields are drawn as a
+  **connected spine** in the right panel — a vertical line threading node dots (lapis claim · moss aim ·
+  amber prayer) with connectors ("↓ so the author aimed to… / for this group… / and it reaches Christ
+  by…") and a nested know·feel·do. All fields stay editable and keep their `id`s; exports unchanged.
+  *(This reverses the earlier "keep Theme/Build/Check full-canvas for now" call — owner-confirmed.)*
+- **New shared `moss` colour token** (`--moss{,-ink,-wash,-edge}` in `index.css` light+dark, exposed in
+  `tailwind.config.ts`), used by the spine's aim nodes and the COMA answered-✓.
+- **Deliberate adaptation:** know·feel·do are **stacked** (not the mockup's 3-across) so they stay
+  typable in the ~320px panel.
+
+Gate green: `typecheck && lint && test (307) && e2e (19) && build`; **0 console errors** bar the two
+known React-Router future-flag warnings.
+
 ### 2026-08-11 — Shell redesign (header lens rail, unified Text menu, N-column parallel) + Read/COMA re-verify
 
 **Shipped (across five commits) + verified.** A batch of shell/reader refactors landed after the

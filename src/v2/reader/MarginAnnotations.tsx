@@ -31,9 +31,8 @@ import { TONE } from '@/v2/tones';
  * unanchored), a source-step line (`▸ step NN · Name`), two-way hover, and delete. A chip row at
  * the top filters the flat list by **origin** (the step a card was made in); the hidden-chip set
  * persists in `localStorage`. There is no separate "Study notes" area — an unanchored card is just
- * a card with no anchor. Two panel switches (Slice 3b): **Reveal only on hover** (a card shows only
- * while you hover one of its anchor verses) and **Hide filtered-out** (on = remove non-matching cards;
- * off = dim them). All three — chips + both switches — persist in `localStorage`.
+ * a card with no anchor. **The chips are the only filter** (owner decision #7 → "just the chips"):
+ * filtered-out cards simply don't render; hovering a verse ↔ its card still two-way-highlights.
  */
 function autoGrow(el: HTMLTextAreaElement | null) {
   if (!el) return;
@@ -61,20 +60,6 @@ function loadHidden(): Set<AnnotationOrigin> {
     );
   } catch {
     return new Set();
-  }
-}
-
-/** The two panel switches (Slice 3b), persisted like the chips. `onlyHover` reveals a card only
- *  while you hover one of its anchor verses; `hideOut` (default on) removes non-matching cards —
- *  off dims them (~0.32 opacity) instead. */
-const ONLY_HOVER_KEY = 'qth2/panel-only-hover';
-const HIDE_OUT_KEY = 'qth2/panel-hide-filtered';
-function loadBool(key: string, def: boolean): boolean {
-  try {
-    const v = localStorage.getItem(key);
-    return v == null ? def : v === '1';
-  } catch {
-    return def;
   }
 }
 
@@ -122,8 +107,6 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
   const byId = useMemo(() => new Map(allVerses(passage).map((v) => [v.verseId, v])), [passage]);
 
   const [hidden, setHidden] = useState<Set<AnnotationOrigin>>(loadHidden);
-  const [onlyHover, setOnlyHover] = useState(() => loadBool(ONLY_HOVER_KEY, false));
-  const [hideOut, setHideOut] = useState(() => loadBool(HIDE_OUT_KEY, true));
   useEffect(() => {
     try {
       localStorage.setItem(HIDDEN_KEY, JSON.stringify([...hidden]));
@@ -131,33 +114,18 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
       /* storage unavailable — the filter still applies for this session */
     }
   }, [hidden]);
-  useEffect(() => {
-    try {
-      localStorage.setItem(ONLY_HOVER_KEY, onlyHover ? '1' : '0');
-      localStorage.setItem(HIDE_OUT_KEY, hideOut ? '1' : '0');
-    } catch {
-      /* storage unavailable — the switches still apply for this session */
-    }
-  }, [onlyHover, hideOut]);
 
   const present = useMemo(() => presentOrigins(annotations), [annotations]);
   const allOn = present.every((o) => !hidden.has(o));
 
-  // A card *matches* when its origin chip is on AND (if "reveal only on hover") one of its anchor
-  // verses is the hovered one. Non-matching cards are removed (hideOut) or dimmed (!hideOut).
-  const matches = (a: Annotation): boolean => {
-    const chipMatched = !hidden.has(annotationOrigin(a));
-    const hoverMatched = !onlyHover || (litVerseId != null && a.verseIds.includes(litVerseId));
-    return chipMatched && hoverMatched;
-  };
+  // The chips are the only filter (owner decision #7): a card shows iff its origin chip is on.
+  // Filtered-out cards simply don't render.
   const ordered = useMemo(
     () => [...sortAnchored(annotations), ...floatingAnnotations(annotations)],
     [annotations],
   );
-  const rows = ordered.map((a) => ({ a, matched: matches(a) }));
-  const shownCount = rows.filter((r) => r.matched).length;
-  // hideOut on → only matching cards render; off → all render (the non-matching are dimmed).
-  const toRender = hideOut ? rows.filter((r) => r.matched) : rows;
+  const toRender = ordered.filter((a) => !hidden.has(annotationOrigin(a)));
+  const shownCount = toRender.length;
 
   const toggleAll = () => setHidden(allOn ? new Set(present) : new Set());
   const toggleOrigin = (o: AnnotationOrigin) =>
@@ -183,7 +151,7 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
       .map((v) => verseText(v))
       .join(' ');
 
-  const card = (a: Annotation, matched: boolean) => {
+  const card = (a: Annotation) => {
     const tone = toneFor(a);
     const meta = annotationMeta(a);
     const lit = litVerseId != null && a.verseIds.includes(litVerseId);
@@ -199,7 +167,6 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           'group mb-3 rounded-lg border border-line border-l-[3px] bg-leaf p-[11px_13px] transition-all',
           TONE[tone].borderL,
           lit && TONE[tone].cardLit,
-          !matched && 'opacity-[0.32]',
           capturing && 'shadow-[0_0_0_2px_var(--lapis-edge)]',
         )}
       >
@@ -405,13 +372,6 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
         </div>
       )}
 
-      {annotations.length > 0 && (
-        <div className="mx-1 mb-3.5 flex flex-wrap gap-x-4 gap-y-1.5">
-          <Switch on={onlyHover} onClick={() => setOnlyHover((v) => !v)} label="Reveal only on hover" />
-          <Switch on={hideOut} onClick={() => setHideOut((v) => !v)} label="Hide filtered-out" />
-        </div>
-      )}
-
       {annotations.length === 0 ? (
         props.lensOrigin === 'questions' ? (
           <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
@@ -431,41 +391,12 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
         )
       ) : toRender.length === 0 ? (
         <p className="mx-1 py-6 text-center text-[12.5px] text-ink-faint">
-          {onlyHover
-            ? 'Hover a verse in the passage to reveal its cards.'
-            : 'Nothing from these steps touches the passage. Turn a chip back on above.'}
+          Nothing from these steps touches the passage. Turn a chip back on above.
         </p>
       ) : (
-        <>{toRender.map(({ a, matched }) => card(a, matched))}</>
+        <>{toRender.map((a) => card(a))}</>
       )}
     </div>
-  );
-}
-
-/** A small toggle switch (Slice 3b panel options) — the pill + its label toggle together. */
-function Switch({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={on}
-      className="inline-flex items-center gap-1.5 text-[12px] text-ink-soft hover:text-ink"
-    >
-      <span
-        className={cn(
-          'relative h-[16px] w-[28px] shrink-0 rounded-full transition-colors',
-          on ? 'bg-lapis' : 'bg-line',
-        )}
-      >
-        <span
-          className={cn(
-            'absolute top-[2px] size-[12px] rounded-full bg-white transition-[left]',
-            on ? 'left-[14px]' : 'left-[2px]',
-          )}
-        />
-      </span>
-      {label}
-    </button>
   );
 }
 

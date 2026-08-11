@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { verseRefLabel } from '@/lib/map';
@@ -53,6 +53,9 @@ export interface ReaderCanvasProps {
   /** Anchor-capture mode: the selection re-anchors a card, so the action bar is suppressed and
    *  the verses read as a crosshair target. */
   capturing?: boolean;
+  /** Optional content rendered inside the leaf, above the passage — e.g. the Theme & aim lens's
+   *  "Theme of the study" band, so the spine is visible while you read (owner decision #4). */
+  banner?: ReactNode;
 }
 
 export function ReaderCanvas(props: ReaderCanvasProps) {
@@ -284,6 +287,8 @@ export function ReaderCanvas(props: ReaderCanvasProps) {
           <h1 className="font-scripture text-[30px] leading-tight text-ink">{props.leafTitle}</h1>
           <span className="font-mono text-[11px] tracking-[0.03em] text-ink-faint">{props.leafMeta}</span>
         </header>
+
+        {props.banner}
 
         <div ref={containerRef} className="select-none font-scripture text-[1.32rem] leading-[1.72] text-ink">
           {model.bands.map((band) => {

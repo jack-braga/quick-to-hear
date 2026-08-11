@@ -111,6 +111,11 @@
     --rubric-wash: rgba(166, 50, 30, 0.17);
     --amber-wash: rgba(185, 138, 30, 0.2);
     --amber-edge: rgba(185, 138, 30, 0.42);
+    /* moss — the Theme & aim spine (aim nodes) + the COMA "answered ✓" tick */
+    --moss: #4f6b3a;
+    --moss-ink: #3c5330;
+    --moss-wash: rgba(79, 107, 58, 0.16);
+    --moss-edge: rgba(79, 107, 58, 0.4);
     /* neutral verse hover/selection — teal, distinct from every annotation tone */
     --sel-wash: rgba(45, 106, 104, 0.16);
     --sel-edge: rgba(45, 106, 104, 0.5);
@@ -135,6 +140,11 @@
     --rubric-wash: rgba(226, 128, 95, 0.2);
     --amber-wash: rgba(221, 187, 97, 0.18);
     --amber-edge: rgba(221, 187, 97, 0.44);
+    /* moss — the Theme & aim spine (aim nodes) + the COMA "answered ✓" tick */
+    --moss: #9fc27e;
+    --moss-ink: #bcd6a3;
+    --moss-wash: rgba(159, 194, 126, 0.18);
+    --moss-edge: rgba(159, 194, 126, 0.42);
     /* neutral verse hover/selection — teal, distinct from every annotation tone */
     --sel-wash: rgba(125, 198, 192, 0.18);
     --sel-edge: rgba(125, 198, 192, 0.5);

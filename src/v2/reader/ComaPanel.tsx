@@ -58,6 +58,9 @@ export function ComaPanel(props: ComaPanelProps) {
   const genreSets = useMemo(() => comaSetsForGenres(study.setup.genres), [study.setup.genres]);
   // Which text-types to show; empty = all (chips only appear when 2+ genres are set up).
   const [activeGenres, setActiveGenres] = useState<Set<string>>(new Set());
+  // Accordion (owner decision #3): exactly one COMA heading open at a time; the rest collapse to a
+  // one-liner with a count. Default: Context open. Clicking the open heading collapses it (→ null).
+  const [openHeading, setOpenHeading] = useState<QuestionType | null>('context');
 
   // Focus a just-spawned answer-card's field once (write-first), then clear the request.
   useEffect(() => {
@@ -209,17 +212,44 @@ export function ComaPanel(props: ComaPanelProps) {
             </div>
           )}
 
-          <div className="space-y-3.5">
+          <div>
             {HEADINGS.map((h) => {
               const rows = shown.flatMap((g) => g.set[h.key].map((prompt) => ({ genre: g, prompt })));
               if (rows.length === 0) return null;
+              const answered = rows.filter((r) => answersFor(h.key, r.prompt).length > 0).length;
+              const isOpen = openHeading === h.key;
               return (
-                <div key={h.key}>
-                  <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-lapis-ink">
-                    {h.label}
-                  </div>
-                  {rows.map(({ genre, prompt }, i) =>
-                    promptRow(h.key, prompt, SHORT_GENRE[genre.genre] ?? genre.label, `${genre.genre}-${i}`),
+                <div key={h.key} className="border-t border-line first:border-t-0">
+                  <button
+                    type="button"
+                    onClick={() => setOpenHeading((prev) => (prev === h.key ? null : h.key))}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center gap-2 py-2.5 text-left"
+                  >
+                    <span
+                      className={cn(
+                        'w-2.5 font-mono text-[9px] leading-none text-ink-faint transition-transform',
+                        isOpen && 'rotate-90',
+                      )}
+                      aria-hidden
+                    >
+                      ▶
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-lapis-ink">
+                      {h.label}
+                    </span>
+                    <span className="ml-auto font-mono text-[9.5px] text-ink-faint">
+                      {answered > 0 && <span className="text-moss-ink">{answered}✓</span>}
+                      {answered > 0 && ' · '}
+                      {rows.length} prompt{rows.length > 1 ? 's' : ''}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className="pb-2">
+                      {rows.map(({ genre, prompt }, i) =>
+                        promptRow(h.key, prompt, SHORT_GENRE[genre.genre] ?? genre.label, `${genre.genre}-${i}`),
+                      )}
+                    </div>
                   )}
                 </div>
               );

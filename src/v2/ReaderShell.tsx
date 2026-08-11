@@ -18,7 +18,7 @@ import { LENSES, LENS_ICON, type LensId } from '@/v2/lenses';
 import { BuildLens } from '@/v2/lenses/BuildLens';
 import { CheckLens } from '@/v2/lenses/CheckLens';
 import { SetupLens } from '@/v2/lenses/SetupLens';
-import { ThemeAimLens } from '@/v2/lenses/ThemeAimLens';
+import { ThemeAimLens, ThemeBand } from '@/v2/lenses/ThemeAimLens';
 import { buildReaderModel, manuscriptModel } from '@/v2/reader/model';
 import { ComaPanel } from '@/v2/reader/ComaPanel';
 import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
@@ -457,10 +457,32 @@ export function ReaderShell({ study }: { study: Study }) {
       <MarginPlaceholder text="The running order is the sequence that exports. Reorder it on the left; jump back to any question to refine it in the Questions lens." />
     );
   } else if (lens === 'theme') {
-    center = <ThemeAimLens study={study} />;
-    margin = (
-      <MarginPlaceholder text="The theme & aim are the study's spine — every question should serve them. They carry into the leader's notes." />
+    // #4: the passage stays centered (plain, no verse tones) with the theme as a quiet band over it;
+    // the structured-spine editor lives in the right panel. The canvas is read-only here.
+    center = (
+      <ReaderCanvas
+        model={renderModel ?? model}
+        interactive={false}
+        leafTitle={leafTitle}
+        leafMeta={leafMeta}
+        selected={[]}
+        lastAnchor={null}
+        verseTones={NO_TONES}
+        lit={null}
+        flashVerseId={null}
+        focusSectionId={null}
+        banner={<ThemeBand theme={study.themeAim.theme} />}
+        onSelect={() => {}}
+        onVerseHover={() => {}}
+        onDivide={() => {}}
+        onMerge={() => {}}
+        onRename={() => {}}
+        onSelectSectionRange={() => {}}
+        onSectionFocusHandled={() => {}}
+        onAction={() => {}}
+      />
     );
+    margin = <ThemeAimLens study={study} />;
   } else if (lens === 'check') {
     center = <CheckLens study={study} />;
     margin = (
