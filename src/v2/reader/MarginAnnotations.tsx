@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { warningById } from '@/lib/content';
+import { detectWarnings } from '@/lib/questions';
 import { cn } from '@/lib/utils';
 import { allVerses, verseText, type ParsedText } from '@/types/passage';
 import {
@@ -267,6 +269,23 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
             onChange={(e) => props.onEdit(a.id, { expectedAnswer: e.target.value })}
           />
         )}
+
+        {/* question: soft, overridable question-craft warnings (SPEC 6e) — detection in
+            `detectWarnings`, the wording authored in `warnings.yaml`. Advisory only, never a block. */}
+        {a.kind === 'question' &&
+          detectWarnings(a.text).map((id) => {
+            const msg = warningById(id)?.message;
+            if (!msg) return null;
+            return (
+              <p
+                key={id}
+                className="mt-2 rounded-md border border-[rgba(185,138,30,0.35)] bg-[rgba(185,138,30,0.1)] px-2 py-1 text-[11.5px] leading-[1.45] text-[#8a6a16] dark:text-[#e2c87c]"
+              >
+                <span className="mr-1 font-semibold">⚠ heads up</span>
+                {msg}
+              </p>
+            );
+          })}
 
         {/* source-step line + recycle-forward (Questions lens: seed a question at this anchor) */}
         <div className="mt-2 flex items-center justify-between gap-2">

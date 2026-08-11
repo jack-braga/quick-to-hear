@@ -401,6 +401,26 @@ test('v2 @mention autocomplete: @book → chapter → verse dropdowns build the 
   await expect(chip).toHaveText(/Mal 4:5/);
 });
 
+test('v2 Questions lens: a yes-or-no opener surfaces the soft question-craft warning (§3)', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '06 Questions' }).click();
+
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').fill('Is Zechariah faithful?');
+
+  // Soft warning (advisory, never a block) — text authored in warnings.yaml, detection in detectWarnings.
+  await expect(page.getByText(/may be a yes-or-no question/i)).toBeVisible();
+
+  // Rewording to an open question clears it.
+  await page.locator('textarea[data-focus]').fill('What does Zechariah’s service show about him?');
+  await expect(page.getByText(/may be a yes-or-no question/i)).toHaveCount(0);
+});
+
 test('v2 Build lens: questions order by verse, reorder, and persist', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

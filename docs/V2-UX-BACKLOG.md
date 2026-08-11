@@ -170,6 +170,16 @@ v2's Build + Theme lenses are genuinely thinner than v1's Phase 5/6. This is cor
 prompts/tests that *are* the discipline), not polish. Re-surface it into the v2 lenses (the pure
 loaders already exist in `src/lib/content/method.ts`).
 
+**Progress (2026-08-12) — in flight:**
+- ✅ **Soft warnings** now surface in the **Questions lens**: a question card shows the yes-no /
+  leading / double-barrelled advisories live as you type (detection `detectWarnings` in
+  `src/lib/questions.ts`, wording from `warnings.yaml` via `warningById`). Advisory only, never a
+  block (rule 3). e2e-locked.
+- ⬜ **Still to surface:** question **formulas** (seed the Questions lens), **litmus tests** (Theme +
+  per-question-type), **traps** (Theme guidance), **stuck helpers** (Theme "feeling stuck?"). All
+  loaders exist (`formulaGroups`, `litmusThemeTests`/`litmusForQuestionType`, `trapsContent`,
+  `stuckHelpers`); zero other `src/v2` usage yet.
+
 ---
 
 ## 4. Bug / polish backlog
