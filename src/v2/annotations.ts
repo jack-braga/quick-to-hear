@@ -15,23 +15,24 @@ import {
  * `verseIds` marks a floating (study-level) note.
  */
 
-/** The accent a kind reads in: confusing = rubric (red), question = amber, a COMA answer = moss
- *  (green — distinct from a Map note), everything else = lapis. */
-export type AnnotationTone = 'rubric' | 'lapis' | 'amber' | 'moss';
+/** The accent a kind reads in: confusing = rubric (red), question = amber, a study note = violet
+ *  (a printed prose block), a COMA answer = moss (green — distinct from a Survey note), else lapis. */
+export type AnnotationTone = 'rubric' | 'lapis' | 'amber' | 'moss' | 'violet';
 
 export function toneFor(a: Annotation): AnnotationTone {
   if (a.kind === 'question') return 'amber';
+  if (a.kind === 'study-note') return 'violet';
   if (a.kind === 'note' && a.flag === 'confusing') return 'rubric';
-  // A COMA answer-card reads in moss so it's distinct from a Map note (both are plain notes).
+  // A COMA answer-card reads in moss so it's distinct from a Survey note (both are plain notes).
   if (annotationOrigin(a) === 'coma') return 'moss';
   return 'lapis';
 }
 
 /** Priority when a verse carries several annotations: the resting tint shows the most notable. */
-const TONE_PRIORITY: Record<AnnotationTone, number> = { rubric: 4, amber: 3, moss: 2, lapis: 1 };
+const TONE_PRIORITY: Record<AnnotationTone, number> = { rubric: 5, amber: 4, violet: 3, moss: 2, lapis: 1 };
 
 /** Tones highest-priority first — the stable order the diagonal multi-tone stripe cycles through. */
-const TONES_BY_PRIORITY: AnnotationTone[] = ['rubric', 'amber', 'moss', 'lapis'];
+const TONES_BY_PRIORITY: AnnotationTone[] = ['rubric', 'amber', 'violet', 'moss', 'lapis'];
 
 // --- Origin (which lens a card was made in) — v2 Layout-B "everything is a card" ---------------
 

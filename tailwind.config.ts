@@ -91,6 +91,12 @@ export default {
           wash: 'var(--moss-wash)',
           edge: 'var(--moss-edge)',
         },
+        violet: {
+          DEFAULT: 'var(--violet)',
+          ink: 'var(--violet-ink)',
+          wash: 'var(--violet-wash)',
+          edge: 'var(--violet-edge)',
+        },
         // Neutral verse hover/selection — deliberately a non-tone hue (teal), so a selected or
         // hovered verse never reads as a lapis/amber/rubric annotation tone.
         sel: {

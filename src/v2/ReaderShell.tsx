@@ -226,10 +226,20 @@ export function ReaderShell({ study }: { study: Study }) {
   const onAddCard = (kind: AnnotationKind, flag?: NoteFlag) =>
     addAnnotation(makeAnnotation(newId(), { kind, verseIds: [], flag, origin: lensOrigin }));
 
-  // Recycle-forward (Questions lens): seed an EMPTY question at a prior card's anchor (copy the
-  // verses only — never the content). The user writes the question + its expected answer.
+  // Recycle-forward (Write lens): seed an EMPTY question at a prior card's anchor (copy the verses
+  // only — never the content, rule 1). The user writes the question + its expected answer.
   const onMakeQuestion = (source: Annotation) =>
     addAnnotation(makeAnnotation(newId(), { kind: 'question', verseIds: [...source.verseIds], origin: 'questions' }));
+
+  // Recycle-forward (Write lens): seed a study note FROM a prior card, carrying its text (+ any
+  // reference mentions) forward — a study note is your own prose, so reusing your words is not
+  // "generating" content; it's user-triggered recycle-forward.
+  const onMakeStudyNote = (source: Annotation) =>
+    addAnnotation({
+      ...makeAnnotation(newId(), { kind: 'study-note', verseIds: [...source.verseIds], origin: 'questions' }),
+      text: source.text,
+      ...(source.mentions ? { mentions: source.mentions } : {}),
+    });
 
   // Questions lens: seed a new question from a formula stem (SPEC 6c). The tool scaffolds the
   // question; the user fills the `____` blanks + writes the expected answer.
@@ -589,6 +599,7 @@ export function ReaderShell({ study }: { study: Study }) {
         onEndCapture={endCapture}
         onAdd={onAddCard}
         onMakeQuestion={makeQuestion}
+        onMakeStudyNote={origin === 'questions' ? onMakeStudyNote : undefined}
         onAddFromFormula={origin === 'questions' ? onAddFromFormula : undefined}
         onMentionMeta={onSetMentionMeta}
         onFocusHandled={clearFocusAnnotation}

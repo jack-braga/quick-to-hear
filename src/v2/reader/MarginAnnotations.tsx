@@ -96,9 +96,12 @@ export interface MarginAnnotationsProps {
   /** Add a study-level (unanchored) card of this lens's kind — note (+ optional confusing flag) or
    *  question. Its anchor is set later via the card. */
   onAdd: (kind: AnnotationKind, flag?: NoteFlag) => void;
-  /** Recycle-forward (Questions lens only): seed a question at a prior card's anchor. When set, every
+  /** Recycle-forward (Write lens): seed a question at a prior card's anchor. When set, every
    *  non-question card shows a **→ make a question**. */
   onMakeQuestion?: (source: Annotation) => void;
+  /** Recycle-forward (Write lens): seed a study note from a prior card (carries its text). When set,
+   *  every non-study-note card shows a **→ make a study note**. */
+  onMakeStudyNote?: (source: Annotation) => void;
   /** Questions lens: seed a new question from a formula stem (SPEC 6c). */
   onAddFromFormula?: (stem: string) => void;
   /** Set a mention's include-for-group / return-question metadata on the host note (cross-ref
@@ -236,10 +239,11 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           </p>
         )}
 
-        {a.kind === 'note' ? (
-          // Notes carry the inline @-mention editor — a reference to another passage lives *inside a
-          // note's content* (never in a question, whose text is the exported deliverable). Each
-          // mention's include-for-group / return-question toggles live on it (cross-ref collapse).
+        {a.kind === 'note' || a.kind === 'study-note' ? (
+          // Notes and study notes carry the inline @-mention editor — a reference to another passage
+          // lives *inside the prose* (a study note prints for the group, so its included reference
+          // becomes a support passage; a question's text stays the clean deliverable, no mentions).
+          // Each mention's include-for-group toggle lives on it (cross-ref collapse).
           <MentionEditor
             value={a.text}
             onChange={(text) => props.onEdit(a.id, { text })}
@@ -291,19 +295,31 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
             );
           })}
 
-        {/* source-step line + recycle-forward (Questions lens: seed a question at this anchor) */}
+        {/* source-step line + recycle-forward (Write lens: seed a question / study note here) */}
         <div className="mt-2 flex items-center justify-between gap-2">
           <span className="font-mono text-[9.5px] text-ink-faint">{sourceLine(annotationOrigin(a))}</span>
-          {props.onMakeQuestion && a.kind !== 'question' && (
-            <button
-              type="button"
-              onClick={() => props.onMakeQuestion!(a)}
-              title="Seed a question at this anchor (you write the question)"
-              className="whitespace-nowrap font-mono text-[10px] text-lapis-ink hover:underline"
-            >
-              → make a question
-            </button>
-          )}
+          <span className="flex flex-wrap justify-end gap-2.5">
+            {props.onMakeQuestion && a.kind !== 'question' && (
+              <button
+                type="button"
+                onClick={() => props.onMakeQuestion!(a)}
+                title="Seed a question at this anchor (you write the question)"
+                className="whitespace-nowrap font-mono text-[10px] text-lapis-ink hover:underline"
+              >
+                → make a question
+              </button>
+            )}
+            {props.onMakeStudyNote && a.kind !== 'study-note' && (
+              <button
+                type="button"
+                onClick={() => props.onMakeStudyNote!(a)}
+                title="Seed a study note from this card (carries its text forward)"
+                className="whitespace-nowrap font-mono text-[10px] text-violet-ink hover:underline"
+              >
+                → make a study note
+              </button>
+            )}
+          </span>
         </div>
       </div>
     );
@@ -344,6 +360,14 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
               className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
             >
               ＋ question
+            </button>
+            <button
+              type="button"
+              onClick={() => props.onAdd('study-note')}
+              title="Add a study note — a prose block that prints for the group (anchor it later)"
+              className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-violet-edge hover:text-violet-ink"
+            >
+              ＋ study note
             </button>
           </>
         ) : (
@@ -390,11 +414,12 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
       {annotations.length === 0 ? (
         props.lensOrigin === 'questions' ? (
           <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
-            Select verses, then <b className="font-semibold text-ink">Question</b> — or turn a prior{' '}
-            <b className="font-semibold text-ink">note</b> or{' '}
-            <b className="font-semibold text-ink">COMA answer</b> into a question with{' '}
-            <b className="font-mono text-[12px] text-lapis-ink">→ make a question</b>. Every question
-            needs an <b className="font-semibold text-ink">expected answer</b> before it’s ready.
+            Select verses, then <b className="font-semibold text-ink">Question</b> or{' '}
+            <b className="font-semibold text-ink">Study note</b> — or turn a prior card into either with{' '}
+            <b className="font-mono text-[12px] text-lapis-ink">→ make a question</b> /{' '}
+            <b className="font-mono text-[12px] text-violet-ink">→ make a study note</b>. Every question
+            needs an <b className="font-semibold text-ink">expected answer</b> before it’s ready; a study
+            note is a prose block that prints for the group.
           </div>
         ) : (
           <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">

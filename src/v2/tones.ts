@@ -37,6 +37,13 @@ export const TONE: Record<
     cardLit:
       '-translate-x-[3px] border-moss bg-moss-wash shadow-[0_0_0_2px_var(--moss),0_8px_20px_-8px_rgba(79,107,58,0.4)]',
   },
+  violet: {
+    wash: 'bg-violet-wash',
+    ring: 'bg-violet-wash shadow-[inset_0_0_0_2px_var(--violet)]',
+    borderL: 'border-l-violet',
+    cardLit:
+      '-translate-x-[3px] border-violet bg-violet-wash shadow-[0_0_0_2px_var(--violet),0_8px_20px_-8px_rgba(106,75,147,0.4)]',
+  },
 };
 
 /** The strong ring colour per tone, as a raw CSS value (matches `TONE[t].ring`). Used by the verse
@@ -46,6 +53,7 @@ export const TONE_EDGE: Record<AnnotationTone, string> = {
   amber: '#b98a1e',
   lapis: 'var(--lapis)',
   moss: 'var(--moss)',
+  violet: 'var(--violet)',
 };
 
 /** The wash colour per tone as a raw CSS value — for the diagonal multi-tone stripe a verse gets
@@ -56,6 +64,7 @@ export const TONE_WASH: Record<AnnotationTone, string> = {
   amber: 'var(--amber-wash)',
   lapis: 'var(--lapis-wash)',
   moss: 'var(--moss-wash)',
+  violet: 'var(--violet-wash)',
 };
 
 /**

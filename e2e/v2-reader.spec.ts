@@ -670,6 +670,30 @@ test('v2 Deepen lens: append an own-work revision to a Survey card, and it persi
   await expect(page.locator('[data-focus-rev]').first()).toHaveValue(/incense hour/);
 });
 
+test('v2 Write lens: author a study note (a prose block that prints for the group), and it persists', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // Write (08): add a study note — a new output kind, distinct from a question.
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.getByRole('button', { name: /study note/i }).click(); // ＋ study note
+  await expect(page.getByText('Study note', { exact: true })).toBeVisible(); // the card tag
+
+  // Study notes carry prose (via the same @-mention editor as notes); type into it.
+  const editor = page.locator('[data-mention-editor]');
+  await editor.click();
+  await editor.pressSequentially('Incense marked the hour of prayer — the crowd outside is praying.');
+
+  // Persist, reload — the study note (and its text) survive.
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await expect(page.getByText(/Incense marked the hour of prayer/)).toBeVisible();
+});
+
 test('v2.8 attribution page: only COMA is framed as verbatim', async ({ page }) => {
   await page.goto('./#/about');
   await expect(page.getByRole('heading', { name: /Attribution & further reading/i })).toBeVisible();

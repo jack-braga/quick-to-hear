@@ -29,6 +29,7 @@ describe('toneFor', () => {
   it('maps kinds to accents', () => {
     expect(toneFor(note({ flag: 'confusing' }))).toBe('rubric');
     expect(toneFor(note({ kind: 'question', expectedAnswer: '' }))).toBe('amber');
+    expect(toneFor(note({ kind: 'study-note' }))).toBe('violet');
     expect(toneFor(note())).toBe('lapis');
     expect(toneFor(note({ flag: 'comment' }))).toBe('lapis');
   });

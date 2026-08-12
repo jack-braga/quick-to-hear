@@ -116,6 +116,11 @@
     --moss-ink: #3c5330;
     --moss-wash: rgba(79, 107, 58, 0.16);
     --moss-edge: rgba(79, 107, 58, 0.4);
+    /* violet — the study-note kind (a printed prose block, distinct from an amber question) */
+    --violet: #6a4b93;
+    --violet-ink: #503670;
+    --violet-wash: rgba(106, 75, 147, 0.16);
+    --violet-edge: rgba(106, 75, 147, 0.4);
     /* neutral verse hover/selection — teal, distinct from every annotation tone */
     --sel-wash: rgba(45, 106, 104, 0.16);
     --sel-edge: rgba(45, 106, 104, 0.5);
@@ -145,6 +150,11 @@
     --moss-ink: #bcd6a3;
     --moss-wash: rgba(159, 194, 126, 0.18);
     --moss-edge: rgba(159, 194, 126, 0.42);
+    /* violet — the study-note kind (a printed prose block, distinct from an amber question) */
+    --violet: #b39ddb;
+    --violet-ink: #cbb8e8;
+    --violet-wash: rgba(179, 157, 219, 0.2);
+    --violet-edge: rgba(179, 157, 219, 0.44);
     /* neutral verse hover/selection — teal, distinct from every annotation tone */
     --sel-wash: rgba(125, 198, 192, 0.18);
     --sel-edge: rgba(125, 198, 192, 0.5);
