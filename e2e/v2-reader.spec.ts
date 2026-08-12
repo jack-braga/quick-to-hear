@@ -602,6 +602,35 @@ test('v2.8 teaching help: the (i) opens the inline guidance, and "Tell me more" 
   await expect(page.getByRole('note')).toHaveCount(0);
 });
 
+test('v2 Deepen lens: append an own-work revision to a Survey card, and it persists', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // Survey: mark a verse confusing (a round-0 card).
+  await page.getByRole('button', { name: '03 Survey' }).click();
+  await page.locator('[data-v="LUKE.1.11"]').click();
+  await page.getByRole('button', { name: /mark confusing/i }).click();
+
+  // Deepen (round 1): the Survey card returns with its First pass; append an own-work note.
+  await page.getByRole('button', { name: '05 Deepen' }).click();
+  await expect(page.getByText('First pass', { exact: true })).toBeVisible();
+  await expect(page.getByText('Mark · confusing')).toBeVisible();
+  await page.getByRole('button', { name: /add a note/i }).click();
+  await page
+    .locator('[data-focus-rev]')
+    .first()
+    .fill('The incense hour = the people’s prayers ascending.');
+
+  // Persist (autosave debounce), reload, and confirm the revision survived — still in Deepen.
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await page.getByRole('button', { name: '05 Deepen' }).click();
+  await expect(page.locator('[data-focus-rev]').first()).toHaveValue(/incense hour/);
+});
+
 test('v2.8 attribution page: only COMA is framed as verbatim', async ({ page }) => {
   await page.goto('./#/about');
   await expect(page.getByRole('heading', { name: /Attribution & further reading/i })).toBeVisible();

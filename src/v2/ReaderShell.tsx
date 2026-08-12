@@ -9,7 +9,7 @@ import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Annotation, AnnotationKind, AnnotationOrigin, MentionMeta, NoteFlag, QuestionType, Section, Study } from '@/types/study';
+import type { Annotation, AnnotationKind, AnnotationOrigin, MentionMeta, NoteFlag, QuestionType, Revision, Section, Study } from '@/types/study';
 import { annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
@@ -25,6 +25,7 @@ import { MarginAnnotations } from '@/v2/reader/MarginAnnotations';
 import { ParallelCanvas } from '@/v2/reader/ParallelCanvas';
 import { ReadPanel } from '@/v2/reader/ReadPanel';
 import { ReaderCanvas, type ReadingMode } from '@/v2/reader/ReaderCanvas';
+import { RevisionPanel } from '@/v2/reader/RevisionPanel';
 import { TranslationControls } from '@/v2/TranslationControls';
 import type { ActionKind } from '@/v2/reader/ActionBar';
 import type { PaletteAction, PaletteContext } from '@/v2/reader/paletteItems';
@@ -262,6 +263,34 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const onRemoveAnnotation = (id: string) =>
     applyToCurrent((s) => ({ ...s, annotations: s.annotations.filter((a) => a.id !== id) }));
+
+  // ---- Deepen / Weigh revisions (append-preserve) ------------------------------------------
+  // Deepen (round 1) / Weigh (round 2) never create a card — they append a revision to an existing
+  // card's one unified `revisions` list (each revision carries its own origin). The panel supplies a
+  // fully-formed revision (id + origin) so it can focus the new field.
+  const onAddRevision = (cardId: string, rev: Revision) =>
+    applyToCurrent((s) => ({
+      ...s,
+      annotations: s.annotations.map((a) =>
+        a.id === cardId ? { ...a, revisions: [...(a.revisions ?? []), rev] } : a,
+      ),
+    }));
+  const onEditRevision = (cardId: string, revId: string, patch: Partial<Revision>) =>
+    applyToCurrent((s) => ({
+      ...s,
+      annotations: s.annotations.map((a) =>
+        a.id === cardId
+          ? { ...a, revisions: (a.revisions ?? []).map((r) => (r.id === revId ? { ...r, ...patch } : r)) }
+          : a,
+      ),
+    }));
+  const onRemoveRevision = (cardId: string, revId: string) =>
+    applyToCurrent((s) => ({
+      ...s,
+      annotations: s.annotations.map((a) =>
+        a.id === cardId ? { ...a, revisions: (a.revisions ?? []).filter((r) => r.id !== revId) } : a,
+      ),
+    }));
 
   // ---- inline anchor capture (Slice 4) -----------------------------------------------------
   // Click a card's anchor chip → the next passage selection *sets that card's verse(s)* instead of
@@ -563,7 +592,15 @@ export function ReaderShell({ study }: { study: Study }) {
           onFocusHandled={clearFocusAnnotation}
         />
       ) : lens === 'deepen' ? (
-        <MarginPlaceholder text="Deepen — round 1. Revisit Survey & COMA: answer what you marked confusing and add what you now see, from the text first. Your own work only — no commentaries yet. (The append UI lands in the next slice.)" />
+        <RevisionPanel
+          round="deepen"
+          annotations={annotations}
+          litVerseId={hoveredVerse}
+          onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
+          onAddRevision={onAddRevision}
+          onEditRevision={onEditRevision}
+          onRemoveRevision={onRemoveRevision}
+        />
       ) : lens === 'weigh' ? (
         <MarginPlaceholder text="Weigh — round 2. Now open a commentary: add a 📖 note to the same cards, and revisit your Theme & aim so the weighed version leads. (The append UI lands in the next slice.)" />
       ) : (
