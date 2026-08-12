@@ -1,6 +1,7 @@
-import { downloadHandoutMarkdown, downloadLeaderMarkdown } from '@/lib/export';
-import { emptyStudyBuild, type Question, type Study, type SupportPassage } from '@/types/study';
+import { downloadTextFile, slugify } from '@/lib/download';
+import { emptyStudyBuild, studyLabel, type Question, type Study, type SupportPassage } from '@/types/study';
 import { orderedQuestions } from '@/v2/build';
+import { handoutMarkdown, leaderMarkdown } from '@/v2/exportMarkdown';
 import { mentionKey, parseMentions } from '@/v2/reader/mentions';
 
 /**
@@ -73,10 +74,18 @@ export function projectForExport(study: Study): Study {
   };
 }
 
+/** The markdown downloads render from the v2 {@link exportModel} (study notes + item references +
+ *  interleaved blocks), the same model the on-screen preview and print routes use. */
+function baseName(study: Study): string {
+  return slugify(studyLabel({ reference: study.setup.title || study.setup.reference }));
+}
+
 export function downloadV2Handout(study: Study): Promise<void> {
-  return downloadHandoutMarkdown(projectForExport(study));
+  downloadTextFile(`${baseName(study)}-handout.md`, handoutMarkdown(study));
+  return Promise.resolve();
 }
 
 export function downloadV2Leader(study: Study): Promise<void> {
-  return downloadLeaderMarkdown(projectForExport(study));
+  downloadTextFile(`${baseName(study)}-leader.md`, leaderMarkdown(study));
+  return Promise.resolve();
 }

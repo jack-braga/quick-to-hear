@@ -15,8 +15,9 @@ import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
 import { LENSES, LENS_ICON, type LensId } from '@/v2/lenses';
-import { BuildLens } from '@/v2/lenses/BuildLens';
+import { BuildPanel } from '@/v2/lenses/BuildPanel';
 import { CheckLens } from '@/v2/lenses/CheckLens';
+import { ExportPreview } from '@/v2/print/ExportPreview';
 import { SetupLens } from '@/v2/lenses/SetupLens';
 import { ThemeAimLens, ThemeBand } from '@/v2/lenses/ThemeAimLens';
 import { buildReaderModel, manuscriptModel } from '@/v2/reader/model';
@@ -78,6 +79,8 @@ export function ReaderShell({ study }: { study: Study }) {
   const annotations = study.annotations;
 
   const [lens, setLens] = useState<LensId>(passage ? 'map' : 'setup');
+  // Build lens: which export document the centre previews (Participant / Leader / Parallel).
+  const [buildVariant, setBuildVariant] = useState<'participant' | 'leader' | 'parallel'>('participant');
   const [readingMode, setReadingMode] = useState<ReadingMode>(loadReadingMode);
   // Which non-primary translations are ticked to view side-by-side (v2.9). Persisted per-study so the
   // parallel view survives a reload; the primary itself is always shown (its switch persists to the study).
@@ -480,8 +483,39 @@ export function ReaderShell({ study }: { study: Study }) {
     center = <EmptyLeaf onSetup={() => setLens('setup')} />;
     margin = <MarginPlaceholder text="No passage yet." />;
   } else if (lens === 'build') {
+    // The passage steps aside: the centre is the live export preview; the right panel assembles.
     center = (
-      <BuildLens
+      <div className="w-full">
+        <div className="mb-4 flex justify-center">
+          <div className="inline-flex overflow-hidden rounded-lg border border-line">
+            {(['participant', 'leader', 'parallel'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setBuildVariant(v)}
+                className={cn(
+                  'px-3.5 py-1 font-sans text-[12.5px] capitalize',
+                  buildVariant === v ? 'bg-lapis text-white dark:text-[#16181d]' : 'bg-leaf text-ink-soft hover:text-ink',
+                )}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+        {buildVariant === 'parallel' ? (
+          <div className="flex items-start gap-4">
+            <ExportPreview study={study} variant="participant" fill />
+            <ExportPreview study={study} variant="leader" fill />
+          </div>
+        ) : (
+          <ExportPreview study={study} variant={buildVariant} />
+        )}
+      </div>
+    );
+    margin = (
+      <BuildPanel
+        study={study}
         annotations={annotations}
         runningOrder={study.runningOrder}
         onReorder={onReorder}
@@ -489,9 +523,6 @@ export function ReaderShell({ study }: { study: Study }) {
         onRemove={onRemoveAnnotation}
         onJump={jumpFromBuild}
       />
-    );
-    margin = (
-      <MarginPlaceholder text="The running order is the sequence that exports. Reorder it on the left; jump back to any question to refine it in the Questions lens." />
     );
   } else if (lens === 'theme') {
     // #4: the passage stays centered (plain, no verse tones) with the theme as a quiet band over it;

@@ -326,7 +326,7 @@ test('v2 command palette (slimmed, #7): quick-jump to a verse', async ({ page })
   await expect(page.locator('[data-v="LUKE.1.20"]')).toBeInViewport();
 });
 
-test('v2 @mention cross-ref collapse: chip → peek → include-for-group → prints as a support passage', async ({
+test('v2 @mention include-for-group: a study note prints its reference as a support passage', async ({
   page,
 }) => {
   await page.goto('./');
@@ -334,36 +334,60 @@ test('v2 @mention cross-ref collapse: chip → peek → include-for-group → pr
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Survey' }).click();
 
-  // A note anchored to v17, with an inline @-mention of another passage.
-  await page.locator('[data-v="LUKE.1.17"]').click();
-  await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /note/i }).click();
-  const editor = page.locator('[data-mention-editor]');
+  // Author a study note in Write with an inline @-mention of another passage.
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.getByRole('button', { name: '＋ study note' }).click();
+  const editor = page.locator('[data-mention-editor][aria-label^="Explain it for the group"]');
   await editor.click();
-  await editor.pressSequentially('cf. @Malachi 4:5-6 fulfils this.');
+  await editor.pressSequentially('The Elijah promise stands behind this: cf. @Malachi 4:5-6.');
 
-  // The reference becomes an inline chip inside the note (typed char-by-char above).
   const chip = page.locator('[data-raw="@Malachi 4:5-6"]');
   await expect(chip).toBeVisible();
-  await expect(chip).toHaveText(/Mal 4:5/);
-  // Prep-only by default — nothing to promote, no standalone card.
-  await expect(chip).toHaveAttribute('data-included', 'false');
+  await expect(chip).toHaveAttribute('data-included', 'false'); // prep-only by default
 
-  // Click it → the peek loads the referenced passage; the toggle lives inline on the mention.
+  // Include it for the group → the peek loads the passage; the toggle lives inline on the mention.
   await chip.click();
   await expect(page.getByText(/send you Elijah the prophet/i)).toBeVisible();
   await page.getByRole('button', { name: /include for the group/i }).click();
-  // Now the chip reads as "printed" (no separate Support-passage card exists anymore).
   await expect(chip).toHaveAttribute('data-included', 'true');
-  await expect(page.getByText('Support passage')).toHaveCount(0);
 
-  // It reaches the participant handout as a box (reference + fetched passage text).
+  // The participant handout prints the study note + the support passage (reference + fetched text).
   await page.waitForTimeout(1000);
   const id = page.url().match(/study\/([^/]+)\//)![1];
   await page.goto(`./#/print/${id}/handout`);
-  await expect(page.getByText(/Malachi 4:5/)).toBeVisible();
+  await expect(page.getByText(/Support passage — Malachi 4:5/)).toBeVisible();
   await expect(page.getByText(/send you Elijah the prophet/i)).toBeVisible();
+});
+
+test('v2 Build lens: the centre previews the export; a study note and its write-lines render', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // Author a question + a study note in Write.
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').fill('What is Zacharias doing?');
+  await page.getByRole('button', { name: '＋ study note' }).click();
+  await page
+    .locator('[data-mention-editor][aria-label^="Explain it for the group"]')
+    .fill('Incense marked the hour of prayer.');
+
+  // Build: the centre is a live preview showing both blocks; the right panel assembles.
+  await page.getByRole('button', { name: '09 Build' }).click();
+  await expect(page.getByText('Participant handout · clean & answer-free')).toBeVisible();
+  await expect(page.locator('[data-preview-block="question"]')).toContainText('What is Zacharias doing?');
+  await expect(page.locator('[data-preview-block="study-note"]')).toContainText('Incense marked the hour of prayer.');
+
+  // The Leader view reveals the leader tag; Participant does not carry it.
+  await page.getByRole('button', { name: 'leader', exact: true }).click();
+  await expect(page.getByText('Leader’s notes · everything')).toBeVisible();
 });
 
 test('v2 @mention autocomplete: @book → chapter → verse dropdowns build the reference', async ({ page }) => {
@@ -679,7 +703,7 @@ test('v2 Write lens: author a study note (a prose block that prints for the grou
 
   // Write (08): add a study note — a new output kind, distinct from a question.
   await page.getByRole('button', { name: '08 Write' }).click();
-  await page.getByRole('button', { name: /study note/i }).click(); // ＋ study note
+  await page.getByRole('button', { name: '＋ study note' }).click(); // ＋ study note
   await expect(page.getByText('Study note', { exact: true })).toBeVisible(); // the card tag
 
   // Study notes carry prose (via the same @-mention editor as notes); type into it.
