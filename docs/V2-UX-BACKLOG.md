@@ -426,6 +426,11 @@ The flow redesign is built. Slices, each gated (typecheck/lint/unit/build/e2e) +
    (type · minutes · ★ essential · write-lines · aim · hide-from-group · attach-reference · ✂ cut);
    downloads/print render from the model (`exportMarkdown`); minutes-vs-session footer.
 
-**Deferred / not built (deliberate):** `note`→`comment` display rename (kept as "Note" for now — a
-label-only change, low risk, can land any time); a true `cut → reserve` pool (✂ cut currently drops);
-question-attached-reference uses a simple text input (not the full `@`-autocomplete). None block the flow.
+8. ✅ **Slice 7 — finish-up** (this commit): **`note`→`comment`** display relabel (kept the internal
+   `note` kind; the tag/buttons/action-bar now read "Comment"); **question-attached references** added to
+   the **Write** lens too (shared `AttachReferenceRow`, reused in Build) — verified they print as support
+   passages; **cut → "in study" toggle** — instead of a reserve pool, each output card has a reversible
+   `reserved` toggle that drops it from both exported documents (owner call, simpler).
+
+**Deferred / not built (deliberate):** question-attached-reference uses a simple text input (not the full
+`@`-autocomplete book→chapter→verse picker the note editor has). Doesn't block the flow.

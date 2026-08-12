@@ -152,7 +152,7 @@ test('v2 anchor capture: click a card’s chip, pick a verse, and it anchors (pe
 
   // Add an unanchored note from the panel — it starts with a dashed "⌖ anchor" chip (no verse).
   const panel = page.locator('aside');
-  await panel.getByRole('button', { name: /note/i }).click();
+  await panel.getByRole('button', { name: /comment/i }).click();
   const anchorChip = panel.getByRole('button', { name: /anchor/i });
   await expect(anchorChip).toBeVisible();
 
@@ -182,7 +182,7 @@ test('v2 Questions lens: recycle-forward turns a prior note into a question at i
   // Make a note in the Map lens, anchored to v8.
   await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.8"]').click();
-  await page.getByRole('toolbar').getByRole('button', { name: /note/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /comment/i }).click();
 
   // In the Questions lens the note carries "→ make a question"; clicking it seeds a question at v8.
   await page.getByRole('button', { name: '08 Write' }).click();
@@ -399,7 +399,7 @@ test('v2 @mention autocomplete: @book → chapter → verse dropdowns build the 
   await page.getByRole('button', { name: '03 Survey' }).click();
 
   await page.locator('[data-v="LUKE.1.17"]').click();
-  await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /note/i }).click();
+  await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /comment/i }).click();
   const editor = page.locator('[data-mention-editor]');
   await editor.click();
   await editor.pressSequentially('see @mal');
@@ -477,7 +477,7 @@ test('v2 @mention: typing @Book Chapter is held (not chipped) until you finish t
   await page.getByRole('button', { name: /read the passage/i }).click();
   await page.getByRole('button', { name: '03 Survey' }).click();
 
-  await page.getByRole('button', { name: '＋ note' }).click();
+  await page.getByRole('button', { name: '＋ comment' }).click();
   const editor = page.locator('[data-mention-editor]');
   await editor.click();
   await editor.pressSequentially('see @Luke 1');
@@ -716,6 +716,40 @@ test('v2 Write lens: author a study note (a prose block that prints for the grou
   await page.reload();
   await page.getByRole('button', { name: '08 Write' }).click();
   await expect(page.getByText(/Incense marked the hour of prayer/)).toBeVisible();
+});
+
+test('v2 Build: attach a reference to a question (prints as support) + "in study" holds a card back', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // Write: author a question and attach a reference to it (its text stays clean).
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').fill('What is Zacharias doing?');
+  await page.getByRole('button', { name: /add reference/i }).click();
+  await page.getByPlaceholder('e.g. Malachi 4:5-6').fill('Malachi 4:5-6');
+  await page.getByRole('button', { name: 'add', exact: true }).click();
+  await expect(page.getByText(/↗ Mal 4:5/)).toBeVisible(); // the attached-reference chip
+
+  // A second question, so we can hold one back (target the newest card — it sorts last, at v17).
+  await page.locator('[data-v="LUKE.1.17"]').click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').last().fill('What was promised about Elijah?');
+
+  // Build: the preview shows both questions, and Q1's reference prints as a support passage.
+  await page.getByRole('button', { name: '09 Build' }).click();
+  await expect(page.getByText(/Support passage — Mal 4:5/)).toBeVisible();
+  await expect(page.locator('[data-preview-block="question"]')).toHaveCount(2);
+
+  // Hold the second question back with the "in study" toggle → it drops from the export.
+  await page.getByRole('button', { name: /in study/i }).nth(1).click();
+  await expect(page.locator('[data-preview-block="question"]')).toHaveCount(1);
 });
 
 test('v2.8 attribution page: only COMA is framed as verbatim', async ({ page }) => {

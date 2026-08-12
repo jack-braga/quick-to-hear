@@ -110,13 +110,13 @@ export function annotationMeta(a: Annotation): { tag: string; placeholder: strin
     return { tag: 'Mark · confusing', placeholder: 'What confuses you here? (they’ll feel it too)' };
   }
   if (a.flag === 'comment') {
-    return { tag: 'Comment', placeholder: 'A note to yourself…' };
+    return { tag: 'Comment', placeholder: 'A comment to yourself…' };
   }
   if (a.comaType) {
     const label = a.comaType[0]!.toUpperCase() + a.comaType.slice(1);
     return { tag: `COMA · ${label}`, placeholder: 'Write what the text gives…' };
   }
-  return { tag: 'Note', placeholder: 'An observation, a meaning, an application…' };
+  return { tag: 'Comment', placeholder: 'An observation, a meaning, an application…' };
 }
 
 /** True when a question is promotable (SPEC 6e): a non-empty expected answer. */

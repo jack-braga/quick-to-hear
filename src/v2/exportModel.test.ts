@@ -111,6 +111,17 @@ describe('exportModel', () => {
     expect(model.totalMinutes).toBe(9); // 5 + 4 (one support)
   });
 
+  it('drops a reserved (held-back) item from the export, though orderedOutput keeps it for the panel', () => {
+    const anns = [
+      q({ id: 'q1', verseIds: ['LUKE.1.8'], estimateMinutes: 5 }),
+      q({ id: 'q2', verseIds: ['LUKE.1.17'], estimateMinutes: 4, reserved: true }),
+    ];
+    expect(orderedOutput(anns, []).map((a) => a.id)).toEqual(['q1', 'q2']); // panel shows both
+    const model = exportModel(studyWith(anns));
+    expect(model.blocks.map((b) => b.id)).toEqual(['q1']); // the export drops the reserved one
+    expect(model.totalMinutes).toBe(5); // its minutes aren't counted
+  });
+
   it('participantBlocks drops a hidden study note but keeps question numbers', () => {
     const study = studyWith([
       q({ id: 'q1', verseIds: ['LUKE.1.8'] }),

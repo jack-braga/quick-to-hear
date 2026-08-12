@@ -10,7 +10,7 @@ export type ActionKind = 'note' | 'ask' | 'mark';
 
 const ACTION_META: Record<ActionKind, { glyph: string; label: string }> = {
   mark: { glyph: '⚑', label: 'Mark confusing' },
-  note: { glyph: '✎', label: 'Note' },
+  note: { glyph: '✎', label: 'Comment' },
   ask: { glyph: '?', label: 'Question' },
 };
 

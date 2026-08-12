@@ -132,7 +132,9 @@ export function supportFor(a: Annotation): SupportRef[] {
 }
 
 export function exportModel(study: Study): ExportModel {
-  const ordered = orderedOutput(study.annotations, study.runningOrder);
+  // `orderedOutput` keeps every output item (the Build panel shows reserved ones dimmed); the export
+  // itself drops anything held back via the "in study" toggle (`reserved`).
+  const ordered = orderedOutput(study.annotations, study.runningOrder).filter((a) => !a.reserved);
 
   let qNumber = 0;
   const blocks: ExportBlock[] = ordered.map((a): ExportBlock => {

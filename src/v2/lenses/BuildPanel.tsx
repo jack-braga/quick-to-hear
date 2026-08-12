@@ -1,14 +1,14 @@
 import { useState } from 'react';
 
 import { litmusForQuestionType } from '@/lib/content';
-import { parseReference } from '@/lib/verse';
 import { cn } from '@/lib/utils';
 import type { AimComponent, Annotation, QuestionType, Study } from '@/types/study';
 import { annotationMinutes, isQuestionReady, toneFor, type AnnotationTone } from '@/v2/annotations';
 import { moveBefore, moveBy, QUESTION_TYPE_OPTIONS } from '@/v2/build';
 import { DEFAULT_QUESTION_WRITE_LINES, exportModel, orderedOutput } from '@/v2/exportModel';
+import { AttachReferenceRow } from '@/v2/reader/AttachReferenceRow';
 import { formatVerseIds } from '@/v2/reader/selection';
-import { mentionKey, mentionLabel, parseMentions } from '@/v2/reader/mentions';
+import { parseMentions } from '@/v2/reader/mentions';
 
 /**
  * The Build assembly panel (V2-UX-BACKLOG §7.5). The passage steps aside (the centre is the live
@@ -59,8 +59,6 @@ export function BuildPanel(props: BuildPanelProps) {
   const { annotations, runningOrder } = props;
   const [filter, setFilter] = useState<KindFilter>('all');
   const [dragId, setDragId] = useState<string | null>(null);
-  const [attaching, setAttaching] = useState<string | null>(null);
-  const [attachText, setAttachText] = useState('');
 
   const ordered = orderedOutput(annotations, runningOrder);
   const orderedIds = ordered.map((a) => a.id);
@@ -74,22 +72,6 @@ export function BuildPanel(props: BuildPanelProps) {
     props.onEdit(a.id, { estimateMinutes: Math.max(0, annotationMinutes(a) + delta) });
   const setWriteLines = (a: Annotation, delta: number, base: number) =>
     props.onEdit(a.id, { writeLines: Math.max(0, (a.writeLines ?? base) + delta) });
-
-  const attachReference = (a: Annotation) => {
-    const ref = parseReference(attachText.trim());
-    if (!ref) return;
-    const osis = mentionKey(ref);
-    props.onEdit(a.id, {
-      mentions: { ...a.mentions, [osis]: { includeForGroup: true, reference: mentionLabel(ref) } },
-    });
-    setAttaching(null);
-    setAttachText('');
-  };
-  const removeReference = (a: Annotation, osis: string) => {
-    const next = { ...a.mentions };
-    delete next[osis];
-    props.onEdit(a.id, { mentions: next });
-  };
 
   return (
     <div>
@@ -146,6 +128,7 @@ export function BuildPanel(props: BuildPanelProps) {
                   'rounded-lg border border-line border-l-[3px] bg-leaf p-[9px_11px]',
                   isQuestion ? 'border-l-[#b98a1e]' : 'border-l-violet',
                   dragId === a.id && 'opacity-50',
+                  a.reserved && 'opacity-45',
                 )}
               >
                 <div className="mb-1 flex items-center gap-2">
@@ -188,17 +171,8 @@ export function BuildPanel(props: BuildPanelProps) {
                     : noteSummary(a.text) || 'No study-note text yet — author it in Write.'}
                 </p>
 
-                {/* attached references (questions carry them here so the text stays clean) */}
-                {isQuestion && a.mentions && Object.keys(a.mentions).length > 0 && (
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    {Object.entries(a.mentions).map(([osis, m]) => (
-                      <span key={osis} className="inline-flex items-center gap-1 rounded-[5px] border border-lapis-edge bg-lapis-wash px-1.5 py-0.5 font-mono text-[9.5px] text-lapis-ink">
-                        ↗ {m.reference ?? osis}
-                        <button type="button" aria-label="Remove reference" onClick={() => removeReference(a, osis)} className="text-ink-faint hover:text-rubric">✕</button>
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {/* attached references — questions carry them here so their text stays clean */}
+                {isQuestion && <AttachReferenceRow card={a} onEdit={props.onEdit} />}
 
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {isQuestion ? (
@@ -266,39 +240,20 @@ export function BuildPanel(props: BuildPanelProps) {
                   </p>
                 )}
 
-                <div className="mt-1.5 flex items-center gap-3">
-                  {isQuestion &&
-                    (attaching === a.id ? (
-                      <span className="inline-flex items-center gap-1">
-                        <input
-                          autoFocus
-                          value={attachText}
-                          onChange={(e) => setAttachText(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') attachReference(a);
-                            if (e.key === 'Escape') setAttaching(null);
-                          }}
-                          placeholder="e.g. Malachi 4:5-6"
-                          className="w-32 rounded-md border border-line bg-panel px-1.5 py-0.5 font-mono text-[9.5px] text-ink outline-none focus:border-lapis-edge"
-                        />
-                        <button type="button" onClick={() => attachReference(a)} className="font-mono text-[9.5px] text-lapis-ink hover:underline">add</button>
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAttaching(a.id);
-                          setAttachText('');
-                        }}
-                        className="font-mono text-[9.5px] text-lapis-ink hover:underline"
-                      >
-                        ↗ add reference
-                      </button>
-                    ))}
-                  <span className="flex-1" />
-                  <button type="button" onClick={() => props.onRemove(a.id)} className="font-mono text-[9.5px] text-ink-faint hover:text-rubric hover:underline">
-                    ✂ cut
+                <div className="mt-2 flex items-center gap-3">
+                  <button
+                    type="button"
+                    aria-pressed={!a.reserved}
+                    onClick={() => props.onEdit(a.id, { reserved: !a.reserved })}
+                    title={a.reserved ? 'Held back — not in the exported study. Click to include.' : 'In the study — click to hold it back.'}
+                    className={cn(
+                      'font-mono text-[9.5px]',
+                      a.reserved ? 'text-ink-faint hover:text-ink' : 'text-moss-ink hover:underline',
+                    )}
+                  >
+                    {a.reserved ? '☐ not in study' : '☑ in study'}
                   </button>
+                  <span className="flex-1" />
                 </div>
               </li>
             );

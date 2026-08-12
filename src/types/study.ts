@@ -230,6 +230,9 @@ export const AnnotationSchema = z.object({
   // study-note — keep this personal-commentary card out of the participant handout (leader-only).
   // Additive-optional; absent = printed for the group.
   hideFromGroup: z.boolean().optional(),
+  // question/study-note — held back: excluded from BOTH exported documents (the Build "in study"
+  // toggle — a reversible alternative to cutting). Additive-optional; absent = in the study.
+  reserved: z.boolean().optional(),
   // Deepen/Weigh revisions appended to this card (Deepen/Weigh never make a new card). One unified
   // list; each revision's own `origin` marks the round. See {@link RevisionSchema}.
   revisions: z.array(RevisionSchema).optional(),

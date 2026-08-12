@@ -23,6 +23,7 @@ import {
   toneFor,
 } from '@/v2/annotations';
 import { LENSES } from '@/v2/lenses';
+import { AttachReferenceRow } from '@/v2/reader/AttachReferenceRow';
 import { FormulaPicker } from '@/v2/reader/FormulaPicker';
 import { MentionEditor } from '@/v2/reader/MentionEditor';
 import { formatVerseIds } from '@/v2/reader/selection';
@@ -278,6 +279,9 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           />
         )}
 
+        {/* question: attach a support-passage reference (prints beside it; keeps the text clean) */}
+        {a.kind === 'question' && <AttachReferenceRow card={a} onEdit={props.onEdit} />}
+
         {/* question: soft, overridable question-craft warnings (SPEC 6e) — detection in
             `detectWarnings`, the wording authored in `warnings.yaml`. Advisory only, never a block. */}
         {a.kind === 'question' &&
@@ -375,10 +379,10 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
             <button
               type="button"
               onClick={() => props.onAdd('note')}
-              title="Add a note (anchor it to verses later)"
+              title="Add a comment (anchor it to verses later)"
               className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-lapis-edge hover:text-ink"
             >
-              ＋ note
+              ＋ comment
             </button>
             <button
               type="button"
@@ -423,10 +427,10 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           </div>
         ) : (
           <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
-            Select verses, then <b className="font-semibold text-ink">Note</b> or{' '}
+            Select verses, then <b className="font-semibold text-ink">Comment</b> or{' '}
             <b className="font-semibold text-ink">Mark confusing</b> — or hover between two verses to
             divide the passage. Reference another passage by typing{' '}
-            <b className="font-mono text-[12px] text-lapis-ink">@Malachi 4:5-6</b> inside a note.
+            <b className="font-mono text-[12px] text-lapis-ink">@Malachi 4:5-6</b> inside a comment.
           </div>
         )
       ) : toRender.length === 0 ? (
