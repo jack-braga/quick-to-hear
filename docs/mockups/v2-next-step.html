@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — a "next step" button: pick a placement</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --moss: #4f6b3a; --moss-edge: rgba(79,107,58,0.4); --moss-wash: rgba(79,107,58,0.16); --moss-ink: #3c5330;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); line-height: 1.5; }
+      .topbar { display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 20px clamp(16px,3vw,28px) 60px; }
+      h1 { font-family: var(--font-scripture); font-size: 24px; margin: 4px 0 4px; }
+      p.lede { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 20px; max-width: 64ch; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+      .opt h2 { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 3px; }
+      .opt p { font-size: 12px; color: var(--ink-soft); margin: 0 0 8px; }
+      .opt p b { color: var(--ink); }
+
+      /* a mini reader frame */
+      .frame { position: relative; height: 240px; border: 1px solid var(--line); border-radius: 12px; background: var(--desk); overflow: hidden; box-shadow: var(--shadow); }
+      .fbar { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); border-bottom: 1px solid var(--line); }
+      .fbar .rail { display: flex; gap: 2px; margin-left: auto; }
+      .fbar .lens { width: 16px; height: 16px; display: grid; place-items: center; border-radius: 4px; font-size: 9px; color: var(--ink-faint); }
+      .fbar .lens.on { background: var(--lapis); color: #fff; }
+      .fbody { display: grid; grid-template-columns: 1fr 74px; height: calc(100% - 30px); }
+      .leaf { margin: 12px; background: var(--leaf); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-family: var(--font-scripture); font-size: 10px; color: var(--ink-soft); line-height: 1.5; overflow: hidden; }
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 60%, var(--leaf)); }
+
+      .next { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 11px; font-weight: 500; border-radius: 8px; padding: 6px 11px; background: var(--lapis); color: #fff; border: none; box-shadow: var(--shadow); }
+      .next small { font-family: var(--font-mono); font-size: 8px; opacity: .8; }
+      /* A — floating bottom-right */
+      .fa .next { position: absolute; right: 14px; bottom: 14px; }
+      /* B — footer bar */
+      .fb .footer { position: absolute; left: 0; right: 0; bottom: 0; height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: var(--leaf); border-top: 1px solid var(--line); }
+      .fb .prev { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .fb .steps { flex: 1; display: flex; gap: 3px; justify-content: center; }
+      .fb .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+      .fb .dot.on { background: var(--lapis); }
+      .fb .next { padding: 4px 10px; }
+      /* C — inline CTA under the content */
+      .fc .cta { margin: 0 12px 12px; padding: 10px; border: 1px dashed var(--moss-edge); background: var(--moss-wash); border-radius: 8px; display: flex; align-items: center; gap: 10px; }
+      .fc .cta .txt { font-size: 10.5px; color: var(--moss-ink); }
+      .fc .cta .txt b { color: var(--ink); }
+      .fc .cta .next { margin-left: auto; background: var(--moss); }
+      /* D — header arrow */
+      .fd .rail .go { width: 16px; height: 16px; display: grid; place-items: center; border-radius: 4px; font-size: 11px; color: #fff; background: var(--lapis); margin-left: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar"><span class="brand">Quick&nbsp;to&nbsp;Hear</span><span style="font-family:var(--font-scripture);font-size:16px">A “next step” button</span></div>
+    <div class="wrap">
+      <h1>Where should “Next →” live?</h1>
+      <p class="lede">You can already jump via the lens rail, but a clear <b>next-step</b> button helps you
+        move through the flow linearly. Here are four placements (each showing the current lens =
+        <b>Survey</b>, next = <b>COMA</b>). Pick one — I can also do a keyboard shortcut alongside it.</p>
+
+      <div class="grid">
+        <div class="opt">
+          <h2>A · Floating pill (bottom-right)</h2>
+          <p>Always visible, out of the way. <b>+</b> unobtrusive, familiar. <b>−</b> can overlap content; no “back”.</p>
+          <div class="frame fa">
+            <div class="fbar"><span style="font-family:var(--font-scripture);font-size:11px">Luke 1:5–25</span>
+              <div class="rail"><span class="lens">⚙</span><span class="lens">◉</span><span class="lens on">▤</span><span class="lens">▦</span><span class="lens">⊕</span><span class="lens">◎</span></div>
+            </div>
+            <div class="fbody"><div class="leaf">⁸ Now while he executed the priest’s office before God… ¹¹ An angel of the Lord appeared to him…</div><div class="panel"></div></div>
+            <button class="next">Next: COMA <small>→</small></button>
+          </div>
+        </div>
+
+        <div class="opt">
+          <h2>B · Footer bar (prev · progress · next)</h2>
+          <p>A dedicated step strip. <b>+</b> gives back + forward + a progress sense. <b>−</b> costs a strip of height.</p>
+          <div class="frame fb">
+            <div class="fbar"><span style="font-family:var(--font-scripture);font-size:11px">Luke 1:5–25</span>
+              <div class="rail"><span class="lens">⚙</span><span class="lens">◉</span><span class="lens on">▤</span><span class="lens">▦</span><span class="lens">⊕</span><span class="lens">◎</span></div>
+            </div>
+            <div class="fbody" style="height:calc(100% - 30px - 34px)"><div class="leaf">⁸ Now while he executed the priest’s office before God…</div><div class="panel"></div></div>
+            <div class="footer">
+              <span class="prev">← Read</span>
+              <span class="steps"><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i></span>
+              <button class="next">Next: COMA <small>→</small></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="opt">
+          <h2>C · Inline CTA at the end of the step</h2>
+          <p>Sits after the lens’ own content, like “done here?”. <b>+</b> reads as a natural hand-off. <b>−</b> you must scroll to it.</p>
+          <div class="frame fc">
+            <div class="fbar"><span style="font-family:var(--font-scripture);font-size:11px">Luke 1:5–25</span>
+              <div class="rail"><span class="lens">⚙</span><span class="lens">◉</span><span class="lens on">▤</span><span class="lens">▦</span><span class="lens">⊕</span><span class="lens">◎</span></div>
+            </div>
+            <div class="fbody" style="grid-template-columns:1fr"><div class="leaf" style="margin-bottom:6px">⁸ Now while he executed the priest’s office before God… ¹¹ An angel of the Lord appeared to him…</div></div>
+            <div class="cta"><span class="txt"><b>Sections divided, confusions marked?</b><br />Next: read it through COMA.</span><button class="next">COMA <small>→</small></button></div>
+          </div>
+        </div>
+
+        <div class="opt">
+          <h2>D · Advance arrow in the header rail</h2>
+          <p>A “→” at the end of the lens rail. <b>+</b> tiny, always there, near the steps. <b>−</b> easy to miss; no label.</p>
+          <div class="frame fd">
+            <div class="fbar"><span style="font-family:var(--font-scripture);font-size:11px">Luke 1:5–25</span>
+              <div class="rail"><span class="lens">⚙</span><span class="lens">◉</span><span class="lens on">▤</span><span class="lens">▦</span><span class="lens">⊕</span><span class="lens">◎</span><span class="go">→</span></div>
+            </div>
+            <div class="fbody"><div class="leaf">⁸ Now while he executed the priest’s office before God… ¹¹ An angel of the Lord appeared to him, standing on the right side of the altar of incense.</div><div class="panel"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

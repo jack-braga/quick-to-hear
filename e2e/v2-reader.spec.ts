@@ -23,7 +23,7 @@ test('v2 reader: load a passage, mark a verse, and it survives a reload', async 
 
   // Select a verse and mark it confusing.
   await verse8.click();
-  await page.getByRole('button', { name: /mark confusing/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
 
   // The margin shows a verse-anchored card.
   await expect(page.getByRole('button', { name: 'Luke 1:8', exact: true })).toBeVisible();
@@ -640,7 +640,7 @@ test('v2 Weigh lens: the weighed Theme supersedes (revised leads, original kept)
   // Survey (03): a card to weigh.
   await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.9"]').click();
-  await page.getByRole('button', { name: /mark confusing/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
 
   // Weigh (07): the Theme supersede — the weighed revision leads, the original is kept.
   await page.getByRole('button', { name: '07 Weigh' }).click();
@@ -675,12 +675,12 @@ test('v2 Deepen lens: append an own-work revision to a Survey card, and it persi
   // Survey: mark a verse confusing (a round-0 card).
   await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.11"]').click();
-  await page.getByRole('button', { name: /mark confusing/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
 
   // Deepen (round 1): the Survey card returns with its First pass; append an own-work note.
   await page.getByRole('button', { name: '05 Deepen' }).click();
   await expect(page.getByText('First pass', { exact: true })).toBeVisible();
-  await expect(page.getByText('Mark · confusing')).toBeVisible();
+  await expect(page.getByText('Confusion', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /add a note/i }).click();
   await page
     .locator('[data-focus-rev]')

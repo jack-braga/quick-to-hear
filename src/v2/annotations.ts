@@ -107,7 +107,7 @@ export function annotationMeta(a: Annotation): { tag: string; placeholder: strin
     return { tag: 'Study note', placeholder: 'Explain it for the group — this prints as a study note…' };
   }
   if (a.flag === 'confusing') {
-    return { tag: 'Mark · confusing', placeholder: 'What confuses you here? (they’ll feel it too)' };
+    return { tag: 'Confusion', placeholder: 'What confuses you here? (they’ll feel it too)' };
   }
   if (a.flag === 'comment') {
     return { tag: 'Comment', placeholder: 'A comment to yourself…' };

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — lens icons: pick a set</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); line-height: 1.5; }
+      .topbar { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .wrap { max-width: 1000px; margin: 0 auto; padding: 22px clamp(16px,3vw,32px) 60px; }
+      h1 { font-family: var(--font-scripture); font-size: 24px; margin: 6px 0 4px; }
+      p.lede { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 18px; max-width: 62ch; }
+
+      /* the live rail — matches the app header */
+      .railcard { position: sticky; top: 8px; z-index: 5; background: var(--leaf); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 22px; }
+      .railcard .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); margin-bottom: 8px; display: flex; gap: 12px; align-items: center; }
+      .rail { display: flex; flex-wrap: wrap; gap: 3px; }
+      .lens { min-width: 30px; height: 30px; padding: 0 5px; display: grid; place-items: center; border-radius: 8px; border: 1px solid transparent; color: var(--ink-soft); font-size: 17px; background: none; position: relative; }
+      .lens small { position: absolute; bottom: 1px; right: 2px; font-family: var(--font-mono); font-size: 7px; color: var(--ink-faint); }
+      .lens.active { border-color: var(--lapis-edge); background: var(--lapis-wash); }
+      .preset { display: inline-flex; gap: 6px; }
+      .preset button { font-family: var(--font-mono); font-size: 10.5px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 7px; padding: 3px 9px; cursor: pointer; }
+      .preset button:hover { color: var(--ink); border-color: var(--lapis-edge); }
+
+      /* per-lens chooser */
+      .row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+      .row .name { font-family: var(--font-scripture); font-size: 15px; }
+      .row .name small { display: block; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+      .cands { display: flex; flex-wrap: wrap; gap: 7px; }
+      .cand { width: 40px; height: 40px; display: grid; place-items: center; font-size: 20px; border: 1px solid var(--line); border-radius: 9px; background: var(--leaf); cursor: pointer; }
+      .cand:hover { border-color: var(--lapis-edge); }
+      .cand.on { border-color: var(--lapis); background: var(--lapis-wash); box-shadow: inset 0 0 0 1px var(--lapis-edge); }
+      .note { font-size: 12.5px; color: var(--ink-soft); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 13px; margin-top: 18px; }
+      .note b { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="topbar"><span class="brand">Quick&nbsp;to&nbsp;Hear</span><span style="font-family:var(--font-scripture);font-size:16px">Lens icons</span></div>
+    <div class="wrap">
+      <h1>Pick an icon for each lens</h1>
+      <p class="lede">Some current glyphs are arbitrary (Read, COMA, Deepen, Build). Click a candidate in
+        each row to try it — the live rail at the top updates so you can judge the whole set together.
+        Seed a starting point with the presets. Tell me the set you like (mix freely).</p>
+
+      <div class="railcard">
+        <div class="lbl">Your set — live preview
+          <span class="preset">
+            <button data-preset="current">Reset to current</button>
+            <button data-preset="emoji">Try all-emoji</button>
+          </span>
+        </div>
+        <div class="rail" id="rail"></div>
+      </div>
+
+      <div id="rows"></div>
+
+      <div class="note"><b>Style note.</b> The current rail is <b>monochrome glyphs</b> (they take the ink
+        colour, quiet). <b>Emoji</b> are more legible/evocative but add colour to the header — a real
+        design choice. You can also go mixed (emoji only for the vague ones). I'll wire whatever you pick.</div>
+    </div>
+
+    <script>
+      // [id, num, name, [candidates] — first is the current glyph]
+      const LENSES = [
+        ['setup','01','Set up', ['⚙','🛠','◧','📋']],
+        ['read','02','Read', ['◉','📖','👁','📕']],
+        ['survey','03','Survey', ['▤','🗺','🔍','⊞']],
+        ['coma','04','COMA', ['▦','◲','🧭','⊡']],
+        ['deepen','05','Deepen', ['⊕','⤵','🔬','⛏']],
+        ['theme','06','Theme & aim', ['◎','🎯','⌖','✸']],
+        ['weigh','07','Weigh', ['⚖','🪙','☯','🤔']],
+        ['write','08','Write', ['✎','✍','📝','🖊']],
+        ['build','09','Build', ['▥','🔨','🧱','⚒']],
+        ['check','10','Check', ['✓','✅','☑','🔎']],
+      ];
+      const chosen = {};
+      LENSES.forEach(([id, , , cands]) => (chosen[id] = cands[0]));
+
+      const rail = document.getElementById('rail');
+      const rows = document.getElementById('rows');
+
+      function drawRail() {
+        rail.innerHTML = '';
+        LENSES.forEach(([id, num], i) => {
+          const b = document.createElement('button');
+          b.className = 'lens' + (i === 2 ? ' active' : '');
+          b.innerHTML = chosen[id] + '<small>' + num + '</small>';
+          rail.appendChild(b);
+        });
+      }
+      function drawRows() {
+        rows.innerHTML = '';
+        LENSES.forEach(([id, num, name, cands]) => {
+          const row = document.createElement('div');
+          row.className = 'row';
+          const label = document.createElement('div');
+          label.className = 'name';
+          label.innerHTML = name + '<small>Step ' + num + '</small>';
+          const cbox = document.createElement('div');
+          cbox.className = 'cands';
+          cands.forEach((g) => {
+            const c = document.createElement('button');
+            c.className = 'cand' + (chosen[id] === g ? ' on' : '');
+            c.textContent = g;
+            c.onclick = () => { chosen[id] = g; drawRail(); drawRows(); };
+            cbox.appendChild(c);
+          });
+          row.appendChild(label);
+          row.appendChild(cbox);
+          rows.appendChild(row);
+        });
+      }
+      document.querySelectorAll('.preset button').forEach((b) =>
+        b.addEventListener('click', () => {
+          const p = b.dataset.preset;
+          LENSES.forEach(([id, , , cands]) => (chosen[id] = p === 'emoji' ? (cands.find((g) => /\p{Emoji}/u.test(g)) ?? cands[0]) : cands[0]));
+          drawRail(); drawRows();
+        }));
+      drawRail(); drawRows();
+    </script>
+  </body>
+</html>

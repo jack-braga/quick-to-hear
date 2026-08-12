@@ -387,10 +387,10 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
             <button
               type="button"
               onClick={() => props.onAdd('note', 'confusing')}
-              title="Add a confusion mark (anchor it to verses later)"
+              title="Mark something confusing (anchor it to verses later)"
               className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-rubric hover:text-rubric"
             >
-              ＋ mark
+              ＋ mark confusing
             </button>
           </>
         )}

@@ -54,6 +54,21 @@ function loadReadingMode(): ReadingMode {
  *  tones/highlights (and its margin is the pray-and-read panel, not cards). */
 const NO_TONES: Map<string, AnnotationTone[]> = new Map();
 
+/** The active lens persists per-study, so a reload keeps you on the step you were on (rather than
+ *  snapping back to Survey). Falls back to Survey (or Set up, when there's no passage yet). */
+function lensKey(studyId: string): string {
+  return `qth2/lens/${studyId}`;
+}
+function loadLens(studyId: string, hasPassage: boolean): LensId {
+  try {
+    const raw = localStorage.getItem(lensKey(studyId));
+    if (raw && LENSES.some((l) => l.id === raw)) return raw as LensId;
+  } catch {
+    /* storage unavailable — fall through to the default */
+  }
+  return hasPassage ? 'map' : 'setup';
+}
+
 /** The parallel view (which non-primary translations are ticked to read side-by-side) persists
  *  per-study in the browser, so it survives a reload — like the reading mode. */
 function viewedKey(studyId: string): string {
@@ -78,7 +93,7 @@ export function ReaderShell({ study }: { study: Study }) {
   const sections = study.map.sections;
   const annotations = study.annotations;
 
-  const [lens, setLens] = useState<LensId>(passage ? 'map' : 'setup');
+  const [lens, setLens] = useState<LensId>(() => loadLens(study.id, passage != null));
   // Build lens: which export document the centre previews (Participant / Leader / Parallel).
   const [buildVariant, setBuildVariant] = useState<'participant' | 'leader' | 'parallel'>('participant');
   const [readingMode, setReadingMode] = useState<ReadingMode>(loadReadingMode);
@@ -123,6 +138,15 @@ export function ReaderShell({ study }: { study: Study }) {
       /* storage unavailable — the view still applies for this session */
     }
   }, [viewedSet, study.id]);
+
+  // Remember the active lens per-study, so a reload keeps you on the step you were on.
+  useEffect(() => {
+    try {
+      localStorage.setItem(lensKey(study.id), lens);
+    } catch {
+      /* storage unavailable — the lens still applies for this session */
+    }
+  }, [lens, study.id]);
 
   const clearSelection = () => {
     setSelected([]);
