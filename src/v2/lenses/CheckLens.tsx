@@ -89,7 +89,7 @@ export function CheckLens({ study }: { study: Study }) {
           <Help helpKey="p7.coverage" label="Coverage" />
         </div>
         {!coverage.hasSections ? (
-          <p className="text-[13px] text-ink-soft">Divide the passage into sections (Map) to map coverage.</p>
+          <p className="text-[13px] text-ink-soft">Divide the passage into sections (Survey) to map coverage.</p>
         ) : (
           <ul className="space-y-1.5">
             {coverage.sections.map((sec) => (

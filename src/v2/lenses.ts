@@ -1,19 +1,22 @@
 /**
- * The seven phases (SPEC) reframed as **lenses over one canvas** (ROADMAP-v2 §1): switching
- * lens changes what you do to the text and what overlays it; the text stays put. v2.2 wires
- * the **Map** lens for real and a minimal **Set up** (load a passage); the rest read the
- * passage and are filled in across v2.4–v2.6.
+ * The phases (SPEC) reframed as **lenses over one canvas** (ROADMAP-v2 §1): switching lens changes
+ * what you do to the text and what overlays it; the text stays put. The flow redesign
+ * (V2-UX-BACKLOG §7) makes this **ten** lenses: **Deepen** (round 1, after COMA) and **Weigh**
+ * (round 2, after Theme & aim) are new; **Survey** was "Map" and **Write** was "Questions" (display
+ * renames — the internal ids `map`/`questions` stay stable so stored studies still resolve).
  */
 
 export const LENSES = [
   { id: 'setup', num: '01', name: 'Set up' },
   { id: 'read', num: '02', name: 'Read' },
-  { id: 'map', num: '03', name: 'Map' },
+  { id: 'map', num: '03', name: 'Survey' },
   { id: 'coma', num: '04', name: 'COMA' },
-  { id: 'theme', num: '05', name: 'Theme & aim' },
-  { id: 'questions', num: '06', name: 'Questions' },
-  { id: 'build', num: '07', name: 'Build' },
-  { id: 'check', num: '08', name: 'Check' },
+  { id: 'deepen', num: '05', name: 'Deepen' },
+  { id: 'theme', num: '06', name: 'Theme & aim' },
+  { id: 'weigh', num: '07', name: 'Weigh' },
+  { id: 'questions', num: '08', name: 'Write' },
+  { id: 'build', num: '09', name: 'Build' },
+  { id: 'check', num: '10', name: 'Check' },
 ] as const;
 
 export type LensId = (typeof LENSES)[number]['id'];
@@ -24,8 +27,10 @@ export const LENS_ICON: Record<LensId, string> = {
   read: '◉',
   map: '▤',
   coma: '▦',
+  deepen: '⊕',
   theme: '◎',
-  questions: '?',
+  weigh: '⚖',
+  questions: '✎',
   build: '▥',
   check: '✓',
 };

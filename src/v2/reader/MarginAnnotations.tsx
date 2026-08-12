@@ -67,7 +67,7 @@ function loadHidden(): Set<AnnotationOrigin> {
 }
 
 /** The card's source-step line — `▸ step NN · Name` when the origin maps to a numbered lens,
- *  else just `▸ Name` (the Questions lens has no number until the flow split lands). */
+ *  else just `▸ Name`. Origin ids display via `ORIGIN_LABEL` (e.g. `map`→Survey, `questions`→Write). */
 function sourceLine(origin: AnnotationOrigin): string {
   const lens = LENSES.find((l) => l.id === origin);
   const label = ORIGIN_LABEL[origin];

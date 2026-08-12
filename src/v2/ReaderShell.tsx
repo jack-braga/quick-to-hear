@@ -562,6 +562,10 @@ export function ReaderShell({ study }: { study: Study }) {
           onMentionMeta={onSetMentionMeta}
           onFocusHandled={clearFocusAnnotation}
         />
+      ) : lens === 'deepen' ? (
+        <MarginPlaceholder text="Deepen — round 1. Revisit Survey & COMA: answer what you marked confusing and add what you now see, from the text first. Your own work only — no commentaries yet. (The append UI lands in the next slice.)" />
+      ) : lens === 'weigh' ? (
+        <MarginPlaceholder text="Weigh — round 2. Now open a commentary: add a 📖 note to the same cards, and revisit your Theme & aim so the weighed version leads. (The append UI lands in the next slice.)" />
       ) : (
         <MarginPlaceholder text="The text stays put; the overlay changes with the lens." />
       );

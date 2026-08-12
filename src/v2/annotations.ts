@@ -45,12 +45,13 @@ export function annotationOrigin(a: Annotation): AnnotationOrigin {
   return 'map';
 }
 
-/** Human label for an origin (the panel chip + the source line). */
+/** Human label for an origin (the panel chip + the source line). The ids `map`/`questions` are
+ *  stable, but they now display as **Survey** / **Write** (the flow-redesign renames). */
 export const ORIGIN_LABEL: Record<AnnotationOrigin, string> = {
-  map: 'Map',
+  map: 'Survey',
   coma: 'COMA',
   theme: 'Theme & aim',
-  questions: 'Questions',
+  questions: 'Write',
 };
 
 /** The origins actually present among these cards, in canonical (flow) order — the chip set. */

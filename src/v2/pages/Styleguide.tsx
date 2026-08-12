@@ -107,7 +107,7 @@ export default function Styleguide() {
             </span>
             <button className="flex items-baseline gap-2.5 rounded-lg border-l-2 border-l-lapis bg-lapis-wash px-2.5 py-2 text-left">
               <span className="font-mono text-[11px] text-lapis">03</span>
-              <span className="text-[13.5px] font-semibold text-lapis-ink">Map</span>
+              <span className="text-[13.5px] font-semibold text-lapis-ink">Survey</span>
             </button>
             <span className="grid size-6 place-items-center rounded-md bg-lapis font-mono text-[11px] text-white dark:text-[#10131a]">
               3

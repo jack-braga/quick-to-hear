@@ -192,7 +192,7 @@ export function ComaPanel(props: ComaPanelProps) {
         <>
           <p className="mb-3 text-[13px] leading-[1.5] text-ink-soft">
             Read the passage against these. <b className="font-semibold text-ink">✎ Answer</b> a prompt
-            to jot a card — anchor it to verses, and it carries forward into Questions.
+            to jot a card — anchor it to verses, and it carries forward into Write.
           </p>
 
           {multi && (

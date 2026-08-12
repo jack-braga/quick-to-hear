@@ -15,7 +15,7 @@ test('v2 reader: load a passage, mark a verse, and it survives a reload', async 
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
   // Set-up now lands on Read; step across to Map for the interactive work.
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
 
   // The Map lens renders the real verses.
   const verse8 = page.locator('[data-v="LUKE.1.8"]');
@@ -83,7 +83,7 @@ test('v2 COMA answer-cards: ✎ Answer spawns a card that flows into the Questio
 
   // The answer-card is an origin-COMA annotation → it shows in the Questions panel with a
   // COMA · Context tag and the recycle-forward "→ make a question".
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
   await expect(page.getByText(/COMA · Context/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /make a question/i })).toBeVisible();
 });
@@ -121,7 +121,7 @@ test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persis
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
 
   // Select a verse and add a Question from the action bar (authoring lives in the Questions lens).
   await page.locator('[data-v="LUKE.1.10"]').click();
@@ -148,7 +148,7 @@ test('v2 anchor capture: click a card’s chip, pick a verse, and it anchors (pe
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
 
   // Add an unanchored note from the panel — it starts with a dashed "⌖ anchor" chip (no verse).
   const panel = page.locator('aside');
@@ -180,12 +180,12 @@ test('v2 Questions lens: recycle-forward turns a prior note into a question at i
   await page.getByRole('button', { name: /read the passage/i }).click();
 
   // Make a note in the Map lens, anchored to v8.
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.8"]').click();
   await page.getByRole('toolbar').getByRole('button', { name: /note/i }).click();
 
   // In the Questions lens the note carries "→ make a question"; clicking it seeds a question at v8.
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
   await page.getByRole('button', { name: /make a question/i }).click();
 
   // The new (empty) question needs an expected answer, and now two cards anchor to Luke 1:8.
@@ -203,7 +203,7 @@ test('v2 Read lens is pure reading: annotation tones are suppressed on the passa
   await page.getByRole('button', { name: /read the passage/i }).click();
 
   // Mark a verse in Map → v8 paints a (rubric) tone on the passage.
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.8"]').click();
   await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveClass(/rubric-wash/);
@@ -221,7 +221,7 @@ test('v2.5 reading modes: the Manuscript toggle persists, and sections show in e
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toBeVisible();
 
   // Reading mode lives in the Aa Text menu now; sections show in every mode (owner call).
@@ -255,7 +255,7 @@ test('v2 parallel translations: tick a second to view side by side (every column
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
 
   // One translation → single view: exactly one cell per verse.
   await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveCount(1);
@@ -291,7 +291,7 @@ test('v2 parallel sectioning: divide the passage on the primary column while par
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
 
   // Go parallel by adding ASV from the Aa Text menu.
   await page.getByRole('button', { name: /Aa Text/ }).click();
@@ -334,7 +334,7 @@ test('v2 @mention cross-ref collapse: chip → peek → include-for-group → pr
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
 
   // A note anchored to v17, with an inline @-mention of another passage.
   await page.locator('[data-v="LUKE.1.17"]').click();
@@ -372,7 +372,7 @@ test('v2 @mention autocomplete: @book → chapter → verse dropdowns build the 
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
 
   await page.locator('[data-v="LUKE.1.17"]').click();
   await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /note/i }).click();
@@ -431,7 +431,7 @@ test('v2 Questions lens: a yes-or-no opener surfaces the soft question-craft war
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
 
   await page.locator('[data-v="LUKE.1.8"]').click();
   await page.getByRole('toolbar', { name: /selected verses/i }).getByRole('button', { name: /question/i }).click();
@@ -451,7 +451,7 @@ test('v2 @mention: typing @Book Chapter is held (not chipped) until you finish t
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '03 Map' }).click();
+  await page.getByRole('button', { name: '03 Survey' }).click();
 
   await page.getByRole('button', { name: '＋ note' }).click();
   const editor = page.locator('[data-mention-editor]');
@@ -475,7 +475,7 @@ test('v2 Questions lens: start a question from a scaffolded formula (§3)', asyn
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
 
   await page.getByRole('button', { name: /from a formula/i }).click();
   await expect(page.getByText('Start from a formula')).toBeVisible();
@@ -493,7 +493,7 @@ test('v2 Build lens: questions order by verse, reorder, and persist', async ({ p
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
 
   const addQuestion = async (v: string) => {
     await page.locator(`[data-v="${v}"]`).click();
@@ -526,7 +526,7 @@ test('v2 exports: handout excludes answers, leader includes them', async ({ page
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
 
   // Author one question with text + an expected answer.
   await page.locator('[data-v="LUKE.1.8"]').click();
@@ -557,7 +557,7 @@ test('v2: theme & aim + set-up reach the documents, and the Check lens audits', 
   await page.getByRole('button', { name: /theme & aim/i }).click();
   await page.fill('#v2-theme', 'God keeps his covenant promise.');
 
-  await page.getByRole('button', { name: '06 Questions' }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
   await page.locator('[data-v="LUKE.1.8"]').click();
   await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
   await page.locator('textarea[data-focus]').fill('What is Zechariah doing?');
