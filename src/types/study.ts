@@ -158,6 +158,11 @@ export type NoteFlag = z.infer<typeof NoteFlagSchema>;
 export const MentionMetaSchema = z.object({
   includeForGroup: z.boolean().default(false),
   returnQuestion: z.string().optional(),
+  // The reference's display string (e.g. "Malachi 4:5-6") when the mention is **attached to a
+  // question** rather than typed inside prose — a question's own text stays the clean deliverable, so
+  // its references live in this map, not in `text`. Absent for a note/study-note mention (whose
+  // display comes from the parsed `@`-mention in the text).
+  reference: z.string().optional(),
 });
 export type MentionMeta = z.infer<typeof MentionMetaSchema>;
 
@@ -219,6 +224,9 @@ export const AnnotationSchema = z.object({
   // number, replacing the dormant light/medium/heavy `weight` for timing. Additive-optional;
   // `annotationMinutes` falls back to the weight table when this is absent.
   estimateMinutes: z.number().optional(),
+  // question/study-note — how many ruled write-lines follow this item in the participant handout
+  // (v2 Build redesign). Additive-optional; the export falls back to a per-kind default when absent.
+  writeLines: z.number().optional(),
   // study-note — keep this personal-commentary card out of the participant handout (leader-only).
   // Additive-optional; absent = printed for the group.
   hideFromGroup: z.boolean().optional(),
