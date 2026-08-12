@@ -11,6 +11,12 @@
 > (`~/.claude/projects/…/8035189a-…jsonl`) for provenance. Three owner screenshots from that session
 > live in `~/.claude/image-cache/8035189a-…/` (1 = inline-mention pref, 2 = tooltip clipping, 3 =
 > parallel action-bar on the wrong column).
+>
+> **⚠ CURRENT FLOW = 10 lenses — see §7 (flow redesign, 2026-08-12).** The "eight lenses" decision in
+> §1 and the seven-step flow in §5 are **superseded**: two lenses were added (**Deepen** after COMA,
+> **Weigh** after Theme & aim) and the shipped "Questions" lens is being renamed **Authoring**. §7 is
+> the authoritative flow; the earlier sections are kept for provenance. Compressed handoff:
+> `docs/HANDOFF-v2-authoring-build.md`.
 
 ---
 
@@ -82,6 +88,10 @@ prompts stay as quiet one-liners. Helm attribution renders at the foot (inviolab
 **Proposed flow restructure (owner, 2026-08-11) — split authoring from assembly.** The owner spotted
 that *writing* questions and *assembling* the study are two jobs v1 mashed into one long "Build." New
 proposed shape (seven lenses → **eight**):
+
+> **⚠ SUPERSEDED 2026-08-12 — see §7.** The split shipped as eight lenses, then a further flow redesign
+> added **Deepen** (after COMA) and **Weigh** (after Theme & aim) → **10 lenses**, and the "Questions"
+> lens is being renamed **Authoring**. The eight-lens shape below is kept for provenance.
 
 > Set up · Read · Map · COMA · Theme & aim · **Questions (new)** · Build · Check
 
@@ -243,6 +253,11 @@ over the clicked column (`c2e229a`/`2b5a1ad`), tooltips clamp on-screen + no inh
 
 ## 5. The documented flow (owner asked to re-confirm — msg#2304, #2408; checked vs `SPEC.md`)
 
+> **⚠ SUPERSEDED 2026-08-12 — see §7 for the current 10-lens flow.** Two prep lenses (**Deepen**,
+> **Weigh**) were inserted, authoring was split into its own lens, and **"background boxes" are now
+> DEAD** (a resolved confusion becomes a **study note**, not a box). The seven-step shape below is kept
+> for provenance.
+
 > Set up → Read → **Map** (divide into sections **+ mark what's confusing**) → **COMA** (notes per
 > category) → **Theme & aim** → **Build** (questions **+ expected answers**) → Check.
 
@@ -261,3 +276,136 @@ them") and **COMA notes → candidate questions**. Any card-panel + naming work 
 - More **copy-paste passages** for references outside the main text (msg#2304).
 - Deep **links to BibleGateway / YouVersion** for a reference after selecting it in Set-Up (msg#2304).
 - BSB edition; Talk mode (pre-existing roadmap deferrals).
+
+---
+
+## 7. Flow redesign — Deepen · Weigh · Authoring · Build (decided 2026-08-12) — CURRENT AUTHORITATIVE FLOW
+
+> **This section supersedes** the "eight lenses" decision in §1 (the restructure block) and the
+> seven-step flow in §5. Design record — three committed mockups in `docs/mockups/`:
+> - `v2-deepen-weigh-unified.html` (`1f57cd8`) — Deepen round 1 / Weigh round 2, one unified revisions
+>   list per card, Theme/Aim supersede.
+> - `v2-build-export-preview.html` (`7bd343c`) — Build = live export preview + per-card controls.
+> - `v2-deepen-commentary-split.html` (`0577843`) — the earlier Option-B split (shows where the steps
+>   sit; note it still shows the now-**dead** "background box").
+>
+> Compressed handoff: `docs/HANDOFF-v2-authoring-build.md`. **Do NOT re-litigate the *Decided* items
+> below unless the owner reopens them.**
+
+### 7.1 The flow — now 10 lenses
+
+`Set up · Read · Map* · COMA · Deepen(new) · Theme & aim · Weigh(new) · Authoring* · Build · Check`
+*(\* Map + Authoring names pending — see 7.6)*
+
+| # | Lens | Icon | Notes |
+|---|------|------|-------|
+| 01 | Set up | ⚙ | |
+| 02 | Read | ◉ | pure reading (already shipped) |
+| 03 | **Map\*** | ▤ | rename pending (7.6) |
+| 04 | COMA | ▦ | |
+| 05 | **Deepen** *(new)* | ⊕ | round 1 — your own work, **no commentaries** |
+| 06 | Theme & aim | ◎ | |
+| 07 | **Weigh** *(new)* | ⚖ | round 2 — same append + **📖 commentaries unlocked** + Theme/Aim join |
+| 08 | **Authoring\*** *(was "Questions")* | ✎ | rename pending (7.6); **the only place group-facing output is created** |
+| 09 | Build | ▥ | assemble = export preview + per-card controls (7.5) |
+| 10 | Check | ✓ | |
+
+Two lenses inserted vs the shipped 8-lens flow: **Deepen** (after COMA) and **Weigh** (after Theme &
+aim). The shipped **"Questions"** lens is renamed **Authoring** (final name pending).
+
+### 7.2 Deepen (round 1) + Weigh (round 2) — the append-revision model *(Decided)*
+
+- **Deepen** (after COMA) = **"round 1"**: revisit Map + COMA — answer what you marked confusing, add
+  what you now see, **from the text, no commentaries**. Appends revisions to existing Map/COMA cards.
+- **Weigh** (after Theme & aim) = **"round 2"**: the **same** append activity, but now **📖 commentaries
+  (books) are unlocked** and **Theme & Aim join**. Reserve *substantive* commentary work for here; light
+  lookups (names / places / dates) stay back in Context/Map.
+- **Card model — everything is a card;** `card.origin` = its creating step (drives the filter chips).
+  **Deepen/Weigh do NOT create cards** — they **append revisions** to existing cards, and **each
+  revision carries its own `origin` = `deepen`|`weigh`** (a two-level origin model). The revision origin
+  drives: the label, whether a **📖 book source is expected** (**weigh only**), and export integrity
+  (own-work vs book).
+- **Unified revisions list** per card — Deepen own-work + Weigh commentary in **ONE** list; source shown
+  as a small 📖 tag — **NOT** separate colour-blocks.
+- **Theme & Aim are special — the weighed revision SUPERSEDES:** it becomes the primary/final version;
+  the original is preserved but demoted to a muted `was · kept` line. Multi-round = a preserved stack
+  shown compactly (default: primary + one "was" line; a `▾ N earlier versions` disclosure only when >1).
+  *(presentation to confirm — open Q5.)*
+- The old loop-back **"apply to step X" button is GONE** → replaced by a muted orientation label, e.g.
+  `↳ this card lives in COMA · step 04`.
+
+### 7.3 Clean split — prep vs authoring vs assembly *(Decided)*
+
+- **Map · COMA · Deepen · Theme & aim · Weigh build your UNDERSTANDING** (prep).
+- **Authoring is the ONLY place group-facing output is created.**
+- **Build just sequences** it.
+
+### 7.4 What reaches the export *(Decided)*
+
+- **Two output documents** (SPEC Phase 7): **participant handout** (clean, answer-free) + **leader's
+  notes** (everything). *(SPEC §7 also lists a re-importable project file — that's the export/import
+  channel, not a printed doc.)*
+- **NO automaticness** — nothing auto-derives into the export. **Only three things reach the export:**
+  **questions**, **study notes** (personal commentary), and **included references** (support passages).
+- **"Background box" is DEAD.** The printed explanatory box is a **study note**, printed under that name.
+- **include-for-group == make-it-a-support-passage:** ONE action; toggling a reference on prints that
+  passage below/around its host card. Only references **inside question or study-note cards** are
+  includable. *(This is the `note.mentions[osis].includeForGroup` model from §2 — carried forward.)*
+- **return-question** = an optional add-on field on an **included** reference — the follow-up that steers
+  the group **back** to the main passage after you send them elsewhere (the v1 "step everyone forgets").
+  **Worked example (from the Build mockup):** studying Luke 1, Q2 sends the group to **Malachi 4:5–6**
+  (the Elijah promise, printed as a support passage); its **return-question** — *"Back in Luke 1 — why
+  does that promise matter for who John is?"* — brings them home. *(owner wanted more context before
+  final confirm — open Q4.)*
+- **One-click "→ make a question / → make a study note"** from a prior card (user-initiated; copies the
+  card's text in as a seed) — **CONFIRMED.** This is the recycle-forward mechanism — user-triggered,
+  **never automatic** (inviolable rule 1).
+
+### 7.5 Build redesign — export preview + per-card controls *(Decided)*
+
+- The passage **leaves the centre**; the centre becomes a **live export preview** with a **Participant /
+  Leader / Parallel** toggle (the export "paper" is always light — it's a print preview).
+- The right panel shows only the **output cards** (questions + study notes) + assembly controls, with
+  **controls living ON each card**:
+  - **Question card controls** (streamlined from a SPEC + `content/method` audit): **Type**
+    (context / observation / meaning / application) · **Minutes** (an explicit estimate, **NOT**
+    light/med/heavy) · **Essential** (toggle; renamed from "load-bearing") · **Aim know/feel/do**
+    (select, shown **only on application** questions). Read-only above: text, anchor, ✓ expected-answer.
+    Per-card action: `✂ cut → reserve`. **DROPPED:** gospel-plain toggle, wrong-turns, pastoral
+    flag/note.
+  - **Study-note card control:** `☐ hide from group` (leader-only vs printed).
+  - Panel footer: **total minutes vs session length**.
+
+### 7.6 Naming (owner leaning — pending confirm, open Q1–Q3)
+
+- Rename Map/COMA **"note"** annotations → **"comment"** (frees the word "note"). *(cost: a ripple
+  rename of existing notes.)*
+- Personal-commentary card = **"study note"**, printed under that name — **distinct from Weigh's
+  *published* "commentary" (the 📖 books you consult).** ⚠ **The `v2-build-export-preview.html` mockup
+  still labels this printed box "Commentary" — that label must become "Study note" when built** (so
+  "commentary" is reserved for the published-book source in Weigh).
+- **Authoring** phase (currently "Questions") — RENAME (open Q2; owner wants options + rationale).
+- **Map** phase — RENAME (open Q3; owner wants options + rationale).
+
+### 7.7 Still-open questions (2026-08-12 — being resolved with the owner in chat)
+
+1. Naming: `note`→`comment`; personal-commentary→**study note** (printed as such).
+2. **Authoring-phase name** (present 3–4 options + rationale).
+3. **Map-phase name** (present 3–4 options + rationale).
+4. **Return-question** — confirm it's an optional field on an *included* reference (worked example: 7.4).
+5. **Theme/Aim supersede** — confirm the compact-history presentation (7.2).
+6. Delete `docs/mockups/v2-recycle-forward.html` (demos the *rejected* auto-derivation model)?
+
+### 7.8 Build slices (implementation order — not yet started)
+
+Likely model + UI work, in slices (each testable + committable per the house rules):
+
+1. `revision.origin` (`deepen`|`weigh`) on the annotation/revision model.
+2. A **study-note** card kind + `hideFromGroup`.
+3. **Expose question minutes in Build** — `Annotation.weight` is dormant (`export.ts` defaults to
+   `medium`, so today's timing total is meaningless).
+4. Rename `note` → `comment`.
+5. The two new **Deepen** + **Weigh** lenses.
+6. The **Authoring** phase (questions + study-note authoring; include-for-group = support-passage;
+   one-click convert).
+7. The **Build** redesign (export preview + per-card controls).

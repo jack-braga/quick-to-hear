@@ -1,5 +1,11 @@
 # Handoff — continue the v2 "Layout B" overhaul (increment #4)
 
+> **⚠ SUPERSEDED (2026-08-12) by `docs/HANDOFF-v2-authoring-build.md`.** Increment #4 shipped. A later
+> flow redesign changed the lens count: the **8-lens flow below is now 10 lenses** — **Deepen** inserted
+> after COMA, **Weigh** inserted after Theme & aim, and the **"Questions"** lens renamed **Authoring**.
+> The authoritative flow + decisions now live in **`docs/V2-UX-BACKLOG.md` §7**. This file is kept for
+> its increment-#4 build record; read it for *what shipped*, not for the current flow.
+
 > Paste this into a fresh Claude Code CLI session to keep going. It is the continuation prompt.
 > (Written 2026-08-11 — the prior session ran out of context before it could hand off.)
 
@@ -27,6 +33,7 @@ highlight**. Then flesh out the new **Questions** lens and refactor **Build → 
 
 - **8-lens flow:** `Set up · Read · Map · COMA · Theme & aim · `**`Questions (new)`**` · Build · Check`.
   Questions = author (convert prior cards → questions); Build = assemble (sequence + filler; images deferred).
+  **⚠ Now 10 lenses (2026-08-12) — Deepen + Weigh added, Questions→Authoring; see V2-UX-BACKLOG §7.**
 - **Everything is a card:** `origin` (its step) + `verseIds` (0..N, optional). **No study-notes area.**
 - **Panel = chip filter** by origin/genre — flat, **NOT** collapsible groups (owner found those busy).
 - **Inline anchor** = **click the anchor chip → capture → select verses** (reuse drag/⇧/⌘). Every kind.
