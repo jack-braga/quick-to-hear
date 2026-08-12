@@ -1,3 +1,4 @@
+import { WEIGHT_MINUTES } from '@/lib/questions';
 import { compareVerseIds } from '@/lib/verse/ids';
 import {
   ANNOTATION_ORIGINS,
@@ -38,7 +39,8 @@ const TONES_BY_PRIORITY: AnnotationTone[] = ['rubric', 'amber', 'moss', 'lapis']
  *  the Questions lens, a COMA-typed note → COMA, anything else → Map. */
 export function annotationOrigin(a: Annotation): AnnotationOrigin {
   if (a.origin) return a.origin;
-  if (a.kind === 'question') return 'questions';
+  // both the question and its sibling study-note are authored in the Write lens (origin 'questions').
+  if (a.kind === 'question' || a.kind === 'study-note') return 'questions';
   if (a.comaType) return 'coma';
   return 'map';
 }
@@ -98,6 +100,9 @@ export function verseTones(annotations: Annotation[]): Map<string, AnnotationTon
 export function annotationMeta(a: Annotation): { tag: string; placeholder: string } {
   if (a.kind === 'question') {
     return { tag: 'Question', placeholder: 'Draft a question anchored to these verses…' };
+  }
+  if (a.kind === 'study-note') {
+    return { tag: 'Study note', placeholder: 'Explain it for the group — this prints as a study note…' };
   }
   if (a.flag === 'confusing') {
     return { tag: 'Mark · confusing', placeholder: 'What confuses you here? (they’ll feel it too)' };
@@ -165,5 +170,14 @@ export function makeAnnotation(id: string, input: MakeAnnotationInput): Annotati
   const base: Annotation = { id, kind: input.kind, verseIds: input.verseIds, text: '' };
   if (input.origin) base.origin = input.origin;
   if (input.kind === 'question') return { ...base, expectedAnswer: '' };
+  if (input.kind === 'study-note') return base; // a plain card that prints for the group
   return { ...base, flag: input.flag }; // note
+}
+
+/** A question's time estimate in minutes: the explicit `estimateMinutes` when the leader has set
+ *  one, else the legacy weight table (light 1 / medium 3 / heavy 6; default medium). Lets the Build
+ *  timing total reflect real per-question estimates instead of the flat `medium` default. */
+export function annotationMinutes(a: Pick<Annotation, 'estimateMinutes' | 'weight'>): number {
+  if (typeof a.estimateMinutes === 'number') return a.estimateMinutes;
+  return WEIGHT_MINUTES[a.weight ?? 'medium'];
 }

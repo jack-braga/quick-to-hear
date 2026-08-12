@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   anchorToneByVerse,
   anchoredAnnotations,
+  annotationMinutes,
   annotationOrigin,
   filterByOrigins,
   floatingAnnotations,
@@ -78,8 +79,21 @@ describe('annotationOrigin', () => {
   it('uses the stored origin, else derives from kind', () => {
     expect(annotationOrigin(note({ origin: 'theme' }))).toBe('theme'); // stored wins
     expect(annotationOrigin(note({ kind: 'question' }))).toBe('questions'); // derived
+    expect(annotationOrigin(note({ kind: 'study-note' }))).toBe('questions'); // authored in Write
     expect(annotationOrigin(note({ comaType: 'meaning' }))).toBe('coma'); // a COMA-typed note
     expect(annotationOrigin(note())).toBe('map'); // plain note falls back to Map
+  });
+});
+
+describe('annotationMinutes', () => {
+  it('uses the explicit estimate when set (including 0)', () => {
+    expect(annotationMinutes(note({ kind: 'question', estimateMinutes: 7 }))).toBe(7);
+    expect(annotationMinutes(note({ kind: 'question', estimateMinutes: 0 }))).toBe(0);
+  });
+  it('falls back to the weight table, defaulting medium', () => {
+    expect(annotationMinutes(note({ kind: 'question' }))).toBe(3); // no weight → medium
+    expect(annotationMinutes(note({ kind: 'question', weight: 'light' }))).toBe(1);
+    expect(annotationMinutes(note({ kind: 'question', weight: 'heavy' }))).toBe(6);
   });
 });
 
@@ -134,6 +148,15 @@ describe('makeAnnotation', () => {
     expect(makeAnnotation('2', { kind: 'question', verseIds: ['LUKE.1.5'] })).toMatchObject({
       kind: 'question',
       expectedAnswer: '',
+    });
+    expect(
+      makeAnnotation('3', { kind: 'study-note', verseIds: ['LUKE.1.5'], origin: 'questions' }),
+    ).toEqual({
+      id: '3',
+      kind: 'study-note',
+      verseIds: ['LUKE.1.5'],
+      text: '',
+      origin: 'questions',
     });
   });
 });

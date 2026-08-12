@@ -137,11 +137,13 @@ export type StudyMap = z.infer<typeof MapSchema>;
 // Annotations (v2.4) — the unified anchored-annotation surface (ROADMAP-v2 §2)
 // ---------------------------------------------------------------------------
 
-/** The two annotation kinds. A "Mark = confusing" and a "Comment" are just **notes** with a
- *  `flag`; a **question** is the deliverable (keeps the expected-answer hard block). A reference to
- *  another passage is not its own kind — it is an inline `@`-mention inside a note's text (see
- *  {@link MentionMetaSchema}). */
-export const ANNOTATION_KINDS = ['note', 'question'] as const;
+/** The annotation kinds. A "Mark = confusing" and a "Comment" are just **notes** with a `flag`;
+ *  a **question** is the deliverable (keeps the expected-answer hard block); a **study-note** is the
+ *  personal-commentary card authored in the Write lens — it prints for the group under that name,
+ *  unless `hideFromGroup` keeps it leader-only. (It is distinct from a Weigh *commentary*, which is a
+ *  📖 book source on a revision, never a card.) A reference to another passage is not its own kind — it
+ *  is an inline `@`-mention inside a note's text (see {@link MentionMetaSchema}). */
+export const ANNOTATION_KINDS = ['note', 'question', 'study-note'] as const;
 export const AnnotationKindSchema = z.enum(ANNOTATION_KINDS);
 export type AnnotationKind = z.infer<typeof AnnotationKindSchema>;
 
@@ -165,6 +167,23 @@ export type MentionMeta = z.infer<typeof MentionMetaSchema>;
 export const ANNOTATION_ORIGINS = ['map', 'coma', 'theme', 'questions'] as const;
 export const AnnotationOriginSchema = z.enum(ANNOTATION_ORIGINS);
 export type AnnotationOrigin = z.infer<typeof AnnotationOriginSchema>;
+
+/** A **revision** appended to a card at Deepen (round 1, own work) or Weigh (round 2, with a 📖
+ *  book source). Deepen/Weigh never create cards — they add to a card's `revisions` list, and each
+ *  revision carries its own `origin` (the two-level origin model): the card's `origin` is the lens
+ *  that made it; a revision's `origin` is the round that deepened it. A `source` (book + reference)
+ *  is expected on **weigh** revisions only; **deepen** own-work revisions omit it. */
+export const REVISION_ORIGINS = ['deepen', 'weigh'] as const;
+export const RevisionOriginSchema = z.enum(REVISION_ORIGINS);
+export type RevisionOrigin = z.infer<typeof RevisionOriginSchema>;
+
+export const RevisionSchema = z.object({
+  id: z.string(),
+  origin: RevisionOriginSchema,
+  text: z.string().default(''),
+  source: z.string().optional(),
+});
+export type Revision = z.infer<typeof RevisionSchema>;
 
 /**
  * A v2 annotation. It anchors to **main-passage verses** by canonical id (translation-
@@ -196,6 +215,16 @@ export const AnnotationSchema = z.object({
   loadBearing: z.boolean().optional(),
   gospelPlain: z.boolean().optional(),
   aimComponent: AimComponentSchema.optional(),
+  // question — an explicit time estimate in minutes (v2 Build redesign): the leader sets a real
+  // number, replacing the dormant light/medium/heavy `weight` for timing. Additive-optional;
+  // `annotationMinutes` falls back to the weight table when this is absent.
+  estimateMinutes: z.number().optional(),
+  // study-note — keep this personal-commentary card out of the participant handout (leader-only).
+  // Additive-optional; absent = printed for the group.
+  hideFromGroup: z.boolean().optional(),
+  // Deepen/Weigh revisions appended to this card (Deepen/Weigh never make a new card). One unified
+  // list; each revision's own `origin` marks the round. See {@link RevisionSchema}.
+  revisions: z.array(RevisionSchema).optional(),
   // note — inline @-mention metadata, keyed by the mention's OSIS (the reference text lives in
   // `text`). Only present once a mention is given include-for-group / a return question.
   mentions: z.record(z.string(), MentionMetaSchema).optional(),
@@ -225,6 +254,15 @@ export type Coma = z.infer<typeof ComaSchema>;
 // Phase 5 — Theme & aim
 // ---------------------------------------------------------------------------
 
+/** A superseding revision of the theme or the group-aim, added at Weigh (round 2). The latest
+ *  revision leads (the primary version); the original + any earlier revisions are preserved but
+ *  demoted (see `@/v2/revisions` `supersede`). `source` names the 📖 commentary that prompted it. */
+export const ThemeAimRevisionSchema = z.object({
+  text: z.string().default(''),
+  source: z.string().optional(),
+});
+export type ThemeAimRevision = z.infer<typeof ThemeAimRevisionSchema>;
+
 export const ThemeAimSchema = z.object({
   theme: z.string().default(''),
   authorAim: z.string().default(''),
@@ -233,6 +271,10 @@ export const ThemeAimSchema = z.object({
   feel: z.string().default(''),
   doField: z.string().default(''),
   christRoute: z.string().default(''),
+  // Weigh (round 2) supersede: revisions of the theme + the group-aim. The last entry leads
+  // (primary); `theme`/`groupAim` stay as the kept original. Empty = never re-weighed.
+  themeRevisions: z.array(ThemeAimRevisionSchema).default([]),
+  aimRevisions: z.array(ThemeAimRevisionSchema).default([]),
   // Method-YAML ack ids version independently of schemaVersion, so unknown keys are
   // tolerated (records, not enums).
   litmusAcks: z.record(z.boolean()).default({}),
