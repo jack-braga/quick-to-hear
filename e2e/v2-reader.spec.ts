@@ -602,6 +602,45 @@ test('v2.8 teaching help: the (i) opens the inline guidance, and "Tell me more" 
   await expect(page.getByRole('note')).toHaveCount(0);
 });
 
+test('v2 Weigh lens: the weighed Theme supersedes (revised leads, original kept) + a commentary note appends', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // Theme & aim (06): commit a theme.
+  await page.getByRole('button', { name: /theme & aim/i }).click();
+  await page.fill('#v2-theme', 'God keeps his covenant, answering long prayer in his own timing.');
+
+  // Survey (03): a card to weigh.
+  await page.getByRole('button', { name: '03 Survey' }).click();
+  await page.locator('[data-v="LUKE.1.9"]').click();
+  await page.getByRole('button', { name: /mark confusing/i }).click();
+
+  // Weigh (07): the Theme supersede — the weighed revision leads, the original is kept.
+  await page.getByRole('button', { name: '07 Weigh' }).click();
+  await page.locator('[data-revise="theme"]').click();
+  await page
+    .locator('[data-weigh-primary="theme"]')
+    .fill('God keeps covenant by sending the forerunner — answering long prayer in his own timing.');
+  await expect(page.getByText('★ revised leads')).toBeVisible();
+  // the original is preserved, demoted to the "was · kept" line
+  await expect(
+    page.getByText('God keeps his covenant, answering long prayer in his own timing.'),
+  ).toBeVisible();
+
+  // a 📖 commentary note appends to the card (round 2, same unified list as Deepen).
+  await page.getByRole('button', { name: /add a commentary note/i }).click();
+  await page.locator('[data-focus-rev]').first().fill('A once-in-a-lifetime honour — “ordinary” undersells it.');
+
+  // Persist, reload — the weighed theme still leads.
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await page.getByRole('button', { name: '07 Weigh' }).click();
+  await expect(page.locator('[data-weigh-primary="theme"]')).toHaveValue(/sending the forerunner/);
+});
+
 test('v2 Deepen lens: append an own-work revision to a Survey card, and it persists', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

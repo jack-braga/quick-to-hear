@@ -86,6 +86,9 @@ function orientLine(origin: AnnotationOrigin): string {
 
 export interface RevisionPanelProps {
   round: RevisionOrigin;
+  /** Weigh supplies its own header + banner + Theme/Aim supersede above the cards, so it hides this
+   *  panel's built-in header/lede and shows just the card list. */
+  hideHeader?: boolean;
   annotations: Annotation[];
   litVerseId: string | null;
   onHover: (a: Annotation | null) => void;
@@ -127,8 +130,12 @@ export function RevisionPanel(props: RevisionPanelProps) {
 
   return (
     <div>
-      <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">{meta.head}</div>
-      <p className="mb-3.5 text-[12.5px] leading-[1.5] text-ink-soft">{meta.lede}</p>
+      {!props.hideHeader && (
+        <>
+          <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-faint">{meta.head}</div>
+          <p className="mb-3.5 text-[12.5px] leading-[1.5] text-ink-soft">{meta.lede}</p>
+        </>
+      )}
 
       {cards.length === 0 ? (
         <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">

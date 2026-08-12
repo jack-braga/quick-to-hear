@@ -9,7 +9,7 @@ import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Annotation, AnnotationKind, AnnotationOrigin, MentionMeta, NoteFlag, QuestionType, Revision, Section, Study } from '@/types/study';
+import type { Annotation, AnnotationKind, AnnotationOrigin, MentionMeta, NoteFlag, QuestionType, Revision, Section, Study, ThemeAimRevision } from '@/types/study';
 import { annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
 import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
@@ -26,6 +26,7 @@ import { ParallelCanvas } from '@/v2/reader/ParallelCanvas';
 import { ReadPanel } from '@/v2/reader/ReadPanel';
 import { ReaderCanvas, type ReadingMode } from '@/v2/reader/ReaderCanvas';
 import { RevisionPanel } from '@/v2/reader/RevisionPanel';
+import { WeighPanel, type ThemeField } from '@/v2/reader/WeighPanel';
 import { TranslationControls } from '@/v2/TranslationControls';
 import type { ActionKind } from '@/v2/reader/ActionBar';
 import type { PaletteAction, PaletteContext } from '@/v2/reader/paletteItems';
@@ -291,6 +292,30 @@ export function ReaderShell({ study }: { study: Study }) {
         a.id === cardId ? { ...a, revisions: (a.revisions ?? []).filter((r) => r.id !== revId) } : a,
       ),
     }));
+
+  // ---- Theme/Aim supersede at Weigh --------------------------------------------------------
+  // Theme & Aim aren't cards — their Weigh revision supersedes on `study.themeAim` (the last leads;
+  // the original is kept but demoted). `field` maps to the theme text / the group aim.
+  const revKey = (field: ThemeField): 'themeRevisions' | 'aimRevisions' =>
+    field === 'theme' ? 'themeRevisions' : 'aimRevisions';
+  const onAddThemeRevision = (field: ThemeField) =>
+    applyToCurrent((s) => {
+      const key = revKey(field);
+      return { ...s, themeAim: { ...s.themeAim, [key]: [...s.themeAim[key], { text: '' }] } };
+    });
+  const onEditThemeRevision = (field: ThemeField, index: number, patch: Partial<ThemeAimRevision>) =>
+    applyToCurrent((s) => {
+      const key = revKey(field);
+      return {
+        ...s,
+        themeAim: { ...s.themeAim, [key]: s.themeAim[key].map((r, i) => (i === index ? { ...r, ...patch } : r)) },
+      };
+    });
+  const onRemoveThemeRevision = (field: ThemeField, index: number) =>
+    applyToCurrent((s) => {
+      const key = revKey(field);
+      return { ...s, themeAim: { ...s.themeAim, [key]: s.themeAim[key].filter((_, i) => i !== index) } };
+    });
 
   // ---- inline anchor capture (Slice 4) -----------------------------------------------------
   // Click a card's anchor chip → the next passage selection *sets that card's verse(s)* instead of
@@ -602,7 +627,18 @@ export function ReaderShell({ study }: { study: Study }) {
           onRemoveRevision={onRemoveRevision}
         />
       ) : lens === 'weigh' ? (
-        <MarginPlaceholder text="Weigh — round 2. Now open a commentary: add a 📖 note to the same cards, and revisit your Theme & aim so the weighed version leads. (The append UI lands in the next slice.)" />
+        <WeighPanel
+          themeAim={study.themeAim}
+          onAddThemeRevision={onAddThemeRevision}
+          onEditThemeRevision={onEditThemeRevision}
+          onRemoveThemeRevision={onRemoveThemeRevision}
+          annotations={annotations}
+          litVerseId={hoveredVerse}
+          onHover={(a) => setLitAnnotation(a ? { ids: a.verseIds, tone: toneFor(a) } : null)}
+          onAddRevision={onAddRevision}
+          onEditRevision={onEditRevision}
+          onRemoveRevision={onRemoveRevision}
+        />
       ) : (
         <MarginPlaceholder text="The text stays put; the overlay changes with the lens." />
       );
