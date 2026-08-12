@@ -403,16 +403,29 @@ aim). The shipped **"Questions"** lens is renamed **Write**; **Map** is renamed 
 5. ✅ Theme/Aim supersede — compact-history presentation **confirmed** (7.2).
 6. ✅ `docs/mockups/v2-recycle-forward.html` **deleted** (demoed the rejected auto-derivation model).
 
-### 7.8 Build slices (implementation order — not yet started)
+### 7.8 Build slices — ✅ SHIPPED (2026-08-12/13)
 
-Likely model + UI work, in slices (each testable + committable per the house rules):
+The flow redesign is built. Slices, each gated (typecheck/lint/unit/build/e2e) + browser-verified:
 
-1. `revision.origin` (`deepen`|`weigh`) on the annotation/revision model.
-2. A **study-note** card kind + `hideFromGroup`.
-3. **Expose question minutes in Build** — `Annotation.weight` is dormant (`export.ts` defaults to
-   `medium`, so today's timing total is meaningless).
-4. Rename `note` → `comment`.
-5. The two new **Deepen** + **Weigh** lenses.
-6. The **Authoring** phase (questions + study-note authoring; include-for-group = support-passage;
-   one-click convert).
-7. The **Build** redesign (export preview + per-card controls).
+1. ✅ **Slice 1 — model foundations** (`ad5515f`): `revisions[]` + `RevisionOrigin` (`deepen`|`weigh`),
+   `study-note` kind + `hideFromGroup`, explicit `estimateMinutes` (`annotationMinutes` — fixes the
+   dormant flat-`medium` timing), Theme/Aim supersede stacks + pure `supersede()`.
+2. ✅ **Slice 2 — 10-lens flow** (`4035f4b`): inserted **Deepen (05)** + **Weigh (07)**; renamed **Map→
+   Survey**, **Questions→Write** (labels-only — internal ids `map`/`questions` stay stable).
+3. ✅ **Slice 3 — Deepen lens** (`00fcb55`): the reusable `RevisionPanel` (append own-work revisions to
+   Survey/COMA cards; first pass kept).
+4. ✅ **Slice 4 — Weigh lens** (`43d7d8d`): `RevisionPanel` round=weigh (📖 commentary in the same list)
+   + the Theme/Aim supersede UI (revised leads, original kept, `▾ N earlier`).
+5. ✅ **Slice 5 — Write lens** (`425d6db`): authors study notes (violet tone) + `→ make` converts; study
+   notes carry references via the `@`-mention editor.
+6. ✅ **Slice 6a — export model** (`f17145f`): v2-native `exportModel` — interleaved question/study-note
+   blocks, references on both kinds, write-lines, minutes, participant/leader; `writeLines` on
+   Annotation + `reference` on MentionMeta (attached question refs).
+7. ✅ **Slice 6b — Build redesign** (`cc9859f`): live export preview (`ExportPreview`, reused by the
+   print routes) with Participant/Leader/Parallel + page-cut guide; `BuildPanel` per-card controls
+   (type · minutes · ★ essential · write-lines · aim · hide-from-group · attach-reference · ✂ cut);
+   downloads/print render from the model (`exportMarkdown`); minutes-vs-session footer.
+
+**Deferred / not built (deliberate):** `note`→`comment` display rename (kept as "Note" for now — a
+label-only change, low risk, can land any time); a true `cut → reserve` pool (✂ cut currently drops);
+question-attached-reference uses a simple text input (not the full `@`-autocomplete). None block the flow.
