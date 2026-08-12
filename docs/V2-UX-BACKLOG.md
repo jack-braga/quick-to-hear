@@ -14,9 +14,9 @@
 >
 > **⚠ CURRENT FLOW = 10 lenses — see §7 (flow redesign, 2026-08-12).** The "eight lenses" decision in
 > §1 and the seven-step flow in §5 are **superseded**: two lenses were added (**Deepen** after COMA,
-> **Weigh** after Theme & aim) and the shipped "Questions" lens is being renamed **Authoring**. §7 is
-> the authoritative flow; the earlier sections are kept for provenance. Compressed handoff:
-> `docs/HANDOFF-v2-authoring-build.md`.
+> **Weigh** after Theme & aim), **Map** is renamed **Survey**, and the shipped "Questions" lens is
+> renamed **Write**. §7 is the authoritative flow; the earlier sections are kept for provenance.
+> Compressed handoff: `docs/HANDOFF-v2-authoring-build.md`.
 
 ---
 
@@ -90,8 +90,8 @@ that *writing* questions and *assembling* the study are two jobs v1 mashed into 
 proposed shape (seven lenses → **eight**):
 
 > **⚠ SUPERSEDED 2026-08-12 — see §7.** The split shipped as eight lenses, then a further flow redesign
-> added **Deepen** (after COMA) and **Weigh** (after Theme & aim) → **10 lenses**, and the "Questions"
-> lens is being renamed **Authoring**. The eight-lens shape below is kept for provenance.
+> added **Deepen** (after COMA) and **Weigh** (after Theme & aim) → **10 lenses**; **Map** → **Survey**
+> and the "Questions" lens → **Write**. The eight-lens shape below is kept for provenance.
 
 > Set up · Read · Map · COMA · Theme & aim · **Questions (new)** · Build · Check
 
@@ -279,7 +279,13 @@ them") and **COMA notes → candidate questions**. Any card-panel + naming work 
 
 ---
 
-## 7. Flow redesign — Deepen · Weigh · Authoring · Build (decided 2026-08-12) — CURRENT AUTHORITATIVE FLOW
+## 7. Flow redesign — Deepen · Weigh · Write · Build (decided 2026-08-12) — CURRENT AUTHORITATIVE FLOW
+
+> **Naming + open questions RESOLVED (owner, 2026-08-12):** ① `note`→`comment`, personal-commentary→
+> **study note** — confirmed. ② Authoring lens name = **Write**. ③ Map lens name = **Survey**.
+> ④ **Return-question DROPPED** — bake the "return" into the original question's wording; don't build
+> the field now (see 7.4). ⑤ Theme/Aim compact-history presentation — confirmed (7.2). ⑥ The rejected
+> `v2-recycle-forward.html` mockup — deleted.
 
 > **This section supersedes** the "eight lenses" decision in §1 (the restructure block) and the
 > seven-step flow in §5. Design record — three committed mockups in `docs/mockups/`:
@@ -294,24 +300,24 @@ them") and **COMA notes → candidate questions**. Any card-panel + naming work 
 
 ### 7.1 The flow — now 10 lenses
 
-`Set up · Read · Map* · COMA · Deepen(new) · Theme & aim · Weigh(new) · Authoring* · Build · Check`
-*(\* Map + Authoring names pending — see 7.6)*
+`Set up · Read · Survey · COMA · Deepen(new) · Theme & aim · Weigh(new) · Write(renamed) · Build · Check`
+*(**Survey** = renamed Map; **Write** = renamed the shipped "Questions" lens — both decided 2026-08-12.)*
 
 | # | Lens | Icon | Notes |
 |---|------|------|-------|
 | 01 | Set up | ⚙ | |
 | 02 | Read | ◉ | pure reading (already shipped) |
-| 03 | **Map\*** | ▤ | rename pending (7.6) |
+| 03 | **Survey** *(was "Map")* | ▤ | divide into sections + mark what's confusing |
 | 04 | COMA | ▦ | |
 | 05 | **Deepen** *(new)* | ⊕ | round 1 — your own work, **no commentaries** |
 | 06 | Theme & aim | ◎ | |
 | 07 | **Weigh** *(new)* | ⚖ | round 2 — same append + **📖 commentaries unlocked** + Theme/Aim join |
-| 08 | **Authoring\*** *(was "Questions")* | ✎ | rename pending (7.6); **the only place group-facing output is created** |
+| 08 | **Write** *(was "Questions")* | ✎ | **the only place group-facing output is created** |
 | 09 | Build | ▥ | assemble = export preview + per-card controls (7.5) |
 | 10 | Check | ✓ | |
 
 Two lenses inserted vs the shipped 8-lens flow: **Deepen** (after COMA) and **Weigh** (after Theme &
-aim). The shipped **"Questions"** lens is renamed **Authoring** (final name pending).
+aim). The shipped **"Questions"** lens is renamed **Write**; **Map** is renamed **Survey**.
 
 ### 7.2 Deepen (round 1) + Weigh (round 2) — the append-revision model *(Decided)*
 
@@ -351,12 +357,13 @@ aim). The shipped **"Questions"** lens is renamed **Authoring** (final name pend
 - **include-for-group == make-it-a-support-passage:** ONE action; toggling a reference on prints that
   passage below/around its host card. Only references **inside question or study-note cards** are
   includable. *(This is the `note.mentions[osis].includeForGroup` model from §2 — carried forward.)*
-- **return-question** = an optional add-on field on an **included** reference — the follow-up that steers
-  the group **back** to the main passage after you send them elsewhere (the v1 "step everyone forgets").
-  **Worked example (from the Build mockup):** studying Luke 1, Q2 sends the group to **Malachi 4:5–6**
-  (the Elijah promise, printed as a support passage); its **return-question** — *"Back in Luke 1 — why
-  does that promise matter for who John is?"* — brings them home. *(owner wanted more context before
-  final confirm — open Q4.)*
+- **return-question — DROPPED for now (owner, 2026-08-12).** Instead of a separate field on an included
+  reference, the leader **bakes the "return" into the original question's own wording** — the question
+  both sends the group to the other passage *and* brings them home. Worked example (kept for the record):
+  studying Luke 1, Q2 sends the group to **Malachi 4:5–6** (the Elijah promise, printed as a support
+  passage); rather than a separate return line, Q2 is phrased *"…what was promised about Elijah, and
+  why does that matter for who John is?"* — the return is in the question. **Do NOT build return-question
+  UI**; the export mockup's `↩ return` lines are dropped. Revisit a dedicated field only if it's needed.
 - **One-click "→ make a question / → make a study note"** from a prior card (user-initiated; copies the
   card's text in as a seed) — **CONFIRMED.** This is the recycle-forward mechanism — user-triggered,
   **never automatic** (inviolable rule 1).
@@ -376,25 +383,25 @@ aim). The shipped **"Questions"** lens is renamed **Authoring** (final name pend
   - **Study-note card control:** `☐ hide from group` (leader-only vs printed).
   - Panel footer: **total minutes vs session length**.
 
-### 7.6 Naming (owner leaning — pending confirm, open Q1–Q3)
+### 7.6 Naming (DECIDED 2026-08-12)
 
-- Rename Map/COMA **"note"** annotations → **"comment"** (frees the word "note"). *(cost: a ripple
-  rename of existing notes.)*
+- Rename Survey/COMA **"note"** annotations → **"comment"** (frees the word "note"). *(cost: a ripple
+  rename of the existing `note` kind + data/UI/tests.)*
 - Personal-commentary card = **"study note"**, printed under that name — **distinct from Weigh's
   *published* "commentary" (the 📖 books you consult).** ⚠ **The `v2-build-export-preview.html` mockup
   still labels this printed box "Commentary" — that label must become "Study note" when built** (so
   "commentary" is reserved for the published-book source in Weigh).
-- **Authoring** phase (currently "Questions") — RENAME (open Q2; owner wants options + rationale).
-- **Map** phase — RENAME (open Q3; owner wants options + rationale).
+- **Write** = the authoring lens (was "Questions").
+- **Survey** = the structure/marking lens (was "Map").
 
-### 7.7 Still-open questions (2026-08-12 — being resolved with the owner in chat)
+### 7.7 Resolved questions (owner, 2026-08-12)
 
-1. Naming: `note`→`comment`; personal-commentary→**study note** (printed as such).
-2. **Authoring-phase name** (present 3–4 options + rationale).
-3. **Map-phase name** (present 3–4 options + rationale).
-4. **Return-question** — confirm it's an optional field on an *included* reference (worked example: 7.4).
-5. **Theme/Aim supersede** — confirm the compact-history presentation (7.2).
-6. Delete `docs/mockups/v2-recycle-forward.html` (demos the *rejected* auto-derivation model)?
+1. ✅ Naming: `note`→`comment`; personal-commentary→**study note** (printed as such). **Confirmed.**
+2. ✅ Authoring-phase name = **Write**.
+3. ✅ Map-phase name = **Survey**.
+4. ✅ **Return-question DROPPED** — bake the return into the original question; don't build the field (7.4).
+5. ✅ Theme/Aim supersede — compact-history presentation **confirmed** (7.2).
+6. ✅ `docs/mockups/v2-recycle-forward.html` **deleted** (demoed the rejected auto-derivation model).
 
 ### 7.8 Build slices (implementation order — not yet started)
 

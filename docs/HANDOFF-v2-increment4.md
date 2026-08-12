@@ -2,7 +2,8 @@
 
 > **⚠ SUPERSEDED (2026-08-12) by `docs/HANDOFF-v2-authoring-build.md`.** Increment #4 shipped. A later
 > flow redesign changed the lens count: the **8-lens flow below is now 10 lenses** — **Deepen** inserted
-> after COMA, **Weigh** inserted after Theme & aim, and the **"Questions"** lens renamed **Authoring**.
+> after COMA, **Weigh** inserted after Theme & aim, **Map** renamed **Survey**, and the **"Questions"**
+> lens renamed **Write**.
 > The authoritative flow + decisions now live in **`docs/V2-UX-BACKLOG.md` §7**. This file is kept for
 > its increment-#4 build record; read it for *what shipped*, not for the current flow.
 
