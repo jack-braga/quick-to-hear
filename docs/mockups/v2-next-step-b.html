@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — Next step (Option B, rail-in-footer)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); line-height: 1.5; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
+
+      /* top bar — NO lens rail now (moved to the footer) */
+      .topbar { display: flex; align-items: center; gap: 14px; height: 52px; padding: 0 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .ref { font-family: var(--font-scripture); font-size: 19px; }
+      .grow { flex: 1; }
+      .aa { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); border-radius: 8px; padding: 5px 10px; font-size: 12px; }
+      .about { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); }
+
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 320px; overflow: hidden; }
+      .center { overflow-y: auto; display: flex; justify-content: center; padding: 26px 22px; }
+      .leaf { width: 100%; max-width: 40rem; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 26px 40px 36px; align-self: flex-start; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 23px; margin: 0 0 2px; }
+      .leaf .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .scripture { font-family: var(--font-scripture); font-size: 1.12rem; line-height: 1.7; margin-top: 14px; color: var(--ink); }
+      .scripture sup { font-family: var(--font-mono); font-size: .56em; color: var(--ink-faint); margin-right: 2px; vertical-align: super; }
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 60%, var(--leaf)); }
+
+      /* the new footer: prev · lens rail · next */
+      .footer { display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 16px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .prev, .nextwrap { flex: 0 0 auto; }
+      .prev { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); background: none; border: none; cursor: pointer; }
+      .prev:hover { color: var(--ink); }
+      .rail { flex: 1; display: flex; justify-content: center; gap: 3px; }
+      .lens { min-width: 30px; height: 30px; padding: 0 5px; display: grid; place-items: center; border-radius: 8px; border: 1px solid transparent; color: var(--ink-faint); font-size: 16px; background: none; position: relative; cursor: pointer; }
+      .lens small { position: absolute; bottom: 0; right: 2px; font-family: var(--font-mono); font-size: 7px; }
+      .lens.done { color: var(--ink-soft); }
+      .lens.active { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .lens:hover { background: var(--panel); }
+      .next { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-ui); font-size: 13px; font-weight: 500; border-radius: 9px; padding: 8px 14px; background: var(--lapis); color: #fff; border: none; box-shadow: var(--shadow); cursor: pointer; }
+      .next small { font-family: var(--font-mono); font-size: 8.5px; opacity: .8; text-transform: uppercase; letter-spacing: .06em; }
+
+      .cap { position: fixed; left: 50%; bottom: 66px; transform: translateX(-50%); background: var(--leaf); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; font-size: 12px; color: var(--ink-soft); box-shadow: var(--shadow); }
+      .cap b { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <span class="aa">Aa Text ▾</span>
+        <div class="grow"></div>
+        <span class="about">About</span>
+        <button class="aa" style="width:34px">☾</button>
+      </div>
+
+      <div class="work">
+        <div class="center">
+          <div class="leaf">
+            <h1>Luke 1:5–25</h1>
+            <span class="meta">WEBBE · public domain</span>
+            <div class="scripture">
+              <span><sup>8</sup>Now while he executed the priest's office before God in the order of his division, </span>
+              <span><sup>9</sup>according to the custom of the priest's office, his lot was to enter into the temple of the Lord and burn incense. </span>
+              <span><sup>10</sup>The whole multitude of the people were praying outside at the hour of incense. </span>
+              <span><sup>11</sup>An angel of the Lord appeared to him, standing on the right side of the altar of incense. </span>
+              <span><sup>13</sup>But the angel said to him, “Don't be afraid, Zacharias, because your request has been heard…” </span>
+            </div>
+          </div>
+        </div>
+        <div class="panel"></div>
+      </div>
+
+      <!-- the rail now lives here, flanked by prev / next -->
+      <div class="footer">
+        <button class="prev">← Survey</button>
+        <nav class="rail" aria-label="Study phases" id="rail"></nav>
+        <div class="nextwrap"><button class="next">Next: Deepen <small>→</small></button></div>
+      </div>
+    </div>
+
+    <div class="cap">Header rail is gone; the steps live in the footer — they <b>are</b> the progress, and
+      <b>Next →</b> walks you forward. (Shown mid-flow: on <b>COMA</b>.)</div>
+
+    <script>
+      const L = [['setup','01','⚙'],['read','02','◉'],['survey','03','▤'],['coma','04','▦'],['deepen','05','⊕'],['theme','06','◎'],['weigh','07','⚖'],['write','08','✎'],['build','09','▥'],['check','10','✓']];
+      const active = 3; // COMA
+      const rail = document.getElementById('rail');
+      L.forEach(([id, num, g], i) => {
+        const b = document.createElement('button');
+        b.className = 'lens' + (i === active ? ' active' : i < active ? ' done' : '');
+        b.innerHTML = g + '<small>' + num + '</small>';
+        rail.appendChild(b);
+      });
+    </script>
+  </body>
+</html>

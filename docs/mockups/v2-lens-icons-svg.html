@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — lens icons: line-drawn (SVG) variants</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); line-height: 1.5; }
+      .topbar { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .wrap { max-width: 1000px; margin: 0 auto; padding: 22px clamp(16px,3vw,32px) 60px; }
+      h1 { font-family: var(--font-scripture); font-size: 24px; margin: 6px 0 4px; }
+      p.lede { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 18px; max-width: 64ch; }
+
+      .railcard { position: sticky; top: 8px; z-index: 5; background: var(--leaf); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 22px; }
+      .railcard .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); margin-bottom: 8px; }
+      .rail { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+      .lens { min-width: 30px; height: 30px; padding: 0 5px; display: grid; place-items: center; border-radius: 8px; border: 1px solid transparent; color: var(--ink-soft); position: relative; }
+      .lens.active { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .lens small { position: absolute; bottom: 0; right: 2px; font-family: var(--font-mono); font-size: 7px; color: var(--ink-faint); }
+      .lens .g { font-size: 16px; }
+      .lens svg { width: 18px; height: 18px; }
+
+      .row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+      .row .name { font-family: var(--font-scripture); font-size: 15px; }
+      .row .name small { display: block; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+      .row .name em { display: block; font-style: normal; font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+      .cands { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .cand { width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--leaf); cursor: pointer; color: var(--ink); }
+      .cand:hover { border-color: var(--lapis-edge); }
+      .cand.on { border-color: var(--lapis); background: var(--lapis-wash); box-shadow: inset 0 0 0 1px var(--lapis-edge); }
+      .cand svg { width: 26px; height: 26px; }
+      .cand .g { font-size: 22px; }
+      .kepttag { align-self: center; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .note { font-size: 12.5px; color: var(--ink-soft); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 13px; margin-top: 18px; }
+      .note b { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="topbar"><span class="brand">Quick&nbsp;to&nbsp;Hear</span><span style="font-family:var(--font-scripture);font-size:16px">Lens icons · line-drawn</span></div>
+    <div class="wrap">
+      <h1>Pictorial icons, drawn as monochrome line art</h1>
+      <p class="lede">These are hand-drawn <b>SVG line icons</b> (not emoji) — they take the ink colour,
+        quiet, and match the pencil's style. Your concepts: <b>book</b> (Read), <b>map</b> (Survey),
+        <b>pulse/coma</b> (COMA), <b>well</b> (Deepen), <b>archery target</b> (Theme&nbsp;&amp;&nbsp;aim),
+        <b>hammer</b> (Build). Click to try; the live rail updates. Tell me your pick per lens (I can
+        also tweak the winner's line weight / details).</p>
+
+      <div class="railcard">
+        <div class="lbl">Your set — live preview</div>
+        <div class="rail" id="rail"></div>
+      </div>
+
+      <div id="rows"></div>
+
+      <div class="note"><b>Note.</b> If you like this direction, the whole rail would move to SVG icons for
+        consistency (the four kept ones — Set&nbsp;up, Weigh, Write, Check — redrawn to match, or left as
+        their current glyphs). Line weight, size and rounding are all tunable once you've chosen the shapes.</div>
+    </div>
+
+    <script>
+      const S = (inner) =>
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+      const DOT = 'fill="currentColor" stroke="none"';
+
+      const IC = {
+        // Read — book
+        'book-open': S('<path d="M12 6.4C10 5 7.6 4.7 5 5.2v12.6c2.6-.5 5 -.2 7 1.2 2-1.4 4.4-1.7 7-1.2V5.2c-2.6-.5-5-.2-7 1.2z"/><path d="M12 6.4v12.6"/>'),
+        'book-closed': S('<path d="M8 4.5h8a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H8a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2z"/><path d="M8 4.5a2 2 0 0 0-2 2"/><path d="M9.5 8.5h5M9.5 11h4"/>'),
+        'book-mark': S('<path d="M7 4.5h9a1 1 0 0 1 1 1v14l-2.2-1.6L12.6 19V5.5"/><path d="M7 4.5A1.5 1.5 0 0 0 5.5 6v12.5A1.5 1.5 0 0 0 7 20h5.6"/>'),
+        // Survey — map
+        'map-fold': S('<path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/>'),
+        'map-x': S('<path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path stroke-dasharray="1.6 2" d="M7 8.5c2.6 1 1 3.6 3.6 4.6"/><path d="M14.4 14.6l3 3M17.4 14.6l-3 3"/>'),
+        'map-scroll': S('<rect x="6" y="6" width="12" height="12" rx="1"/><path d="M6 8.5h12M6 15.5h12"/><path d="M6 6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2M18 6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2"/>'),
+        // COMA — medical
+        'pulse': S('<path d="M3 12h4l2.4-6 3 12 2.4-6H21"/>'),
+        'monitor': S('<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M6 12.4h2l1.4-3.2 2 5.6 1.4-2.4H18"/>'),
+        'zzz': S('<path d="M5 8h5l-5 6h5"/><path d="M13 4.5h4.5l-4.5 5h4.5"/><path d="M13 15.5h3l-3 3.5h3"/>'),
+        // Deepen — well
+        'well': S('<path d="M6.5 11v7.5M17.5 11v7.5"/><path d="M6 18.5h12"/><ellipse cx="12" cy="11" rx="5.5" ry="1.8"/><path d="M8 10.6V7M16 10.6V7"/><path d="M6.8 7L12 3.6 17.2 7"/>'),
+        'well-section': S('<path d="M5.5 7.5h13"/><path d="M7 7.5v9a5 5 0 0 0 10 0v-9"/><path d="M8 14.5a4 1.4 0 0 0 8 0"/><path d="M8.5 17a3.5 1.2 0 0 0 7 0"/>'),
+        'well-drop': S('<ellipse cx="12" cy="7" rx="6" ry="2"/><path d="M6 7v2M18 7v2"/><path d="M12 20c1.6 0 2.7-1.1 2.7-2.5 0-1.4-2.7-4-2.7-4s-2.7 2.6-2.7 4C9.3 18.9 10.4 20 12 20z"/>'),
+        // Theme & aim — archery target
+        'target': S(`<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2.2" ${DOT}/>`),
+        'target-arrow': S(`<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" ${DOT}/><path d="M20 4l-8 8"/><path d="M20 4h-3.2M20 4v3.2"/>`),
+        'target-stand': S(`<circle cx="12" cy="10" r="6"/><circle cx="12" cy="10" r="3"/><circle cx="12" cy="10" r=".9" ${DOT}/><path d="M8.5 15l-2 5M15.5 15l2 5M12 16v4"/>`),
+        // Build — hammer
+        'hammer': S('<path d="M13.8 3.8l6.4 6.4-2.3 2.3-6.4-6.4z"/><path d="M12.3 8.6L4.5 16.4a1.6 1.6 0 0 0 0 2.3l.8.8a1.6 1.6 0 0 0 2.3 0l7.8-7.8"/>'),
+        'hammer-nail': S('<path d="M14.5 4.5l5 5-2.2 2.2-5-5z"/><path d="M13 8.2l-6 6"/><path d="M6 20v-5M4.5 15h3"/>'),
+        'mallet': S('<rect x="6.5" y="4.5" width="11" height="4.5" rx="1.2"/><path d="M12 9v10.5"/>'),
+      };
+
+      // [id, num, name, concept, [candidate ids] | glyph-if-kept, kept?]
+      const LENSES = [
+        ['setup','01','Set up','', ['⚙'], true],
+        ['read','02','Read','a book', ['book-open','book-closed','book-mark']],
+        ['survey','03','Survey','a map (folded / treasure / scroll)', ['map-fold','map-x','map-scroll']],
+        ['coma','04','COMA','a medical pulse / coma', ['pulse','monitor','zzz']],
+        ['deepen','05','Deepen','a water well', ['well','well-section','well-drop']],
+        ['theme','06','Theme & aim','an archery target', ['target','target-arrow','target-stand']],
+        ['weigh','07','Weigh','', ['⚖'], true],
+        ['write','08','Write','', ['✎'], true],
+        ['build','09','Build','a hammer', ['hammer','hammer-nail','mallet']],
+        ['check','10','Check','', ['✓'], true],
+      ];
+      const chosen = {};
+      LENSES.forEach(([id, , , , cands]) => (chosen[id] = cands[0]));
+
+      const render = (v) => (IC[v] ? IC[v] : `<span class="g">${v}</span>`);
+      const rail = document.getElementById('rail');
+      const rows = document.getElementById('rows');
+
+      function drawRail() {
+        rail.innerHTML = '';
+        LENSES.forEach(([id, num], i) => {
+          const b = document.createElement('div');
+          b.className = 'lens' + (i === 3 ? ' active' : '');
+          b.innerHTML = render(chosen[id]) + '<small>' + num + '</small>';
+          rail.appendChild(b);
+        });
+      }
+      function drawRows() {
+        rows.innerHTML = '';
+        LENSES.forEach(([id, num, name, concept, cands, kept]) => {
+          const row = document.createElement('div');
+          row.className = 'row';
+          const label = document.createElement('div');
+          label.className = 'name';
+          label.innerHTML = name + '<small>Step ' + num + (kept ? ' · keeping' : '') + '</small>' + (concept ? '<em>' + concept + '</em>' : '');
+          const cbox = document.createElement('div');
+          cbox.className = 'cands';
+          if (kept) {
+            const c = document.createElement('div');
+            c.className = 'cand on'; c.style.cursor = 'default';
+            c.innerHTML = render(cands[0]);
+            cbox.appendChild(c);
+            const t = document.createElement('span'); t.className = 'kepttag'; t.textContent = 'happy with this one';
+            cbox.appendChild(t);
+          } else {
+            cands.forEach((v) => {
+              const c = document.createElement('button');
+              c.className = 'cand' + (chosen[id] === v ? ' on' : '');
+              c.innerHTML = render(v);
+              c.onclick = () => { chosen[id] = v; drawRail(); drawRows(); };
+              cbox.appendChild(c);
+            });
+          }
+          row.appendChild(label); row.appendChild(cbox); rows.appendChild(row);
+        });
+      }
+      drawRail(); drawRows();
+    </script>
+  </body>
+</html>

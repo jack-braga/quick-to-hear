@@ -48,41 +48,40 @@
   <body>
     <div class="topbar"><span class="brand">Quick&nbsp;to&nbsp;Hear</span><span style="font-family:var(--font-scripture);font-size:16px">Lens icons</span></div>
     <div class="wrap">
-      <h1>Pick an icon for each lens</h1>
-      <p class="lede">Some current glyphs are arbitrary (Read, COMA, Deepen, Build). Click a candidate in
-        each row to try it — the live rail at the top updates so you can judge the whole set together.
-        Seed a starting point with the presets. Tell me the set you like (mix freely).</p>
+      <h1>Pick an icon for the five weak ones</h1>
+      <p class="lede">Keeping the original <b>monochrome-glyph</b> style (no emoji). You're happy with
+        <b>Set up · Theme &amp; aim · Weigh · Write · Check</b> — those are locked below. For the five
+        you flagged (<b>Read, Survey, COMA, Deepen, Build</b>), here are non-emoji candidates: click one
+        to try it; the live rail up top updates so you can judge the whole set. Tell me your picks.</p>
 
       <div class="railcard">
         <div class="lbl">Your set — live preview
-          <span class="preset">
-            <button data-preset="current">Reset to current</button>
-            <button data-preset="emoji">Try all-emoji</button>
-          </span>
+          <span class="preset"><button data-preset="current">Reset to current</button></span>
         </div>
         <div class="rail" id="rail"></div>
       </div>
 
       <div id="rows"></div>
 
-      <div class="note"><b>Style note.</b> The current rail is <b>monochrome glyphs</b> (they take the ink
-        colour, quiet). <b>Emoji</b> are more legible/evocative but add colour to the header — a real
-        design choice. You can also go mixed (emoji only for the vague ones). I'll wire whatever you pick.</div>
+      <div class="note"><b>Note.</b> All candidates are plain Unicode glyphs — they render in the ink
+        colour, quiet, matching the current rail (no colour added to the header). A couple lean on
+        meaning: <b>§</b> = "divide into sections" (Survey); <b>⊞</b> = a 2×2 grid = the four COMA
+        categories; <b>≣</b> = a running-order/list (Build); <b>⤵ / ⊚</b> = going deeper (Deepen).</div>
     </div>
 
     <script>
-      // [id, num, name, [candidates] — first is the current glyph]
+      // [id, num, name, [candidates] — first is the current glyph, kept?]
       const LENSES = [
-        ['setup','01','Set up', ['⚙','🛠','◧','📋']],
-        ['read','02','Read', ['◉','📖','👁','📕']],
-        ['survey','03','Survey', ['▤','🗺','🔍','⊞']],
-        ['coma','04','COMA', ['▦','◲','🧭','⊡']],
-        ['deepen','05','Deepen', ['⊕','⤵','🔬','⛏']],
-        ['theme','06','Theme & aim', ['◎','🎯','⌖','✸']],
-        ['weigh','07','Weigh', ['⚖','🪙','☯','🤔']],
-        ['write','08','Write', ['✎','✍','📝','🖊']],
-        ['build','09','Build', ['▥','🔨','🧱','⚒']],
-        ['check','10','Check', ['✓','✅','☑','🔎']],
+        ['setup','01','Set up', ['⚙'], true],
+        ['read','02','Read', ['◉','☰','❧','▭','⊙','⌆']],
+        ['survey','03','Survey', ['▤','§','⊟','¶','⌗','☰']],
+        ['coma','04','COMA', ['▦','⊞','⊠','◫','⊡','⌗']],
+        ['deepen','05','Deepen', ['⊕','⤵','⊚','↧','▽','⧫']],
+        ['theme','06','Theme & aim', ['◎'], true],
+        ['weigh','07','Weigh', ['⚖'], true],
+        ['write','08','Write', ['✎'], true],
+        ['build','09','Build', ['▥','≣','⧉','⊏','⊓','▤']],
+        ['check','10','Check', ['✓'], true],
       ];
       const chosen = {};
       LENSES.forEach(([id, , , cands]) => (chosen[id] = cands[0]));
@@ -101,32 +100,42 @@
       }
       function drawRows() {
         rows.innerHTML = '';
-        LENSES.forEach(([id, num, name, cands]) => {
+        LENSES.forEach(([id, num, name, cands, kept]) => {
           const row = document.createElement('div');
           row.className = 'row';
           const label = document.createElement('div');
           label.className = 'name';
-          label.innerHTML = name + '<small>Step ' + num + '</small>';
+          label.innerHTML = name + '<small>Step ' + num + (kept ? ' · keeping' : '') + '</small>';
           const cbox = document.createElement('div');
           cbox.className = 'cands';
-          cands.forEach((g) => {
-            const c = document.createElement('button');
-            c.className = 'cand' + (chosen[id] === g ? ' on' : '');
-            c.textContent = g;
-            c.onclick = () => { chosen[id] = g; drawRail(); drawRows(); };
+          if (kept) {
+            const c = document.createElement('div');
+            c.className = 'cand on';
+            c.style.cursor = 'default';
+            c.textContent = cands[0];
             cbox.appendChild(c);
-          });
+            const ok = document.createElement('span');
+            ok.style.cssText = 'align-self:center;font-family:var(--font-mono);font-size:10px;color:var(--ink-faint)';
+            ok.textContent = 'happy with this one';
+            cbox.appendChild(ok);
+          } else {
+            cands.forEach((g) => {
+              const c = document.createElement('button');
+              c.className = 'cand' + (chosen[id] === g ? ' on' : '');
+              c.textContent = g;
+              c.onclick = () => { chosen[id] = g; drawRail(); drawRows(); };
+              cbox.appendChild(c);
+            });
+          }
           row.appendChild(label);
           row.appendChild(cbox);
           rows.appendChild(row);
         });
       }
-      document.querySelectorAll('.preset button').forEach((b) =>
-        b.addEventListener('click', () => {
-          const p = b.dataset.preset;
-          LENSES.forEach(([id, , , cands]) => (chosen[id] = p === 'emoji' ? (cands.find((g) => /\p{Emoji}/u.test(g)) ?? cands[0]) : cands[0]));
-          drawRail(); drawRows();
-        }));
+      document.querySelector('.preset button').addEventListener('click', () => {
+        LENSES.forEach(([id, , , cands]) => (chosen[id] = cands[0]));
+        drawRail(); drawRows();
+      });
       drawRail(); drawRows();
     </script>
   </body>
