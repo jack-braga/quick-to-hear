@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — Build: export preview + assembly panel (mockup)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --amber: #b98a1e; --amber-wash: rgba(185,138,30,0.16); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.42);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.13); --rubric-edge: rgba(166,50,30,0.35);
+        --moss: #4f6b3a; --moss-wash: rgba(79,107,58,0.16); --moss-edge: rgba(79,107,58,0.4); --moss-ink: #3c5330;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
+        /* the export "paper" is always light — it's a print preview */
+        --paper: #fdfcf8; --paper-ink: #1d1b17; --paper-soft: #6c6760; --paper-line: #e6e1d4;
+      }
+      :root[data-theme='night'] {
+        --desk: #23252c; --leaf: #2b2e37; --panel: #333743;
+        --ink: #e8e4da; --ink-soft: #a49f94; --ink-faint: #746f65; --line: #3c414c;
+        --lapis: #90b0ef; --lapis-ink: #c6d6f8; --lapis-wash: rgba(144,176,239,0.16); --lapis-edge: rgba(144,176,239,0.38);
+        --amber: #e2c87c; --amber-wash: rgba(221,187,97,0.17); --amber-ink: #e2c87c; --amber-edge: rgba(221,187,97,0.42);
+        --rubric: #e2805f; --rubric-wash: rgba(226,128,95,0.16); --rubric-edge: rgba(226,128,95,0.4);
+        --moss: #9fc27e; --moss-wash: rgba(159,194,126,0.18); --moss-edge: rgba(159,194,126,0.42); --moss-ink: #bcd6a3;
+        --shadow: 0 1px 2px rgba(0,0,0,0.32), 0 14px 30px -14px rgba(0,0,0,0.5);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+      button { font-family: inherit; cursor: pointer; }
+      .app { height: 100vh; display: grid; grid-template-rows: auto auto 1fr; }
+
+      .topbar { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 18px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; white-space: nowrap; }
+      .ref { font-family: var(--font-scripture); font-size: 18px; white-space: nowrap; }
+      .grow { flex: 1; }
+      .lenses { display: flex; gap: 2px; }
+      .lens { min-width: 27px; height: 27px; padding: 0 5px; display: grid; place-items: center; border-radius: 7px; background: none; border: 1px solid transparent; color: var(--ink-faint); font-size: 12px; }
+      .lens small { font-family: var(--font-mono); font-size: 8px; }
+      .lens.done { color: var(--ink-soft); }
+      .lens.active { border-color: var(--lapis-edge); color: #fff; background: var(--lapis); }
+      :root[data-theme='night'] .lens.active { color: #16181d; background: var(--lapis); }
+      .toggle { border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); width: 30px; height: 30px; border-radius: 8px; }
+
+      .chooser { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 9px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+      .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-faint); }
+      .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+      .seg button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 12px; padding: 5px 12px; }
+      .seg button + button { border-left: 1px solid var(--line); }
+      .seg button.on { background: var(--lapis); color: #fff; }
+      :root[data-theme='night'] .seg button.on { color: #16181d; }
+      .note-any { flex: 1; min-width: 260px; font-size: 11.5px; color: var(--ink-soft); }
+      .note-any b { color: var(--ink); }
+
+      .work { display: grid; grid-template-columns: minmax(0,1fr) 400px; overflow: hidden; }
+      .center { overflow-y: auto; padding: 22px; display: flex; gap: 18px; justify-content: center; align-items: flex-start; background: var(--desk); }
+      .center.parallel { justify-content: stretch; }
+
+      /* an export "sheet" — always paper-light */
+      .sheet { background: var(--paper); color: var(--paper-ink); border: 1px solid var(--paper-line); border-radius: 6px; box-shadow: var(--shadow); width: 100%; max-width: 46rem; padding: 30px clamp(22px,3.4vw,48px) 44px; }
+      .center.parallel .sheet { max-width: none; flex: 1; padding: 22px 26px 34px; }
+      .sheet.hidden { display: none; }
+      .sheettag { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: #fff; border-radius: 5px; padding: 2px 8px; display: inline-block; margin-bottom: 12px; }
+      .sheettag.part { background: var(--lapis); }
+      .sheettag.lead { background: var(--rubric); }
+      .sheet h2 { font-family: var(--font-scripture); font-size: 21px; margin: 0 0 2px; }
+      .sheet .cite { font-family: var(--font-mono); font-size: 9.5px; color: var(--paper-soft); }
+      .sheet .passage { font-family: var(--font-scripture); font-size: 13px; color: var(--paper-soft); line-height: 1.6; margin: 12px 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--paper-line); }
+      .qnum { font-family: var(--font-scripture); font-size: 14.5px; margin: 15px 0 3px; }
+      .qnum b { font-weight: 600; }
+      .writeline { border-bottom: 1px solid var(--paper-line); height: 15px; margin: 9px 8px 0; }
+      .writeline.short { width: 60%; }
+      /* a printed support passage (an included @-reference) */
+      .support { border-left: 3px solid var(--lapis-edge); background: rgba(40,70,138,0.06); border-radius: 6px; padding: 7px 11px; margin: 9px 0 2px; }
+      .support .sh { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--lapis-ink); margin-bottom: 2px; }
+      .support .st { font-family: var(--font-scripture); font-size: 12.5px; color: var(--paper-ink); line-height: 1.5; }
+      .support .ret { font-size: 11px; color: var(--paper-soft); font-style: italic; margin-top: 5px; }
+      /* a printed Commentary (the personal-commentary card, included for the group) */
+      .commentary { border: 1px solid var(--amber-edge); background: rgba(185,138,30,0.09); border-radius: 8px; padding: 9px 12px; margin: 14px 0; }
+      .commentary .ch { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--amber-ink); margin-bottom: 3px; }
+      .commentary .ct { font-family: var(--font-scripture); font-size: 13px; color: var(--paper-ink); line-height: 1.55; }
+      .prayer { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--paper-line); font-family: var(--font-scripture); font-size: 13px; color: var(--paper-ink); }
+      .prayer .ph { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--paper-soft); margin-bottom: 2px; }
+      .copyright { margin-top: 16px; font-family: var(--font-mono); font-size: 8.5px; color: var(--paper-soft); }
+      /* leader-only extras */
+      .leadblock { margin: 13px 0; padding: 9px 12px; border-radius: 8px; background: rgba(166,50,30,0.05); border: 1px solid var(--paper-line); }
+      .leadblock .lh { font-family: var(--font-mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--rubric); margin-bottom: 3px; }
+      .leadblock .lt { font-size: 12.5px; color: var(--paper-ink); line-height: 1.5; }
+      .answer { margin: 5px 0 2px; font-size: 12px; color: var(--paper-ink); }
+      .answer b { font-family: var(--font-mono); font-size: 8px; letter-spacing: .06em; text-transform: uppercase; color: var(--moss-ink); }
+      .qmeta { font-family: var(--font-mono); font-size: 8.5px; color: var(--paper-soft); margin-top: 3px; }
+
+      /* right assembly panel */
+      .panel { border-left: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); overflow-y: auto; }
+      .pbody { padding: 13px 14px 30px; }
+      .phead { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .16em; color: var(--ink-faint); margin-bottom: 3px; }
+      .plede { font-size: 11.5px; color: var(--ink-soft); margin: 0 0 11px; }
+      .chips { display: flex; gap: 6px; margin-bottom: 11px; }
+      .chips button { font-family: var(--font-mono); font-size: 10px; border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); border-radius: 20px; padding: 3px 10px; }
+      .chips button.on { background: var(--ink); color: var(--leaf); border-color: var(--ink); }
+      .ocard { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--lapis-edge); border-radius: var(--radius); padding: 9px 11px 9px 9px; box-shadow: var(--shadow); margin-bottom: 9px; display: grid; grid-template-columns: 16px 1fr; gap: 8px; }
+      .ocard.comm { border-left-color: var(--amber-edge); }
+      .drag { color: var(--ink-faint); font-size: 13px; cursor: grab; line-height: 1.2; user-select: none; padding-top: 2px; }
+      .otop { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; flex-wrap: wrap; }
+      .oanchor { font-family: var(--font-mono); font-size: 9.5px; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 1px 5px; }
+      .okind { font-family: var(--font-mono); font-size: 8px; letter-spacing: .07em; text-transform: uppercase; border-radius: 4px; padding: 1px 5px; border: 1px solid var(--line); color: var(--ink-faint); }
+      .okind.q { color: var(--lapis-ink); border-color: var(--lapis-edge); }
+      .okind.c { color: var(--amber-ink); border-color: var(--amber-edge); }
+      .obody { font-family: var(--font-scripture); font-size: 12.5px; color: var(--ink); line-height: 1.4; }
+      .oref { margin-top: 5px; font-family: var(--font-mono); font-size: 9px; color: var(--lapis-ink); }
+      .ometa { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); }
+      .ometa .on { color: var(--amber-ink); }
+      .expchip { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 8.5px; color: var(--moss-ink); background: var(--moss-wash); border: 1px solid var(--moss-edge); border-radius: 5px; padding: 1px 6px; }
+      .ctrls { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+      .ctrl { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 9.5px; border: 1px solid var(--line); background: var(--leaf); color: var(--ink-soft); border-radius: 6px; padding: 2px 7px; }
+      .ctrl.sel::after { content: '▾'; color: var(--ink-faint); font-size: 8px; margin-left: 3px; }
+      .ctrl.on { background: var(--amber-wash); border-color: var(--amber-edge); color: var(--amber-ink); }
+      .ctrl .step { color: var(--ink-faint); padding: 0 3px; cursor: pointer; }
+      .cut { margin-top: 7px; font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); background: none; border: none; padding: 0; }
+      .cut:hover { color: var(--rubric); text-decoration: underline; }
+      .assembly { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 11px; }
+      .timebar { height: 8px; border-radius: 5px; background: var(--line); overflow: hidden; margin: 6px 0 4px; }
+      .timebar > i { display: block; height: 100%; width: 84%; background: var(--moss); }
+      .tsmall { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-soft); }
+      .opt { font-family: var(--font-mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 12px; margin-top: 9px; }
+      .opt span { display: inline-flex; align-items: center; gap: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <span class="brand">Quick&nbsp;to&nbsp;Hear</span>
+        <span class="ref">Luke 1:5–25</span>
+        <div class="grow"></div>
+        <nav class="lenses" aria-label="Study phases">
+          <button class="lens done">⚙<small>01</small></button>
+          <button class="lens done">◉<small>02</small></button>
+          <button class="lens done">▤<small>03</small></button>
+          <button class="lens done">▦<small>04</small></button>
+          <button class="lens done">⊕<small>05</small></button>
+          <button class="lens done">◎<small>06</small></button>
+          <button class="lens done">⚖<small>07</small></button>
+          <button class="lens done">✎<small>08</small></button>
+          <button class="lens active">▥<small>09</small></button>
+          <button class="lens">✓<small>10</small></button>
+        </nav>
+        <div class="grow"></div>
+        <button class="toggle" id="themeBtn" title="Day / night">☾</button>
+      </div>
+
+      <div class="chooser">
+        <span class="lbl">Build · assemble &amp; preview</span>
+        <div class="seg" id="seg">
+          <button data-view="part" class="on">Participant</button>
+          <button data-view="lead">Leader</button>
+          <button data-view="both">Parallel</button>
+        </div>
+        <p class="note-any">The passage steps aside — the centre is now a <b>live preview of the actual export</b>.
+          The right panel holds only your <b>question</b> + <b>commentary</b> cards and the <b>assembly</b> controls.</p>
+      </div>
+
+      <div class="work">
+        <div class="center" id="center">
+          <!-- PARTICIPANT HANDOUT -->
+          <div class="sheet" id="sheetPart">
+            <span class="sheettag part">Participant handout · clean &amp; answer-free</span>
+            <h2>Luke 1:5–25 · The forerunner promised</h2>
+            <div class="cite">WEBBE · public domain</div>
+            <div class="passage">⁸ Now while he executed the priest's office before God… ¹¹ An angel of the Lord
+              appeared to him… ¹³ “Don't be afraid, Zacharias, because your request has been heard…”</div>
+
+            <div class="qnum"><b>1.</b> What is Zacharias doing when the angel appears, and what does that setting
+              tell us?</div>
+            <div class="writeline"></div><div class="writeline short"></div>
+
+            <div class="qnum"><b>2.</b> The angel says John will go “in the spirit and power of Elijah.” What was
+              promised about Elijah?</div>
+            <div class="support">
+              <div class="sh">↗ Support passage — Malachi 4:5–6</div>
+              <div class="st">“Behold, I will send you Elijah the prophet before the great and terrible day of the
+                Lord comes. He will turn the hearts of the fathers to the children…”</div>
+              <div class="ret">↩ Back in Luke 1 — why does that promise matter for who John is?</div>
+            </div>
+            <div class="writeline"></div><div class="writeline short"></div>
+
+            <div class="commentary">
+              <div class="ch">▣ Commentary</div>
+              <div class="ct">Incense was offered at the hour of prayer, so the whole crowd outside is praying as the
+                angel speaks — the setting itself says God is answering long-prayed prayers.</div>
+            </div>
+
+            <div class="qnum"><b>3.</b> Zacharias has prayed for years. What does the timing of this answer show us
+              about God?</div>
+            <div class="writeline"></div><div class="writeline short"></div>
+
+            <div class="prayer"><div class="ph">Prayer</div>Praise God who keeps his word and answers in his own
+              time — and pray for faith while we wait.</div>
+            <div class="copyright">Scripture: WEBBE (public domain). Prepared with Quick to Hear.</div>
+          </div>
+
+          <!-- LEADER'S NOTES -->
+          <div class="sheet hidden" id="sheetLead">
+            <span class="sheettag lead">Leader's notes · everything</span>
+            <h2>Luke 1:5–25 · The forerunner promised</h2>
+            <div class="cite">WEBBE · public domain</div>
+
+            <div class="leadblock"><div class="lh">Theme · aim · to Christ</div>
+              <div class="lt"><b>Theme:</b> God keeps his covenant by sending the forerunner, answering long prayer in
+                his own timing. <b>Aim:</b> trust God's timing where we've prayed long and heard nothing.
+                <b>To Christ:</b> John points past himself to the Lord he prepares.</div></div>
+
+            <div class="qnum"><b>1.</b> What is Zacharias doing when the angel appears…?</div>
+            <div class="answer"><b>Expected</b> · Ordinary priestly duty at the hour of incense/prayer — the setting
+              says God answers his praying people.</div>
+            <div class="qmeta">Luke 1:8–11 · observation · ★ essential · 5 min</div>
+
+            <div class="qnum"><b>2.</b> …“the spirit and power of Elijah.” What was promised about Elijah?</div>
+            <div class="support"><div class="sh">↗ Support passage — Malachi 4:5–6 (printed for the group)</div>
+              <div class="st">“…I will send you Elijah… turn the hearts of the fathers to the children…”</div>
+              <div class="ret">↩ Return question set — brings the group home to Luke 1.</div></div>
+            <div class="answer"><b>Expected</b> · Elijah would come before the Day of the Lord to turn hearts —
+              so John is the promised forerunner.</div>
+            <div class="qmeta">Luke 1:17 · meaning · ★ essential · 7 min</div>
+
+            <div class="commentary"><div class="ch">▣ Commentary — printed for the group</div>
+              <div class="ct">Incense = the hour of prayer; the praying crowd frames the angel's words as answered
+                prayer.</div></div>
+
+            <div class="qnum"><b>3.</b> …the timing of this answer — what does it show about God?</div>
+            <div class="answer"><b>Expected</b> · God is not slow; he keeps his word and acts at the right time.</div>
+            <div class="qmeta">Luke 1:13 · application · 6 min · aim: do — trust while waiting</div>
+
+            <div class="copyright">Scripture: WEBBE (public domain). COMA prompts © Matthias Media / HTC.
+              Prepared with Quick to Hear.</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: assembly panel -->
+        <div class="panel">
+          <div class="pbody">
+            <div class="phead">Assemble</div>
+            <p class="plede">Only the cards that <b>print</b> live here — questions &amp; commentary. Each card carries
+              <b>its own controls</b>; drag ⠿ to sequence.</p>
+            <div class="chips">
+              <button class="on">All</button><button>Questions</button><button>Commentary</button>
+            </div>
+
+            <div class="ocard">
+              <div class="drag">⠿</div>
+              <div>
+                <div class="otop"><span class="oanchor">Luke 1:8–11</span><span class="okind q">Question</span><span class="expchip">✓ expected answer</span></div>
+                <div class="obody">What is Zacharias doing when the angel appears, and what does the setting tell us?</div>
+                <div class="ctrls">
+                  <span class="ctrl sel">observation</span>
+                  <span class="ctrl"><span class="step">−</span>⏱ 5 min<span class="step">+</span></span>
+                  <span class="ctrl on">★ essential</span>
+                </div>
+                <button class="cut">✂ cut → reserve</button>
+              </div>
+            </div>
+
+            <div class="ocard">
+              <div class="drag">⠿</div>
+              <div>
+                <div class="otop"><span class="oanchor">Luke 1:17</span><span class="okind q">Question</span><span class="expchip">✓ expected answer</span></div>
+                <div class="obody">“…spirit and power of Elijah.” What was promised about Elijah?</div>
+                <div class="oref">↗ Mal 4:5–6 · included for the group · ↩ return question set</div>
+                <div class="ctrls">
+                  <span class="ctrl sel">meaning</span>
+                  <span class="ctrl"><span class="step">−</span>⏱ 7 min<span class="step">+</span></span>
+                  <span class="ctrl on">★ essential</span>
+                </div>
+                <button class="cut">✂ cut → reserve</button>
+              </div>
+            </div>
+
+            <div class="ocard comm">
+              <div class="drag">⠿</div>
+              <div>
+                <div class="otop"><span class="oanchor">Luke 1:8–10</span><span class="okind c">Commentary</span></div>
+                <div class="obody">Incense = the hour of prayer; the praying crowd frames it as answered prayer.</div>
+                <div class="ctrls">
+                  <span class="ctrl">☐ hide from group</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="ocard">
+              <div class="drag">⠿</div>
+              <div>
+                <div class="otop"><span class="oanchor">Luke 1:13</span><span class="okind q">Question</span><span class="expchip">✓ expected answer</span></div>
+                <div class="obody">What does the timing of this answer show us about God?</div>
+                <div class="ctrls">
+                  <span class="ctrl sel">application</span>
+                  <span class="ctrl"><span class="step">−</span>⏱ 6 min<span class="step">+</span></span>
+                  <span class="ctrl">☆ essential</span>
+                  <span class="ctrl sel">aim · do</span>
+                </div>
+                <button class="cut">✂ cut → reserve</button>
+              </div>
+            </div>
+
+            <div class="assembly">
+              <div class="tsmall">Total ≈ 38 min of 45 · drag ⠿ to sequence</div>
+              <div class="timebar"><i></i></div>
+              <div class="opt"><span>New questions &amp; commentary are written back in ✎ authoring — not here</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const root = document.documentElement;
+      document.getElementById('themeBtn').addEventListener('click', () => {
+        const n = root.getAttribute('data-theme') === 'night';
+        root.setAttribute('data-theme', n ? 'day' : 'night');
+        document.getElementById('themeBtn').textContent = n ? '☾' : '☀';
+      });
+      const center = document.getElementById('center');
+      const part = document.getElementById('sheetPart');
+      const lead = document.getElementById('sheetLead');
+      function view(v) {
+        center.classList.toggle('parallel', v === 'both');
+        part.classList.toggle('hidden', v === 'lead');
+        lead.classList.toggle('hidden', v === 'part');
+        for (const b of document.querySelectorAll('#seg button')) b.classList.toggle('on', b.dataset.view === v);
+      }
+      document.querySelectorAll('#seg button').forEach((b) => b.addEventListener('click', () => view(b.dataset.view)));
+      document.querySelectorAll('.chips button').forEach((b) =>
+        b.addEventListener('click', () => {
+          document.querySelectorAll('.chips button').forEach((x) => x.classList.remove('on'));
+          b.classList.add('on');
+        }));
+      view('part');
+    </script>
+  </body>
+</html>
