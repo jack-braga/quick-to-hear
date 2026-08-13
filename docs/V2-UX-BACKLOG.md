@@ -278,7 +278,9 @@ them") and **COMA notes → candidate questions**. Any card-panel + naming work 
   (inline anchor editing on any card).
 - **Word-level selection** (range of words) in manuscript mode — unclear how it works cross-translation
   (msg#1999).
-- **Images** in a study, somehow (msg#2304 — "definitely defer").
+- **Images** in a study, somehow (msg#2304 — "definitely defer"). **→ Scoped brief + surface map:
+  `docs/HANDOFF-v2-images.md`** (attach images to question / study-note cards; mirrors the reference/
+  `mentions` pattern; stored in IndexedDB, embedded in exports).
 - More **copy-paste passages** for references outside the main text (msg#2304).
 - Deep **links to BibleGateway / YouVersion** for a reference after selecting it in Set-Up (msg#2304).
 - BSB edition; Talk mode (pre-existing roadmap deferrals).
