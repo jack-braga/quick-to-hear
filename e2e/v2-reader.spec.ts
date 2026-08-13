@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import { expect, test } from '@playwright/test';
 
 // v2 acceptance (ROADMAP-v2 v2.2): the reader renders the real passage from the store,
@@ -758,6 +760,35 @@ test('v2 Write lens: the secondary "＋ comment" adds a prior-type card, kept as
   await expect(panel.getByText('Comment', { exact: true })).toBeVisible(); // the card tag
   await expect(panel.getByText(/step 03 · Survey/)).toBeVisible(); // origin = Survey, not Write
   await expect(panel.getByRole('button', { name: 'Survey', exact: true })).toBeVisible(); // the filter chip
+});
+
+test('v2 Write: attach an image to a question — thumbnail + caption persist across reload', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.locator('aside').getByRole('button', { name: '＋ question' }).click();
+
+  // Attach: set the hidden file input directly (the button just proxies to it). The image is the
+  // user's own upload — the tool never sources one (rule 1).
+  await page
+    .locator('aside input[type="file"]')
+    .setInputFiles(fileURLToPath(new URL('./fixtures/test-image.png', import.meta.url)));
+
+  // A thumbnail lands (alt defaults to "Attached image" until captioned); caption it.
+  await expect(page.locator('aside').getByRole('img', { name: 'Attached image' })).toBeVisible();
+  await page.getByRole('textbox', { name: 'Image caption' }).fill('The temple');
+
+  // Persist across reload — the bytes live in the IndexedDB image store, the ref in the study body.
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await expect(page.getByRole('textbox', { name: 'Image caption' })).toHaveValue('The temple');
+  await expect(page.locator('aside').getByRole('img', { name: 'The temple' })).toBeVisible();
 });
 
 test('v2 Build: attach a reference to a question (prints as support) + "in study" holds a card back', async ({

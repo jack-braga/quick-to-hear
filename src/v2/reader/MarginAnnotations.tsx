@@ -23,6 +23,7 @@ import {
   toneFor,
 } from '@/v2/annotations';
 import { LENSES } from '@/v2/lenses';
+import { AttachImageRow } from '@/v2/reader/AttachImageRow';
 import { AttachReferenceRow } from '@/v2/reader/AttachReferenceRow';
 import { FormulaPicker } from '@/v2/reader/FormulaPicker';
 import { MentionEditor } from '@/v2/reader/MentionEditor';
@@ -282,6 +283,11 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
 
         {/* question: attach a support-passage reference (prints beside it; keeps the text clean) */}
         {a.kind === 'question' && <AttachReferenceRow card={a} onEdit={props.onEdit} />}
+
+        {/* question / study-note: attach the user's own image(s) — they print with the card (§6). */}
+        {(a.kind === 'question' || a.kind === 'study-note') && (
+          <AttachImageRow card={a} onEdit={props.onEdit} />
+        )}
 
         {/* question: soft, overridable question-craft warnings (SPEC 6e) — detection in
             `detectWarnings`, the wording authored in `warnings.yaml`. Advisory only, never a block. */}
