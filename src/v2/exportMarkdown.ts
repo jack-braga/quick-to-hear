@@ -19,12 +19,14 @@ function noteText(text: string): string {
 }
 
 function support(block: ExportBlock): string[] {
+  if (block.kind === 'spacer') return [];
   return block.support.map((s) => `> ↗ Support passage — ${s.reference}`);
 }
 
 /** Attached images as self-contained markdown — `![caption](data:…)`. `imageUrls` is resolved by the
  *  caller (base64 data URLs so the .md is portable); an unresolved image is simply omitted. */
 function images(block: ExportBlock, imageUrls: Record<string, string>): string[] {
+  if (block.kind === 'spacer') return [];
   return block.images.flatMap((im) => {
     const url = imageUrls[im.id];
     return url ? [`![${im.caption || 'image'}](${url})`] : [];
@@ -38,6 +40,7 @@ export function handoutMarkdown(study: Study, imageUrls: Record<string, string> 
   if (model.intro) out.push('', model.intro);
 
   for (const block of participantBlocks(model)) {
+    if (block.kind === 'spacer') continue; // print-only blank space — markdown carries no spacers
     if (block.kind === 'question') {
       out.push('', `${block.number}. ${block.text}`.trimEnd());
       out.push(...support(block));
@@ -66,6 +69,7 @@ export function leaderMarkdown(study: Study, imageUrls: Record<string, string> =
   if (study.themeAim.christRoute.trim()) out.push('', `**To Christ:** ${study.themeAim.christRoute.trim()}`);
 
   for (const block of model.blocks) {
+    if (block.kind === 'spacer') continue; // print-only blank space — markdown carries no spacers
     if (block.kind === 'question') {
       out.push('', `${block.number}. ${block.text}`.trimEnd());
       if (block.expectedAnswer.trim()) out.push(`- **Expected:** ${block.expectedAnswer.trim()}`);

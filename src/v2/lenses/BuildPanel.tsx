@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import type { AimComponent, Annotation, QuestionType, Study } from '@/types/study';
 import { annotationMinutes, isQuestionReady, toneFor, type AnnotationTone } from '@/v2/annotations';
 import { moveBefore, moveBy, QUESTION_TYPE_OPTIONS } from '@/v2/build';
-import { DEFAULT_QUESTION_WRITE_LINES, exportModel, orderedOutput } from '@/v2/exportModel';
+import { DEFAULT_QUESTION_WRITE_LINES, DEFAULT_SPACER_LINES, exportModel, orderedOutput } from '@/v2/exportModel';
 import { AttachImageRow } from '@/v2/reader/AttachImageRow';
 import { AttachReferenceRow } from '@/v2/reader/AttachReferenceRow';
 import { CardRevisions } from '@/v2/reader/CardRevisions';
@@ -111,6 +111,44 @@ export function BuildPanel(props: BuildPanelProps) {
         <ol className="space-y-2.5">
           {shown.map((a) => {
             const pos = orderedIds.indexOf(a.id) + 1;
+            if (a.kind === 'spacer') {
+              return (
+                <li
+                  key={a.id}
+                  draggable={canReorder}
+                  onDragStart={() => setDragId(a.id)}
+                  onDragEnd={() => setDragId(null)}
+                  onDragOver={(e) => canReorder && e.preventDefault()}
+                  onDrop={(e) => {
+                    if (!canReorder) return;
+                    e.preventDefault();
+                    if (dragId && dragId !== a.id) props.onReorder(moveBefore(orderedIds, dragId, a.id));
+                    setDragId(null);
+                  }}
+                  className="flex items-center gap-2 rounded-lg border border-dashed border-lapis-edge bg-leaf p-[9px_11px]"
+                >
+                  {canReorder && (
+                    <span className="cursor-grab select-none font-mono text-[12px] text-ink-faint" aria-hidden>
+                      ⠿
+                    </span>
+                  )}
+                  <span className="font-mono text-[9.5px] uppercase tracking-[0.08em] text-lapis-ink">⇕ Spacer</span>
+                  <Stepper
+                    label="lines"
+                    value={a.writeLines ?? DEFAULT_SPACER_LINES}
+                    onStep={(d) => setWriteLines(a, d, DEFAULT_SPACER_LINES)}
+                  />
+                  <span className="flex-1" />
+                  {canReorder && (
+                    <>
+                      <button type="button" aria-label="Move up" onClick={() => props.onReorder(moveBy(orderedIds, a.id, -1))} className="text-ink-faint hover:text-ink">↑</button>
+                      <button type="button" aria-label="Move down" onClick={() => props.onReorder(moveBy(orderedIds, a.id, 1))} className="text-ink-faint hover:text-ink">↓</button>
+                    </>
+                  )}
+                  <button type="button" aria-label="Remove spacer" onClick={() => props.onRemove(a.id)} className="text-ink-faint hover:text-rubric">✕</button>
+                </li>
+              );
+            }
             const isQuestion = a.kind === 'question';
             const tone = toneFor(a);
             return (

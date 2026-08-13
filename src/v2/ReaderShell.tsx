@@ -567,6 +567,19 @@ export function ReaderShell({ study }: { study: Study }) {
               ))}
             </div>
           </div>
+          {/* insert a blank-space block into the running order (drag to position, resize in the card) */}
+          <button
+            type="button"
+            onClick={() => {
+              const spacerId = newId();
+              addAnnotation(makeAnnotation(spacerId, { kind: 'spacer', verseIds: [] }));
+              onReorder([...study.runningOrder, spacerId]);
+            }}
+            title="Insert a blank space block into the running order"
+            className="rounded-lg border border-dashed border-lapis-edge bg-leaf px-3 py-1 font-mono text-[11px] text-lapis-ink hover:bg-lapis-wash"
+          >
+            ＋ spacer
+          </button>
         </div>
         {buildVariant === 'parallel' ? (
           <div className="flex items-start gap-4">

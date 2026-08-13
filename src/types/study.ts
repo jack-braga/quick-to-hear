@@ -143,7 +143,7 @@ export type StudyMap = z.infer<typeof MapSchema>;
  *  unless `hideFromGroup` keeps it leader-only. (It is distinct from a Weigh *commentary*, which is a
  *  📖 book source on a revision, never a card.) A reference to another passage is not its own kind — it
  *  is an inline `@`-mention inside a note's text (see {@link MentionMetaSchema}). */
-export const ANNOTATION_KINDS = ['note', 'question', 'study-note'] as const;
+export const ANNOTATION_KINDS = ['note', 'question', 'study-note', 'spacer'] as const;
 export const AnnotationKindSchema = z.enum(ANNOTATION_KINDS);
 export type AnnotationKind = z.infer<typeof AnnotationKindSchema>;
 

@@ -4,7 +4,7 @@ import { exportOptions } from '@/lib/export';
 import { primaryText } from '@/lib/passage';
 import type { ParsedText } from '@/types/passage';
 import type { ImageRef, Study } from '@/types/study';
-import { exportModel, participantBlocks, type ExportBlock, type SupportRef } from '@/v2/exportModel';
+import { exportModel, participantBlocks, type ExportBlock, type SpacerBlock, type SupportRef } from '@/v2/exportModel';
 import { PrintPassage } from '@/v2/print/PrintPassage';
 import { parseMentions } from '@/v2/reader/mentions';
 import { supersede } from '@/v2/revisions';
@@ -76,6 +76,21 @@ function AttachedImage({ image, src }: { image: ImageRef; src?: string }) {
         <figcaption className="mt-1 font-mono text-[9px] italic text-[#6f6a60]">{image.caption}</figcaption>
       )}
     </figure>
+  );
+}
+
+function SpacerBlockView({ block, isPrint }: { block: SpacerBlock; isPrint: boolean }) {
+  const height = `${block.lines * 1.6}em`; // ~one text line each, so it scales with the font size
+  // Print: pure blank space, no rule. Preview: a faint dashed guide so you can see + grab it.
+  if (isPrint) return <div aria-hidden data-print-block="spacer" style={{ height }} />;
+  return (
+    <div
+      data-preview-block="spacer"
+      className="grid place-items-center rounded-md border border-dashed border-[rgba(40,70,138,0.3)] bg-[rgba(40,70,138,0.04)] font-mono text-[9px] uppercase tracking-[0.06em] text-[#17305f]"
+      style={{ height }}
+    >
+      ⇕ spacer · {block.lines} {block.lines === 1 ? 'line' : 'lines'} · invisible in print
+    </div>
   );
 }
 
@@ -202,8 +217,11 @@ export function ExportPreview({ study, variant, supportTexts, imageUrls, fill, m
           </p>
         ) : (
           <div className="mt-4 space-y-4">
-            {blocks.map((block) =>
-              block.kind === 'question' ? (
+            {blocks.map((block) => {
+              if (block.kind === 'spacer') {
+                return <SpacerBlockView key={block.id} block={block} isPrint={isPrint} />;
+              }
+              return block.kind === 'question' ? (
                 <div key={block.id} data-preview-block="question">
                   <p className="font-scripture text-[14.5px] leading-snug">
                     <span className="mr-1 font-semibold">{block.number}.</span>
@@ -252,8 +270,8 @@ export function ExportPreview({ study, variant, supportTexts, imageUrls, fill, m
                     <AttachedImage key={im.id} image={im} src={imageUrls?.[im.id]} />
                   ))}
                 </div>
-              ),
-            )}
+              );
+            })}
           </div>
         )}
 

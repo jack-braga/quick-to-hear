@@ -98,8 +98,14 @@ export function verseTones(annotations: Annotation[]): Map<string, AnnotationTon
   return out;
 }
 
+/** A spacer is a Build-only blank-space block, not a real card — helps the authoring panels skip it. */
+export function isSpacer(a: Annotation): boolean {
+  return a.kind === 'spacer';
+}
+
 /** UI copy per annotation kind/flag (tag shown on the card + the editor placeholder). */
 export function annotationMeta(a: Annotation): { tag: string; placeholder: string } {
+  if (a.kind === 'spacer') return { tag: 'Spacer', placeholder: '' };
   if (a.kind === 'question') {
     return { tag: 'Question', placeholder: 'Draft a question anchored to these verses…' };
   }
@@ -173,6 +179,7 @@ export function makeAnnotation(id: string, input: MakeAnnotationInput): Annotati
   if (input.origin) base.origin = input.origin;
   if (input.kind === 'question') return { ...base, expectedAnswer: '' };
   if (input.kind === 'study-note') return base; // a plain card that prints for the group
+  if (input.kind === 'spacer') return base; // blank-space block (Build-only; not a card)
   return { ...base, flag: input.flag }; // note
 }
 

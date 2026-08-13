@@ -81,6 +81,7 @@ export function RevisionPanel(props: RevisionPanelProps) {
   // (those don't exist yet at these steps, and aren't the point). Anchored by verse, then floating.
   const cards = useMemo(() => {
     const prep = annotations.filter((a) => {
+      if (a.kind === 'spacer') return false; // a Build-only blank block, not an understanding card
       const o = annotationOrigin(a);
       return o === 'map' || o === 'coma';
     });

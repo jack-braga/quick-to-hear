@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { makeStudy, type Annotation, type Study } from '@/types/study';
-import { exportModel, orderedOutput, participantBlocks, supportFor } from '@/v2/exportModel';
+import { exportModel, orderedOutput, participantBlocks, supportFor, type ExportBlock } from '@/v2/exportModel';
 
 const NOW = '2020-01-01T00:00:00.000Z';
+
+// These tests use only question/study-note fixtures; narrow away the spacer variant for property access.
+const asOutput = (b: ExportBlock | undefined) => b as Extract<ExportBlock, { writeLines: number }>;
 
 /** A study carrying the given annotations (+ optional running order / session length). */
 function studyWith(annotations: Annotation[], over: Partial<Study> = {}): Study {
@@ -92,9 +95,9 @@ describe('exportModel', () => {
   it('defaults write-lines (question 3, study note 0) and honours an explicit count', () => {
     const model = exportModel(studyWith([q({ id: 'q1' }), q({ id: 'q2', writeLines: 6 }), sn({ id: 'note' })]));
     const [b1, b2, b3] = model.blocks;
-    expect(b1?.writeLines).toBe(3); // question default
-    expect(b2?.writeLines).toBe(6); // explicit
-    expect(b3?.writeLines).toBe(0); // study-note default
+    expect(asOutput(b1).writeLines).toBe(3); // question default
+    expect(asOutput(b2).writeLines).toBe(6); // explicit
+    expect(asOutput(b3).writeLines).toBe(0); // study-note default
   });
 
   it('a support passage adds SUPPORT_MINUTES to the total', () => {
@@ -107,7 +110,7 @@ describe('exportModel', () => {
         }),
       ]),
     );
-    expect(model.blocks[0]?.support).toHaveLength(1);
+    expect(asOutput(model.blocks[0]).support).toHaveLength(1);
     expect(model.totalMinutes).toBe(9); // 5 + 4 (one support)
   });
 

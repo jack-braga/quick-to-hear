@@ -115,7 +115,9 @@ export interface MarginAnnotationsProps {
 }
 
 export function MarginAnnotations(props: MarginAnnotationsProps) {
-  const { passage, annotations, litVerseId, focusAnnotationId } = props;
+  const { passage, litVerseId, focusAnnotationId } = props;
+  // Spacers are Build-only blank blocks — never cards in the authoring panels.
+  const annotations = props.annotations.filter((a) => a.kind !== 'spacer');
   const byId = useMemo(() => new Map(allVerses(passage).map((v) => [v.verseId, v])), [passage]);
 
   const [hidden, setHidden] = useState<Set<AnnotationOrigin>>(loadHidden);

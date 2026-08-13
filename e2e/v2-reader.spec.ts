@@ -567,6 +567,35 @@ test('v2 Build lens: questions order by verse, reorder, and persist', async ({ p
   await expect(page.locator('ol > li').first()).toContainText('Luke 1:13');
 });
 
+test('v2 Build: a spacer block adds to the running order and prints as blank space', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  const id = page.url().match(/study\/([^/]+)/)?.[1];
+
+  // A question so the export has content, then a spacer in Build.
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.locator('[data-v="LUKE.1.13"]').click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').fill('What does the angel promise?');
+
+  await page.getByRole('button', { name: '09 Build' }).click();
+  await page.getByRole('button', { name: '＋ spacer' }).click();
+
+  // The spacer is a first-class card in the assemble panel + a guide in the live preview.
+  await expect(page.getByText('⇕ Spacer', { exact: true })).toBeVisible(); // the assemble card
+  await expect(page.locator('[data-preview-block="spacer"]')).toBeVisible(); // the preview guide
+
+  // In the printed handout it becomes real blank space (a marked, ruleless block) — no on-screen guide.
+  await page.waitForTimeout(1000);
+  await page.goto(`./#/print/${id}/handout`);
+  await expect(page.locator('[data-print-block="spacer"]')).toHaveCount(1);
+  await expect(page.locator('[data-preview-block="spacer"]')).toHaveCount(0);
+  await expect(page.getByText('What does the angel promise?')).toBeVisible();
+});
+
 test('v2 exports: handout excludes answers, leader includes them', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

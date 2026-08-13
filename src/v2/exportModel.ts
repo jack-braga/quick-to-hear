@@ -20,6 +20,9 @@ import { mentionKey, parseMentions } from '@/v2/reader/mentions';
 /** Ruled write-lines that follow a question when the user hasn't set an explicit count. */
 export const DEFAULT_QUESTION_WRITE_LINES = 3;
 
+/** Blank "lines" a spacer block occupies when the user hasn't set a size. */
+export const DEFAULT_SPACER_LINES = 3;
+
 export interface SupportRef {
   /** The mention's OSIS identity (its key in the item's `mentions` map). */
   osis: string;
@@ -58,7 +61,14 @@ export interface StudyNoteBlock {
   images: ImageRef[];
 }
 
-export type ExportBlock = QuestionBlock | StudyNoteBlock;
+export interface SpacerBlock {
+  kind: 'spacer';
+  id: string;
+  /** Blank "lines" of vertical space this block occupies (prints as empty space, no rule). */
+  lines: number;
+}
+
+export type ExportBlock = QuestionBlock | StudyNoteBlock | SpacerBlock;
 
 export interface ExportModel {
   /** The document heading — the study title if set, else the reference. */
@@ -73,7 +83,7 @@ export interface ExportModel {
 }
 
 function isOutput(a: Annotation): boolean {
-  return a.kind === 'question' || a.kind === 'study-note';
+  return a.kind === 'question' || a.kind === 'study-note' || a.kind === 'spacer';
 }
 
 function firstVerse(a: Annotation): string {
@@ -147,6 +157,9 @@ export function exportModel(study: Study): ExportModel {
 
   let qNumber = 0;
   const blocks: ExportBlock[] = ordered.map((a): ExportBlock => {
+    if (a.kind === 'spacer') {
+      return { kind: 'spacer', id: a.id, lines: a.writeLines ?? DEFAULT_SPACER_LINES };
+    }
     const anchorLabel = a.verseIds.map(verseRefLabel).join(', ');
     const support = supportFor(a);
     const images = imagesFor(a);
