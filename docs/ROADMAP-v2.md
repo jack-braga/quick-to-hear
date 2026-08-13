@@ -134,6 +134,24 @@ manuscript that answers to a command line*. Full day/night.
 
 ## 5. Progress log
 
+### 2026-08-13 — Post-images UX: notes-on-cards everywhere · font size · spacer blocks
+
+**Shipped + verified (e2e + live, gate green: typecheck/lint/355 unit/build/36 e2e); pushed + deployed.**
+Three owner-raised improvements after the images feature (planned together, built in gated slices):
+
+- **Deepen/Weigh notes on cards everywhere** (`c366919`) — a card's `revisions` rendered only in
+  `RevisionPanel`, vanishing on the same card in Survey/Write/Build. New shared `src/v2/reader/CardRevisions.tsx`
+  — **read-only by default**, editable overlay only in Deepen/Weigh (handlers passed) — rendered in
+  `MarginAnnotations` + `BuildPanel`; `RevisionPanel` now composes it. Owner's "unify the panel", scoped to
+  the one inconsistent view (not a five-panel merge).
+- **Per-study font size (S/M/L)** (`036c2d2`) — additive `study.fontScale` (no version bump); an "Aa Font"
+  control in the Build settings bar (`ReaderShell`); applied as a `zoom` on the `ExportPreview` root so
+  preview + print + PDF match.
+- **Spacer blocks** (`42dc389`) — new `'spacer'` annotation kind riding `runningOrder`; `＋ spacer` in the
+  Build settings bar adds + positions it; `BuildPanel` spacer card (lines stepper + reorder + remove);
+  `ExportPreview` renders a dashed guide in preview, `aria-hidden` blank space in print; `exportModel`
+  `SpacerBlock`; markdown skips them; excluded from the authoring panels. Mockup `v2-build-format.html`.
+
 ### 2026-08-13 — Flow redesign COMPLETE: 10 lenses, Deepen/Weigh, Write/Build, reference-picker unified
 
 **Shipped + verified (unit + e2e + live, 0 console errors); gate `typecheck && lint && test (342) &&

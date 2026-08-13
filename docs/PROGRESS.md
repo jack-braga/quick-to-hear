@@ -15,7 +15,20 @@
 > fresh session sees the most recent arc. To resume v2: **`docs/V2-SESSION-PROMPT.md` → `ROADMAP-v2.md`
 > (§4 build order, §5 log) → `V2-UX-BACKLOG.md` §7 (current flow) + §4 (remaining polish).**
 
-**Newest: the first §6 far-future item shipped — ATTACH IMAGES to question / study-note cards** (owner's
+**Newest (2026-08-13) — three owner-raised UX improvements, each gated + verified + deployed:**
+- **Deepen/Weigh notes show on cards everywhere** (`c366919`) — a card's revisions were only rendered in
+  Deepen/Weigh, so they vanished in Survey/Write/Build. New shared **`CardRevisions`** (read-only by
+  default; editable only in Deepen/Weigh) renders them wherever the card appears. Not a full panel merge —
+  just the one inconsistent view.
+- **Per-study font size (S/M/L)** (`036c2d2`) — an "Aa Font" control in the Build settings bar; applied as
+  a uniform `zoom` on the `ExportPreview` root so the preview, print, and PDF all scale together. Additive
+  `study.fontScale` (no schema bump).
+- **Spacer blocks** (`42dc389`) — a `＋ spacer` inserts a variable-size blank block into the running order
+  (drag to position; a "− N lines +" stepper). A new `'spacer'` annotation kind that rides `runningOrder`;
+  prints as real blank space, no rule (a dashed guide shows only on-screen). Excluded from the authoring
+  panels. Mockup `docs/mockups/v2-build-format.html` (`3dd7e54`).
+
+**Earlier: the first §6 far-future item shipped — ATTACH IMAGES to question / study-note cards** (owner's
 Variant A). Fidelity-first (originals byte-for-byte unless oversized — "no blurry images"); bytes in a
 dedicated IndexedDB store (`DB_VERSION` 2), out of the autosave body; they print with the card (question
 image in both docs; study-note image follows `hideFromGroup`) and ride the project file as base64. 4

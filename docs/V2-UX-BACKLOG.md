@@ -202,6 +202,20 @@ loaders already exist in `src/lib/content/method.ts`).
 
 Ordered roughly by how concrete + how recently raised. Source msg in brackets.
 
+**Latest shipped (2026-08-13), each gated + verified + deployed:**
+- ✅ **Deepen/Weigh notes visible on cards everywhere** (`c366919`). Bug: a card's `revisions` rendered
+  only in `RevisionPanel` (Deepen/Weigh), so they disappeared on the same card in Survey/Write/Build. Fix:
+  a shared **`CardRevisions`** component — **read-only by default**, **editable only** when Deepen/Weigh
+  passes the handlers — rendered wherever the card shows. Owner framed it as "unify the panel"; scoped to
+  unifying the one inconsistent *view*, not merging all five panels.
+- ✅ **Per-study font size (S / M / L)** (`036c2d2`). Additive `study.fontScale`; an "Aa Font" segmented
+  control in the Build settings bar; applied as a `zoom` on the shared `ExportPreview` root so preview +
+  print + PDF scale together.
+- ✅ **Spacer blocks** (`42dc389`). A `＋ spacer` inserts a variable-size blank block into the running order
+  (drag to reorder; a lines stepper). New `'spacer'` annotation kind riding `runningOrder`/`orderedOutput`;
+  prints as blank space, no rule (dashed guide on-screen only); excluded from the authoring panels.
+  Mockup: `docs/mockups/v2-build-format.html`.
+
 - **`@`-mention over-eager parse (raised twice — msg#1999, #2749).** ~~Typing `@Matthew 1:5` cuts off
   at `@Matthew 1`.~~ **[parse fixed + regression-locked 2026-08-11]** — verified live (char-by-char
   typing of `@Matthew 1:5` chips the whole verse, not the chapter): `longestReference` already tries
