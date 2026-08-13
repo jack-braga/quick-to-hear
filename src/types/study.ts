@@ -443,6 +443,8 @@ export const StudySchema = z.object({
   runningOrder: z.array(z.string()).default([]),
   // v2 prayer point (drawn from the passage) — printed on both documents. Additive.
   prayerPoint: z.string().default(''),
+  // v2 Build: per-study export font size (scales the whole printed document). Additive.
+  fontScale: z.enum(['s', 'm', 'l']).default('m'),
   coma: ComaSchema.default({ context: [], observation: [], meaning: [], application: [] }),
   themeAim: ThemeAimSchema.default({}),
   build: BuildSchema.default(emptyStudyBuild()),

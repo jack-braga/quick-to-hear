@@ -594,6 +594,31 @@ test('v2 exports: handout excludes answers, leader includes them', async ({ page
   await expect(page.getByText('He served as priest.')).toBeVisible();
 });
 
+test('v2 Build: per-study font size (S/M/L) persists and scales the export', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  const id = page.url().match(/study\/([^/]+)/)?.[1];
+
+  await page.getByRole('button', { name: '09 Build' }).click();
+  await page.getByRole('button', { name: 'l', exact: true }).click(); // large
+
+  // Persists per study across a reload.
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await page.getByRole('button', { name: '09 Build' }).click();
+  await expect(page.getByRole('button', { name: 'l', exact: true })).toHaveAttribute('aria-pressed', 'true');
+
+  // The print route applies the scale — the export root carries a non-1 zoom.
+  await page.goto(`./#/print/${id}/handout`);
+  const scaled = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('*')].some((e) => e.style?.zoom && e.style.zoom !== '1'),
+  );
+  expect(scaled).toBe(true);
+});
+
 test('v2: theme & aim + set-up reach the documents, and the Check lens audits', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /new study/i }).click();

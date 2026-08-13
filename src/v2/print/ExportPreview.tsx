@@ -24,6 +24,10 @@ import { supersede } from '@/v2/revisions';
  */
 const PAGE_PX = 940; // approximate printed-page content height at the preview width
 
+/** Per-study font size → a uniform document zoom. Applied on the root so the preview + the print
+ *  route + the PDF all scale together; the print engine paginates the zoomed content correctly. */
+const FONT_ZOOM: Record<'s' | 'm' | 'l', number> = { s: 0.9, m: 1, l: 1.14 };
+
 function MentionText({ text }: { text: string }) {
   return (
     <>
@@ -132,6 +136,7 @@ export function ExportPreview({ study, variant, supportTexts, imageUrls, fill, m
           ? 'w-full text-[#1d1b17]'
           : `${fill ? 'w-full' : 'mx-auto w-full max-w-[46rem]'} rounded-md border border-[#e6e1d4] bg-[#fdfcf8] text-[#1d1b17] shadow-[0_1px_2px_rgba(30,27,20,0.05),0_10px_26px_-12px_rgba(30,27,20,0.2)]`
       }
+      style={{ zoom: FONT_ZOOM[study.fontScale] }}
     >
       <div ref={bodyRef} className={isPrint ? 'relative' : 'relative px-[clamp(24px,4vw,52px)] py-9'}>
         {/* page-cut guides — the in-app preview only */}

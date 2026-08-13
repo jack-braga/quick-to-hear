@@ -528,7 +528,7 @@ export function ReaderShell({ study }: { study: Study }) {
     // The passage steps aside: the centre is the live export preview; the right panel assembles.
     center = (
       <div className="w-full">
-        <div className="mb-4 flex justify-center">
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-4">
           <div className="inline-flex overflow-hidden rounded-lg border border-line">
             {(['participant', 'leader', 'parallel'] as const).map((v) => (
               <button
@@ -543,6 +543,29 @@ export function ReaderShell({ study }: { study: Study }) {
                 {v}
               </button>
             ))}
+          </div>
+          {/* per-study font size — scales the whole export (preview + print) */}
+          <div className="inline-flex items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">Aa Font</span>
+            <div className="inline-flex overflow-hidden rounded-lg border border-line">
+              {(['s', 'm', 'l'] as const).map((sz) => (
+                <button
+                  key={sz}
+                  type="button"
+                  aria-pressed={study.fontScale === sz}
+                  onClick={() => applyToCurrent((s) => ({ ...s, fontScale: sz }))}
+                  className={cn(
+                    'px-2.5 py-1 font-mono uppercase leading-none',
+                    sz === 's' ? 'text-[11px]' : sz === 'm' ? 'text-[13px]' : 'text-[15px]',
+                    study.fontScale === sz
+                      ? 'bg-lapis-wash font-semibold text-lapis-ink'
+                      : 'bg-leaf text-ink-soft hover:text-ink',
+                  )}
+                >
+                  {sz}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         {buildVariant === 'parallel' ? (
