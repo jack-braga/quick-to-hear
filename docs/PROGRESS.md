@@ -31,19 +31,22 @@ e2e (30) && build`, 0 console errors):**
   commentary); **Write** is the only place group-facing output is authored; **Build** = live export
   preview + per-card controls. Model + export are v2-native (`revisions.ts`, `exportModel.ts`).
 
-**Next up:** no large threads are open — the redesign is fully shipped with nothing deferred. The
-remaining backlog items are small and mostly **owner-decision-gated** (not "just build"):
-- **§4 Set-Up UX once-over** — make the Set-Up page sleeker; consider doing step 1 in the right panel.
-  Subjective/visual → prototype-led (mock, then the owner picks).
-- **§2 Study-level annotation on phase 1** — add an unanchored question/note to the whole study on
-  Set-Up (`verseIds:[]` already supported). *Re-confirm it still fits post-flow-redesign before building.*
-- **§1 select-range → make a section** — owner yes/no (today: divide/merge + band-click only).
-- **§1 add a prior card-type in a later lens** — owner to confirm the leaning (each lens adds its own
-  type; a secondary affordance adds a prior type on demand).
-- **§2 card-naming convention** — the flagged case is fixed (`Mark · Confusing`→`Confusion`, `note`→
-  `comment`); residual is "owner may have more input."
-(§3 "missing v1 value" — formulas/litmus/traps/soft-warnings — already landed with the Write/Theme
-lenses; e2e locks it. The ParallelCanvas multi-tone/manuscript/sectioning gaps are also already fixed —
+**Polish backlog CLEARED (owner, 2026-08-13).** The small §1/§2/§4 items are all resolved — see
+`V2-UX-BACKLOG.md` for each with its commit:
+- **Set-Up UX once-over** — `0563172`: option A (a titled "The shape of the study" divider). Chosen from
+  a two-option mockup (`docs/mockups/v2-setup-onceover.html`).
+- **Translation picker jank** — `939bd88`: changing the primary translation no longer drops the old one
+  (new `promotePrimary`; regression-locked).
+- **Terminology / card-naming** — `939bd88`: type nouns everywhere (Comment · Confusion · Question ·
+  Study note).
+- **Add a prior card-type in a later lens** — `6d5301e`: Write panel gains secondary `＋ comment` /
+  `＋ confusion` (kept as Survey cards). COMA answers stay bound to COMA prompts.
+- **select-range → section** — declined (keep divide/merge only). **Study-level annotation on phase 1** —
+  dropped (superseded by the redesign; Write is the authoring home).
+
+**Next up:** nothing queued — the flow redesign + its polish are complete. Open work is only the
+deliberately-deferred **§6 far-future** items (Talk mode, series mgmt, images in Build, etc.). (§3
+"missing v1 value" landed with the Write/Theme lenses; ParallelCanvas gaps fixed in
 `bd0ae7a`/`9fce981`/`148caa7`.)
 
 ---

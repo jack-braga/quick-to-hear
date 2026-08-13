@@ -80,10 +80,9 @@ prompts stay as quiet one-liners. Helm attribution renders at the foot (inviolab
 - **Selection mechanics — reaffirmed + section-range question.** Locked (ROADMAP §2, built in
   `selection.ts`): **drag = range**, **⇧ = extend from last anchor**, **⌘/Ctrl = add a disjoint range /
   toggle a single verse**, plain click on the sole selected verse **deselects**. The **anchor-capture**
-  gesture reuses exactly these. Open: selecting a **verse range for a section** — today sections are
-  made by a hover "＋ divide here" + merge; clicking a section band selects its range (locked shorthand).
-  *Owner to confirm whether to also add a "select a range → make it a section" action, or keep
-  divide/merge only.*
+  gesture reuses exactly these. Section-range: **RESOLVED (owner, 2026-08-13) — keep divide/merge only.**
+  Sections are made by a hover "＋ divide here" + merge; clicking a section band selects its range. A
+  separate "select a range → make it a section" action was declined (a second path to the same result).
 
 **Proposed flow restructure (owner, 2026-08-11) — split authoring from assembly.** The owner spotted
 that *writing* questions and *assembling* the study are two jobs v1 mashed into one long "Build." New
@@ -114,12 +113,13 @@ proposed shape (seven lenses → **eight**):
   anchor verse(s)** — 0, 1, or many, all fine. Anchored vs unanchored is a *property*, not a category;
   the old floating/Study-notes area is **removed** (theme/aim/prayer are just cards with a Theme origin;
   a floating thought is an unanchored card). Supersedes the earlier "0 anchors = study-level" note above.
-- **Two panel questions still open (owner, 2026-08-11) — to mock:**
-  - **Show + ADD prior types in every text-central lens?** In Map / COMA / Questions the filtered panel
-    shows all prior cards (filter by origin). Open: can you also *add* a previous step's card-type from a
-    later lens (e.g. jot a new COMA answer while in Questions), or does each lens only add *its own* type
-    (with prior types view-only)? Leaning: panel shows all; each lens's primary add = its own type; a
-    secondary affordance lets you add a prior type when you need to.
+- **Two panel questions (owner, 2026-08-11):**
+  - ~~**Show + ADD prior types in every text-central lens?**~~ **[built 2026-08-13 `6d5301e`]** RESOLVED
+    as the leaning: the panel shows all prior cards (chip filter); each lens's **primary** add is its own
+    type; a **secondary affordance** adds a prior type on demand. Concretely, the **Write** panel gained
+    muted `＋ comment` / `＋ confusion` after a divider — jotted cards keep **Survey** origin (their type's
+    home), so chips/provenance stay meaningful. **COMA answers deliberately excluded** (owner, 2026-08-13):
+    they stay in COMA, always bound to a specific Helm prompt, so an answer always has a question.
   - **Panel density = chip filter, NOT collapsible origin-groups (owner, 2026-08-11).** The
     `v2-questions-lens.html` collapsible-groups panel read as "too much going on." Owner prefers the
     **chip-filter** approach from `v2-panel-scope-options.html` / `v2-panel-filters.html`: a chip row
@@ -155,12 +155,14 @@ source line, two-way verse↔card hover, and the diagonal gradient for shared ve
   notes → recycle-forward into questions; Helm attribution renders (rule 8). Multi-genre shipped in
   #4b-1 (`05b8365`): `setup.genre` → `setup.genres[]`, prompts grouped by heading + tagged by text-type
   + a chip-filter, `genres[0]` = primary.
-- **Card naming convention (msg#2091, #2304).** Card names must be clear and rooted in the documented
-  flow. `MARK · CONFUSING` was called out as a weird name. Owner liked the clearer labels in the
-  mockups — port that convention into the app. *Owner may have more input here.*
-- **Study-level annotation on phase 1 (msg#2304).** On the first phase you should be able to add a
-  question or note to the *whole study* (floating / unanchored — the model already supports
-  `verseIds:[]`).
+- ~~**Card naming convention (msg#2091, #2304).**~~ **[closed 2026-08-13 `939bd88`]** Card labels are now
+  the type nouns everywhere — **Comment · Confusion · Question · Study note** — matching the card tags,
+  the action bar, and the panel `＋` buttons (the flagged `MARK · CONFUSING` is gone). Owner confirmed
+  closed.
+- ~~**Study-level annotation on phase 1 (msg#2304).**~~ **[dropped 2026-08-13 — superseded by the flow
+  redesign]** The redesign made **Write** the single authoring home, where unanchored cards already work
+  (`＋ question` / `＋ study note` / now `＋ comment` with no verses). Adding annotation UI onto Set-Up
+  would also fight the "keep Set-Up sleek" once-over above. Owner: drop it.
 
 ---
 
@@ -233,8 +235,12 @@ Ordered roughly by how concrete + how recently raised. Source msg in brackets.
   switch-translation / create-on-selection / go-to-lens / book-completion commands were retired (all
   covered by dedicated UI now — the Aa Text menu, verse action bar, header lens tracker). Pure
   `paletteItems.ts` + tests trimmed; e2e updated to the jump flow.
-- **Set-Up UX once-over (msg#1999, #2128).** Make the study Set-Up page sleek and tidy; consider doing
-  step 1 in the right panel (except the initial translation load). **[open]**
+- ~~**Set-Up UX once-over (msg#1999, #2128).**~~ **[done 2026-08-13 `0563172` — option A]** Owner
+  reviewed a two-option mockup (`docs/mockups/v2-setup-onceover.html`: A tidied single column vs B
+  passage-in-right-rail) and chose **A**: a titled *"The shape of the study"* divider now groups the
+  after-load config (text-type/duration/group/series/intro) so it stops reading as "extra stuff".
+  Structure + single column unchanged. *(Also fixed here `939bd88`: changing the primary translation
+  no longer drops the old one — new `promotePrimary`; regression-locked.)*
 - ~~**Questions appearing in the Map phase? (msg#2749).**~~ **[resolved `bb34d46`]** — confirmed:
   questions don't belong in Map. With the Questions lens (#4c) as the authoring home, the **Map action
   bar is now mark/note only** (item 2 from the 2026-08-11 field feedback).
