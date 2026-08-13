@@ -31,7 +31,7 @@ export function PwaReloadToast() {
       role="status"
       aria-live="polite"
       data-testid="pwa-toast"
-      className="fixed inset-x-0 bottom-4 z-50 mx-auto flex w-[min(92vw,26rem)] items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm shadow-lg"
+      className="fixed inset-x-0 top-4 z-50 mx-auto flex w-[min(92vw,26rem)] items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm shadow-lg"
     >
       <span className="flex-1">
         {needRefresh ? 'A new version is available.' : 'Ready to work offline.'}

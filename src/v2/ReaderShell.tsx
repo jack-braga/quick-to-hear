@@ -11,10 +11,10 @@ import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
 import type { Annotation, AnnotationKind, AnnotationOrigin, MentionMeta, NoteFlag, QuestionType, Revision, Section, Study, ThemeAimRevision } from '@/types/study';
 import { annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
-import { CommandBar } from '@/v2/CommandBar';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
-import { LENSES, LENS_ICON, type LensId } from '@/v2/lenses';
+import { LensRail } from '@/v2/LensRail';
+import { LENSES, type LensId } from '@/v2/lenses';
 import { BuildPanel } from '@/v2/lenses/BuildPanel';
 import { CheckLens } from '@/v2/lenses/CheckLens';
 import { ExportPreview } from '@/v2/print/ExportPreview';
@@ -489,7 +489,6 @@ export function ReaderShell({ study }: { study: Study }) {
   const reference = study.setup.title || study.setup.reference || passage?.reference || 'Untitled study';
   const leafTitle = study.setup.title || passage?.reference || study.setup.reference || 'Passage';
   const leafMeta = passage ? `${tr?.shortName ?? passage.translationId} · public domain` : '';
-  const activeIndex = LENSES.findIndex((l) => l.id === lens);
 
   // ---- lens content ----------------------------------------------------------------------
   const litForCanvas = litAnnotation
@@ -733,30 +732,6 @@ export function ReaderShell({ study }: { study: Study }) {
           />
         )}
         <div className="flex-1" />
-        <nav aria-label="Study phases" className="hidden items-center gap-0.5 sm:flex">
-          {LENSES.map((l, i) => (
-            <button
-              key={l.id}
-              type="button"
-              onClick={() => setLens(l.id)}
-              aria-current={l.id === lens ? 'step' : undefined}
-              aria-label={`${l.num} ${l.name}`}
-              className={cn(
-                'group relative grid size-8 place-items-center rounded-lg border border-transparent text-[15px]',
-                l.id === lens
-                  ? 'border-lapis bg-lapis text-white dark:text-[#16181d]'
-                  : i < activeIndex
-                    ? 'text-ink-soft hover:bg-panel hover:text-ink'
-                    : 'text-ink-faint hover:bg-panel hover:text-ink',
-              )}
-            >
-              {LENS_ICON[l.id]}
-              <span className="pointer-events-none absolute left-1/2 top-9 z-40 -translate-x-1/2 whitespace-nowrap rounded-md border border-line bg-leaf px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-ink opacity-0 shadow-leaf transition-opacity group-hover:opacity-100">
-                {l.num} · {l.name}
-              </span>
-            </button>
-          ))}
-        </nav>
         <a
           href="#/about"
           title="Attribution & further reading"
@@ -767,7 +742,7 @@ export function ReaderShell({ study }: { study: Study }) {
         <DayNightToggle />
       </header>
 
-      {/* main — passage/lens + margin (the lens rail now lives in the header) */}
+      {/* main — passage/lens + margin (the lens rail now lives in the footer) */}
       <div className="grid grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1fr)_300px] lg:grid-cols-[minmax(0,1fr)_320px]">
         <main className="flex items-start justify-center overflow-y-auto px-6 pb-[120px] pt-10">
           {center}
@@ -794,7 +769,7 @@ export function ReaderShell({ study }: { study: Study }) {
         </div>
       )}
 
-      <CommandBar onOpen={() => setPaletteOpen(true)} />
+      <LensRail lens={lens} onLens={setLens} onOpenPalette={() => setPaletteOpen(true)} />
 
       <CommandPalette
         open={paletteOpen}

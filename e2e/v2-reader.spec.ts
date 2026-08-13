@@ -320,7 +320,7 @@ test('v2 command palette (slimmed, #7): quick-jump to a verse', async ({ page })
 
   // The palette is now jump-only: type a verse number and it scrolls there. The old
   // switch-translation / create / go-lens commands were retired (dedicated UI now).
-  await page.getByRole('button', { name: /\/ command/ }).click();
+  await page.getByRole('button', { name: /jump to a verse or reference/i }).click();
   await page.getByRole('dialog', { name: /command palette/i }).getByRole('textbox').fill(':20');
   await page.getByRole('button', { name: /jump to verse 20/i }).click();
   await expect(page.locator('[data-v="LUKE.1.20"]')).toBeInViewport();
@@ -431,7 +431,7 @@ test('v2 Theme & aim: the "Sharpen it" tools surface litmus, the four traps, and
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: /theme & aim/i }).click();
+  await page.getByRole('button', { name: '06 Theme & aim' }).click();
 
   // Test-your-theme litmus opens on demand.
   await page.getByRole('button', { name: /Test your theme/i }).click();
@@ -527,7 +527,7 @@ test('v2 Build lens: questions order by verse, reorder, and persist', async ({ p
   await addQuestion('LUKE.1.13');
   await addQuestion('LUKE.1.8');
 
-  const buildLens = () => page.getByRole('button', { name: /build/i }).click();
+  const buildLens = () => page.getByRole('button', { name: '09 Build' }).click();
   await buildLens();
 
   // Default is verse order → v8 first.
@@ -578,7 +578,7 @@ test('v2: theme & aim + set-up reach the documents, and the Check lens audits', 
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.fill('#v2-intro', 'A study on Gods timing.');
 
-  await page.getByRole('button', { name: /theme & aim/i }).click();
+  await page.getByRole('button', { name: '06 Theme & aim' }).click();
   await page.fill('#v2-theme', 'God keeps his covenant promise.');
 
   await page.getByRole('button', { name: '08 Write' }).click();
@@ -588,7 +588,7 @@ test('v2: theme & aim + set-up reach the documents, and the Check lens audits', 
   await page.locator('input[placeholder^="Expected answer"]').fill('Serving as priest.');
 
   // The Check lens runs the audit on the study.
-  await page.getByRole('button', { name: /check/i }).first().click();
+  await page.getByRole('button', { name: '10 Check' }).first().click();
   await expect(page.getByText(/need a look/i)).toBeVisible();
   await expect(page.getByText(/serves the theme & aim/i)).toBeVisible();
 
@@ -610,7 +610,7 @@ test('v2.8 teaching help: the (i) opens the inline guidance, and "Tell me more" 
   await page.fill('#v2-reference', 'Luke 1:5-25');
   await page.getByRole('button', { name: '+ WEBBE' }).click();
   await page.getByRole('button', { name: /read the passage/i }).click();
-  await page.getByRole('button', { name: /theme & aim/i }).first().click();
+  await page.getByRole('button', { name: '06 Theme & aim' }).first().click();
 
   // Closed by default; clicking the (i) opens the inline [I] guidance.
   await expect(page.getByRole('note')).toHaveCount(0);
@@ -634,7 +634,7 @@ test('v2 Weigh lens: the weighed Theme supersedes (revised leads, original kept)
   await page.getByRole('button', { name: /read the passage/i }).click();
 
   // Theme & aim (06): commit a theme.
-  await page.getByRole('button', { name: /theme & aim/i }).click();
+  await page.getByRole('button', { name: '06 Theme & aim' }).click();
   await page.fill('#v2-theme', 'God keeps his covenant, answering long prayer in his own timing.');
 
   // Survey (03): a card to weigh.
