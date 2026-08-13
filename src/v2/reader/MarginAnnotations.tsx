@@ -94,9 +94,10 @@ export interface MarginAnnotationsProps {
   onStartCapture: (id: string) => void;
   /** Finish capture (also on Esc / Done from the canvas banner). */
   onEndCapture: () => void;
-  /** Add a study-level (unanchored) card of this lens's kind — note (+ optional confusing flag) or
-   *  question. Its anchor is set later via the card. */
-  onAdd: (kind: AnnotationKind, flag?: NoteFlag) => void;
+  /** Add a study-level (unanchored) card — note (+ optional confusing flag), question, or study note.
+   *  Its anchor is set later via the card. `origin` defaults to the current lens; pass it to add a
+   *  **prior** lens's card-type (e.g. a Survey comment from Write) so the card keeps that home origin. */
+  onAdd: (kind: AnnotationKind, flag?: NoteFlag, origin?: AnnotationOrigin) => void;
   /** Recycle-forward (Write lens): seed a question at a prior card's anchor. When set, every
    *  non-question card shows a **→ make a question**. */
   onMakeQuestion?: (source: Annotation) => void;
@@ -338,7 +339,7 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
         </span>
         <span className="whitespace-nowrap font-mono text-[10px] text-ink-faint">{shownCount} shown</span>
       </div>
-      <div className="mx-1 mb-3 flex justify-end gap-1.5">
+      <div className="mx-1 mb-3 flex flex-wrap justify-end gap-1.5">
         {props.lensOrigin === 'questions' ? (
           <>
             {props.onAddFromFormula && (
@@ -372,6 +373,24 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
               className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-violet-edge hover:text-violet-ink"
             >
               ＋ study note
+            </button>
+            {/* Secondary: jot a prior lens's card-type without leaving Write (kept as a Survey card). */}
+            <span className="mx-0.5 h-[18px] w-px self-center bg-line" aria-hidden />
+            <button
+              type="button"
+              onClick={() => props.onAdd('note', undefined, 'map')}
+              title="Jot a Survey comment while you author — it's kept as a Survey card"
+              className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-faint hover:border-lapis-edge hover:text-ink"
+            >
+              ＋ comment
+            </button>
+            <button
+              type="button"
+              onClick={() => props.onAdd('note', 'confusing', 'map')}
+              title="Flag a Survey confusion while you author — it's kept as a Survey card"
+              className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-faint hover:border-rubric hover:text-rubric"
+            >
+              ＋ confusion
             </button>
           </>
         ) : (

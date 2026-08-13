@@ -250,8 +250,11 @@ export function ReaderShell({ study }: { study: Study }) {
 
   // Add a study-level (unanchored) card of the current lens's kind — its anchor is set later via the
   // card (Slice 4 click-chip capture). Map → note (+ optional confusing flag); Questions → question.
-  const onAddCard = (kind: AnnotationKind, flag?: NoteFlag) =>
-    addAnnotation(makeAnnotation(newId(), { kind, verseIds: [], flag, origin: lensOrigin }));
+  // Add an unanchored card. `origin` defaults to the current lens, but a lens may add a *prior*
+  // lens's card-type on demand (e.g. Write jotting a Survey comment) — that card keeps the origin of
+  // the type's home lens, so the chips + source line stay meaningful wherever it was created.
+  const onAddCard = (kind: AnnotationKind, flag?: NoteFlag, origin: AnnotationOrigin = lensOrigin) =>
+    addAnnotation(makeAnnotation(newId(), { kind, verseIds: [], flag, origin }));
 
   // Recycle-forward (Write lens): seed an EMPTY question at a prior card's anchor (copy the verses
   // only — never the content, rule 1). The user writes the question + its expected answer.

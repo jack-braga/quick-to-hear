@@ -739,6 +739,27 @@ test('v2 Write lens: author a study note (a prose block that prints for the grou
   await expect(page.getByText(/Incense marked the hour of prayer/)).toBeVisible();
 });
 
+test('v2 Write lens: the secondary "＋ comment" adds a prior-type card, kept as a Survey card', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  // In Write you can jot a prior lens's card-type without leaving — a Survey comment.
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.locator('aside').getByRole('button', { name: '＋ comment' }).click();
+
+  // It lands as a Comment card whose origin is Survey (source line + a Survey filter chip appear),
+  // not a Write card — so the chips and provenance stay meaningful wherever it was jotted.
+  const panel = page.locator('aside');
+  await expect(panel.getByText('Comment', { exact: true })).toBeVisible(); // the card tag
+  await expect(panel.getByText(/step 03 · Survey/)).toBeVisible(); // origin = Survey, not Write
+  await expect(panel.getByRole('button', { name: 'Survey', exact: true })).toBeVisible(); // the filter chip
+});
+
 test('v2 Build: attach a reference to a question (prints as support) + "in study" holds a card back', async ({
   page,
 }) => {
