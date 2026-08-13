@@ -320,6 +320,11 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
         {/* 4 — the shape of the study (drives guidance, timing, and the handout) */}
         {primary && (
           <div className="space-y-4 border-t border-line pt-6">
+            {/* A titled divider so the after-load fields read as one grouped block, not "extra stuff". */}
+            <div className="space-y-0.5">
+              <h2 className="font-scripture text-[16px] leading-tight text-ink">The shape of the study</h2>
+              <p className="text-[12px] text-ink-faint">Drives the COMA prompts, the timing, and the handout.</p>
+            </div>
             {/* text-type(s) — a passage can be more than one genre; the first (★) is primary */}
             <div className="space-y-2">
               <div className="flex items-center gap-1.5">
