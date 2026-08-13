@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick to Hear — lens icons: Lucide tools + shovel/well options</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.12); --lapis-edge: rgba(40,70,138,0.32);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); line-height: 1.5; }
+      .topbar { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 20px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--desk) 82%, var(--leaf)); }
+      .brand { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-faint); text-transform: uppercase; }
+      .wrap { max-width: 1000px; margin: 0 auto; padding: 22px clamp(16px,3vw,32px) 60px; }
+      h1 { font-family: var(--font-scripture); font-size: 24px; margin: 6px 0 4px; }
+      p.lede { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 18px; max-width: 66ch; }
+
+      .railcard { position: sticky; top: 8px; z-index: 5; background: var(--leaf); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 22px; }
+      .railcard .lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); margin-bottom: 8px; }
+      .rail { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+      .lens { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; border: 1px solid transparent; color: var(--ink-soft); position: relative; }
+      .lens.active { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .lens small { position: absolute; bottom: -1px; right: 1px; font-family: var(--font-mono); font-size: 7px; color: var(--ink-faint); }
+      .lens svg { width: 21px; height: 21px; }
+      .lens .g { font-size: 21px; line-height: 1; }
+
+      .row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+      .row .name { font-family: var(--font-scripture); font-size: 15px; }
+      .row .name small { display: block; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+      .row .name em { display: block; font-style: normal; font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+      .cands { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .cand { width: 50px; height: 50px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--leaf); cursor: pointer; color: var(--ink); }
+      .cand:hover { border-color: var(--lapis-edge); }
+      .cand.on { border-color: var(--lapis); background: var(--lapis-wash); box-shadow: inset 0 0 0 1px var(--lapis-edge); }
+      .cand svg { width: 32px; height: 32px; }
+      .cand .g { font-size: 30px; line-height: 1; }
+      /* Deepen candidates render bigger so the well detail is legible */
+      .row.big .cand { width: 62px; height: 62px; }
+      .row.big .cand svg { width: 42px; height: 42px; }
+      .kepttag { align-self: center; font-family: var(--font-mono); font-size: 10px; color: var(--ink-faint); }
+      .note { font-size: 12.5px; color: var(--ink-soft); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 13px; margin-top: 18px; }
+      .note b { color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div class="topbar"><span class="brand">Quick&nbsp;to&nbsp;Hear</span><span style="font-family:var(--font-scripture);font-size:16px">Lens icons · tools + well</span></div>
+    <div class="wrap">
+      <h1>Proper tools (Lucide), classic pencil, and the well vs a shovel</h1>
+      <p class="lede">The tricky ones now come from <b>Lucide</b> (an open-source MIT line-icon set that
+        matches this style): a real <b>cog</b> (Set&nbsp;up), <b>claw hammer</b> (Build), and — for
+        <b>Deepen</b> — a <b>shovel</b> and a <b>pickaxe</b> (digging deeper) alongside the wells,
+        drawn bigger so you can judge the detail. Write goes back to the classic <b>✎</b>, scaled up.
+        Check is a touch thicker. Pick your Deepen icon; tell me any tweaks.</p>
+
+      <div class="railcard">
+        <div class="lbl">Your set — live preview</div>
+        <div class="rail" id="rail"></div>
+      </div>
+
+      <div id="rows"></div>
+
+      <div class="note"><b>Note.</b> Lucide is MIT-licensed — I'll credit it on the attribution page. Every
+        icon is a stroke line-icon at one weight. The <b>well</b> is my own drawing (Lucide has none); the
+        <b>shovel/pickaxe</b> are Lucide and read cleaner at small sizes — your call which fits “Deepen”.</div>
+    </div>
+
+    <script>
+      const S = (inner, w) =>
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w || 1.75}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+      const DOT = 'fill="currentColor" stroke="none"';
+
+      const IC = {
+        // Lucide (MIT) — the tools
+        settings: S('<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>'),
+        hammer: S('<path d="m15 12-9.373 9.373a1 1 0 0 1-3.001-3L12 9"/><path d="m18 15 4-4"/><path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172v-.344a2 2 0 0 0-.586-1.414l-1.657-1.657A6 6 0 0 0 12.516 3H9l1.243 1.243A6 6 0 0 1 12 8.485V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"/>'),
+        shovel: S('<path d="M21.56 4.56a1.5 1.5 0 0 1 0 2.122l-.47.47a3 3 0 0 1-4.212-.03 3 3 0 0 1 0-4.243l.44-.44a1.5 1.5 0 0 1 2.121 0z"/><path d="M3 22a1 1 0 0 1-1-1v-3.586a1 1 0 0 1 .293-.707l3.355-3.355a1.205 1.205 0 0 1 1.704 0l3.296 3.296a1.205 1.205 0 0 1 0 1.704l-3.355 3.355a1 1 0 0 1-.707.293z"/><path d="m9 15 7.879-7.878"/>'),
+        pickaxe: S('<path d="m14 13-8.381 8.38a1 1 0 0 1-3.001-3L11 9.999"/><path d="M15.973 4.027A13 13 0 0 0 5.902 2.373c-1.398.342-1.092 2.158.277 2.601a19.9 19.9 0 0 1 5.822 3.024"/><path d="M16.001 11.999a19.9 19.9 0 0 1 3.024 5.824c.444 1.369 2.26 1.676 2.603.278A13 13 0 0 0 20 8.069"/><path d="M18.352 3.352a1.205 1.205 0 0 0-1.704 0l-5.296 5.296a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l5.296-5.296a1.205 1.205 0 0 0 0-1.704z"/>'),
+        // my drawings — the approved five
+        read: S('<path d="M12 6.7C9.6 5.1 6.8 4.8 4 5.4v13.4c2.8-.6 5.6-.3 8 1.3 2.4-1.6 5.2-1.9 8-1.3V5.4c-2.8-.6-5.6-.3-8 1.3z"/><path d="M12 6.7v13.4"/>'),
+        survey: S('<path d="M2.6 6.3 9 3.6l6 2.7 6.4-2.7v14.1l-6.4 2.7-6-2.7-6.4 2.7z"/><path d="M9 3.6v14.1M15 6.3v14.1"/>'),
+        coma: S('<path d="M2.4 12h4.3l2.5-7 3.2 14 2.6-7h6.6"/>'),
+        theme: S(`<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.4"/><circle cx="12" cy="12" r="2" ${DOT}/>`),
+        weigh: S('<path d="M12 4.6a1 1 0 1 0 .01 0"/><path d="M12 5.6v13M8.3 18.6h7.4"/><path d="M3.8 8.3l8.2-2 8.2 2"/><path d="M3.8 8.3 1.4 13.2a3 2.3 0 0 0 4.8 0z"/><path d="M20.2 8.3l-2.4 4.9a3 2.3 0 0 0 4.8 0z"/>'),
+        check: S('<path d="M3.8 12.6 9.4 18.2 20.2 6.4"/>', 2.2),
+        // my drawings — wells
+        'well-house': S('<ellipse cx="12" cy="11" rx="5.6" ry="1.8"/><path d="M6.4 11v7M17.6 11v7"/><path d="M6.4 18a5.6 1.8 0 0 0 11.2 0"/><path d="M8.4 10.6V6.6M15.6 10.6V6.6"/><path d="M6.8 6.6 12 3l5.2 3.6"/><path d="M7.6 6.6h8.8"/>'),
+        'well-cross': S('<path d="M4.4 8h15.2"/><path d="M6.4 8v8.2a5.6 5 0 0 0 11.2 0V8"/><path d="M7.8 13.6a4.2 1.5 0 0 0 8.4 0"/><path d="M8.6 16.2a3.4 1.1 0 0 0 6.8 0"/>'),
+        'well-depth': S(`<ellipse cx="12" cy="5.4" rx="7.4" ry="2.1"/><path d="M4.6 5.4v2.6M19.4 5.4v2.6"/><path d="M6.8 10.2a5.2 1.6 0 0 0 10.4 0M8.4 13.4a3.6 1.2 0 0 0 7.2 0M10 16.4a2 .8 0 0 0 4 0"/><path d="M12 21l-1.7-2.2h3.4z" ${DOT}/>`),
+      };
+
+      // [id, num, name, concept, [candidate ids/glyphs], kept?, big?]
+      const LENSES = [
+        ['setup','01','Set up','cog', ['settings'], true],
+        ['read','02','Read','book', ['read'], true],
+        ['survey','03','Survey','folded map', ['survey'], true],
+        ['coma','04','COMA','pulse', ['coma'], true],
+        ['deepen','05','Deepen','dig deeper — shovel / pickaxe / well (pick one)', ['shovel','pickaxe','well-house','well-cross','well-depth'], false, true],
+        ['theme','06','Theme & aim','target', ['theme'], true],
+        ['weigh','07','Weigh','scales', ['weigh'], true],
+        ['write','08','Write','classic pencil ✎', ['✎'], true],
+        ['build','09','Build','claw hammer', ['hammer'], true],
+        ['check','10','Check','check (thicker)', ['check'], true],
+      ];
+      const chosen = {};
+      LENSES.forEach(([id, , , , cands]) => (chosen[id] = cands[0]));
+
+      const render = (v) => (IC[v] ? IC[v] : `<span class="g">${v}</span>`);
+      const rail = document.getElementById('rail');
+      const rows = document.getElementById('rows');
+      function drawRail() {
+        rail.innerHTML = '';
+        LENSES.forEach(([id, num], i) => {
+          const b = document.createElement('div');
+          b.className = 'lens' + (i === 4 ? ' active' : '');
+          b.innerHTML = render(chosen[id]) + '<small>' + num + '</small>';
+          rail.appendChild(b);
+        });
+      }
+      function drawRows() {
+        rows.innerHTML = '';
+        LENSES.forEach(([id, num, name, concept, cands, kept, big]) => {
+          const row = document.createElement('div');
+          row.className = 'row' + (big ? ' big' : '');
+          const label = document.createElement('div');
+          label.className = 'name';
+          label.innerHTML = name + '<small>Step ' + num + (kept ? ' · final' : '') + '</small>' + (concept ? '<em>' + concept + '</em>' : '');
+          const cbox = document.createElement('div');
+          cbox.className = 'cands';
+          cands.forEach((v) => {
+            const c = document.createElement(kept ? 'div' : 'button');
+            c.className = 'cand' + (chosen[id] === v ? ' on' : '');
+            if (kept) c.style.cursor = 'default';
+            c.innerHTML = render(v);
+            if (!kept) c.onclick = () => { chosen[id] = v; drawRail(); drawRows(); };
+            cbox.appendChild(c);
+          });
+          if (kept) { const t = document.createElement('span'); t.className = 'kepttag'; t.textContent = 'final'; cbox.appendChild(t); }
+          row.appendChild(label); row.appendChild(cbox); rows.appendChild(row);
+        });
+      }
+      drawRail(); drawRows();
+    </script>
+  </body>
+</html>
