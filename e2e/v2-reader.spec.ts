@@ -733,8 +733,9 @@ test('v2 Build: attach a reference to a question (prints as support) + "in study
   await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
   await page.locator('textarea[data-focus]').fill('What is Zacharias doing?');
   await page.getByRole('button', { name: /add reference/i }).click();
-  await page.getByPlaceholder('e.g. Malachi 4:5-6').fill('Malachi 4:5-6');
-  await page.getByRole('button', { name: 'add', exact: true }).click();
+  // The reference picker: type a full reference and press Enter (or pick book → chapter → verse).
+  await page.getByRole('textbox', { name: 'Reference' }).fill('Malachi 4:5-6');
+  await page.getByRole('textbox', { name: 'Reference' }).press('Enter');
   await expect(page.getByText(/↗ Mal 4:5/)).toBeVisible(); // the attached-reference chip
 
   // A second question, so we can hold one back (target the newest card — it sorts last, at v17).
@@ -750,6 +751,39 @@ test('v2 Build: attach a reference to a question (prints as support) + "in study
   // Hold the second question back with the "in study" toggle → it drops from the export.
   await page.getByRole('button', { name: /in study/i }).nth(1).click();
   await expect(page.locator('[data-preview-block="question"]')).toHaveCount(1);
+});
+
+test('v2 reference picker: guided book → chapter → verse click-through attaches a reference', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.locator('[data-v="LUKE.1.8"]').click();
+  await page.getByRole('toolbar').getByRole('button', { name: /question/i }).click();
+  await page.locator('textarea[data-focus]').fill('What is Zacharias doing?');
+  await page.getByRole('button', { name: /add reference/i }).click();
+
+  // Type just the book stem, then pick entirely by clicking — the autocomplete's core value.
+  await page.getByRole('textbox', { name: 'Reference' }).fill('Mal');
+  const book = page.locator('[data-testid="ref-suggest"][data-mode="book"]');
+  await expect(book).toBeVisible();
+  await book.getByRole('button', { name: 'Malachi' }).click();
+
+  const chapter = page.locator('[data-testid="ref-suggest"][data-mode="chapter"]');
+  await expect(chapter).toBeVisible();
+  await chapter.getByRole('option', { name: '4', exact: true }).click();
+
+  const verse = page.locator('[data-testid="ref-suggest"][data-mode="verse"]');
+  await expect(verse).toBeVisible();
+  await verse.getByRole('option', { name: '5', exact: true }).click();
+
+  // The picked reference lands as an attached-reference chip.
+  await expect(page.getByText(/↗ Mal 4:5/)).toBeVisible();
 });
 
 test('v2.8 attribution page: only COMA is framed as verbatim', async ({ page }) => {
