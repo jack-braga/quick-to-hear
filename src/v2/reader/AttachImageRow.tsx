@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useStorageEstimate } from '@/hooks/useStorageEstimate';
 import { newId } from '@/lib/id';
 import { bytesToBlob } from '@/lib/images/encode';
 import { isProcessed, processImageFile } from '@/lib/images/processImage';
@@ -32,6 +33,9 @@ export function AttachImageRow({
   const [error, setError] = useState<string | null>(null);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [dragId, setDragId] = useState<string | null>(null);
+  const { estimate, refresh } = useStorageEstimate();
+  // Browser storage is where everything lives (no server) — warn before it fills up.
+  const storageTight = estimate.fraction != null && estimate.fraction > 0.8;
 
   // Resolve an object URL per thumbnail from the stored bytes; revoke on change / unmount (no leaks).
   const idsKey = images.map((r) => r.id).join(',');
@@ -65,14 +69,23 @@ export function AttachImageRow({
     setError(null);
     setBusy(true);
     const result = await processImageFile(file);
-    setBusy(false);
     if (!isProcessed(result)) {
+      setBusy(false);
       setError(result.error);
       return;
     }
     const id = newId();
-    await putImage(id, { studyId, bytes: result.bytes, mime: result.mime, w: result.w, h: result.h });
+    try {
+      await putImage(id, { studyId, bytes: result.bytes, mime: result.mime, w: result.w, h: result.h });
+    } catch {
+      // Out of browser storage — block this add (existing images are never touched).
+      setBusy(false);
+      setError('Storage is full — can’t add more images. Remove one, or export your study and clear space.');
+      return;
+    }
     patchImages([...images, { id, caption: '', w: result.w, h: result.h }]);
+    setBusy(false);
+    refresh(); // re-poll the quota so the warning appears promptly after a big add
   };
 
   const setCaption = (id: string, caption: string) =>
@@ -161,6 +174,12 @@ export function AttachImageRow({
         </button>
       )}
       {error && <p className="mt-1 text-[10.5px] text-rubric">{error}</p>}
+      {storageTight && !error && (
+        <p className="mt-1 rounded border border-amber-edge bg-amber-wash px-2 py-1 text-[10px] leading-[1.4] text-[#8a6a16] dark:text-[#e2c87c]">
+          ⚠ Browser storage {Math.round((estimate.fraction ?? 0) * 100)}% full — big images may not save.
+          Everything is kept in your browser; export a copy to be safe.
+        </p>
+      )}
     </div>
   );
 }

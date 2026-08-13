@@ -796,6 +796,30 @@ test('v2 Write: attach an image to a question — thumbnail + caption persist ac
   await expect(page.getByRole('figure', { name: 'The temple' })).toBeVisible();
 });
 
+test('v2 images: a near-full browser storage quota warns before the add button', async ({ page }) => {
+  // Report the Storage Manager as ~90% full before any app script runs.
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'storage', {
+      configurable: true,
+      value: {
+        estimate: () => Promise.resolve({ usage: 900, quota: 1000 }),
+        persisted: () => Promise.resolve(true),
+      },
+    });
+  });
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: /read the passage/i }).click();
+  await page.getByRole('button', { name: '08 Write' }).click();
+  await page.locator('aside').getByRole('button', { name: '＋ question' }).click();
+
+  // The amber quota note appears near the add-image affordance (adding is still allowed).
+  await expect(page.locator('aside').getByText(/Browser storage 90% full/)).toBeVisible();
+  await expect(page.locator('aside').getByRole('button', { name: '🖼 add image' })).toBeVisible();
+});
+
 test('v2 Build: attach a reference to a question (prints as support) + "in study" holds a card back', async ({
   page,
 }) => {

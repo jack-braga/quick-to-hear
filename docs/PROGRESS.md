@@ -15,6 +15,13 @@
 > fresh session sees the most recent arc. To resume v2: **`docs/V2-SESSION-PROMPT.md` → `ROADMAP-v2.md`
 > (§4 build order, §5 log) → `V2-UX-BACKLOG.md` §7 (current flow) + §4 (remaining polish).**
 
+**Newest: the first §6 far-future item shipped — ATTACH IMAGES to question / study-note cards** (owner's
+Variant A). Fidelity-first (originals byte-for-byte unless oversized — "no blurry images"); bytes in a
+dedicated IndexedDB store (`DB_VERSION` 2), out of the autosave body; they print with the card (question
+image in both docs; study-note image follows `hideFromGroup`) and ride the project file as base64. 4
+gated + browser-verified slices: model+storage `6f7b6f5`, authoring UI `4f6a159`, export/print/markdown
+`fc91a02`, quota warning `[this commit]`. Design: `docs/HANDOFF-v2-images.md` + `docs/mockups/v2-images*.html`.
+
 **The v2 "flow redesign" is COMPLETE — shipped, gated, browser-verified, and pushed to `main`.** It
 grew the flow to **10 lenses** and reworked how group-facing output is authored. All slices are logged
 in `V2-UX-BACKLOG.md §7.8`; the design provenance is in `docs/HANDOFF-v2-authoring-build.md` (now

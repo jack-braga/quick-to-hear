@@ -278,9 +278,14 @@ them") and **COMA notes → candidate questions**. Any card-panel + naming work 
   (inline anchor editing on any card).
 - **Word-level selection** (range of words) in manuscript mode — unclear how it works cross-translation
   (msg#1999).
-- **Images** in a study, somehow (msg#2304 — "definitely defer"). **→ Scoped brief + surface map:
-  `docs/HANDOFF-v2-images.md`** (attach images to question / study-note cards; mirrors the reference/
-  `mentions` pattern; stored in IndexedDB, embedded in exports).
+- ~~**Images** in a study, somehow (msg#2304 — "definitely defer").~~ **[✅ SHIPPED 2026-08-13]** Attach
+  the user's own image(s) to a **question** or **study-note** card (owner's Variant A — a thumbnail strip
+  with caption + drag-reorder); they print with the card (a question image in **both** documents, a
+  study-note image follows `hideFromGroup`). **Fidelity-first**: originals stored byte-for-byte unless
+  oversized (owner: "no blurry images"). Bytes live in a dedicated IndexedDB store (`DB_VERSION` 2,
+  `by-study` GC index), out of the autosave body; the project file carries them as base64. Slices:
+  1 model+storage `6f7b6f5`, 2 authoring UI `4f6a159`, 3 export/print/markdown `fc91a02`, 4 quota
+  warning `[this commit]`. Design: `docs/HANDOFF-v2-images.md` + mockups `docs/mockups/v2-images*.html`.
 - More **copy-paste passages** for references outside the main text (msg#2304).
 - Deep **links to BibleGateway / YouVersion** for a reference after selecting it in Set-Up (msg#2304).
 - BSB edition; Talk mode (pre-existing roadmap deferrals).
