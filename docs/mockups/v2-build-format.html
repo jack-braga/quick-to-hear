@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Build format settings — font size + spacer blocks</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.5);
+        --violet: #6b4ba8; --violet-ink: #4c3480; --violet-wash: rgba(107,75,168,0.13); --violet-edge: rgba(107,75,168,0.36);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; padding: 26px; }
+      button, input, select { font-family: inherit; }
+      h2.head { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 3px; }
+      .sub { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 16px; max-width: 48rem; }
+      .note { font-size: 12px; color: var(--ink-soft); margin: 12px 2px 0; max-width: 60rem; }
+      .note b { color: var(--ink); }
+
+      /* the build settings bar */
+      .bar { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; margin-bottom: 16px; }
+      .seg { display: inline-flex; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; }
+      .seg button { border: none; background: var(--leaf); color: var(--ink-soft); font-size: 12.5px; padding: 6px 14px; cursor: pointer; }
+      .seg button + button { border-left: 1px solid var(--line); }
+      .seg button.on { background: var(--lapis); color: #fff; }
+      .setgrp { display: inline-flex; align-items: center; gap: 8px; }
+      .setlbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-faint); }
+      .sizes { display: inline-flex; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; }
+      .sizes button { border: none; background: var(--leaf); color: var(--ink-soft); padding: 5px 10px; cursor: pointer; }
+      .sizes button + button { border-left: 1px solid var(--line); }
+      .sizes button.on { background: var(--lapis-wash); color: var(--lapis-ink); font-weight: 600; }
+      .sizes button.s { font-size: 11px; } .sizes button.m { font-size: 13px; } .sizes button.l { font-size: 15px; }
+      .ink { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-soft); }
+      .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--ink); }
+
+      .pane { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+
+      /* the export sheet (preview) */
+      .sheet { background: #fff; color: #16130f; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 26px 30px; }
+      .doc-h { font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: #9b978c; border-bottom: 1px solid #ece7dc; padding-bottom: 8px; margin-bottom: 14px; }
+      .qn { display: flex; gap: 9px; align-items: baseline; }
+      .qn .n { font-family: var(--font-mono); font-size: 13px; color: #b0330f; }
+      .qn .t { font-family: var(--font-scripture); line-height: 1.5; }
+      .lines { margin: 10px 0 4px 24px; }
+      .lines div { border-bottom: 1px solid #e4ded2; height: 20px; }
+      /* spacer as it appears in the PREVIEW (a faint guide) — invisible in the actual print */
+      .spacer-preview { margin: 8px 0 8px 0; border: 1px dashed var(--lapis-edge); border-radius: 6px; background: rgba(40,70,138,0.04); display: grid; place-items: center; color: var(--lapis-ink); font-family: var(--font-mono); font-size: 9px; letter-spacing: .04em; }
+
+      /* assemble panel (right) */
+      .assemble { background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); border: 1px solid var(--line); border-radius: 12px; padding: 13px; }
+      .a-h { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 10px; }
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--amber-edge); border-radius: 9px; box-shadow: var(--shadow); padding: 9px 11px; margin-bottom: 9px; }
+      .card .top { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+      .grip { color: var(--ink-faint); cursor: grab; font-size: 12px; }
+      .vref { border-radius: 5px; background: var(--lapis-wash); color: var(--lapis-ink); padding: 1px 6px; font-family: var(--font-mono); font-size: 10px; }
+      .kind { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--amber-ink); }
+      .ctext { font-family: var(--font-scripture); font-size: 12.5px; color: var(--ink); }
+      .x { margin-left: auto; color: var(--ink-faint); cursor: pointer; }
+
+      /* the SPACER card (a first-class assemble block) */
+      .spacer-card { background: var(--leaf); border: 1px dashed var(--lapis-edge); border-radius: 9px; padding: 8px 11px; margin-bottom: 9px; display: flex; align-items: center; gap: 9px; }
+      .spacer-card .lab { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--lapis-ink); }
+      .step { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 7px; padding: 2px 4px; background: var(--panel); }
+      .step button { border: none; background: none; color: var(--ink-soft); cursor: pointer; font-size: 13px; width: 16px; }
+      .step span { font-family: var(--font-mono); font-size: 10px; color: var(--ink); min-width: 42px; text-align: center; }
+      .addrow { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 4px; }
+      .addbtn { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 5px 10px; font-family: var(--font-mono); font-size: 10px; color: var(--ink-soft); cursor: pointer; }
+      .addbtn.spacer { border-style: dashed; border-color: var(--lapis-edge); color: var(--lapis-ink); }
+    </style>
+  </head>
+  <body>
+    <h2 class="head">Build — format settings + spacer blocks</h2>
+    <p class="sub">
+      Two additions to the Build lens: a <b>Font size</b> control (per-study) and insertable <b>spacer blocks</b>
+      of variable size. Both flow through the same export preview, so the on-screen preview, the print, and the
+      PDF all match. The <span style="font-family:var(--font-mono);font-size:11px">Aa</span> size + Ink-saver sit
+      in the settings bar; a spacer is a draggable block in the running order that prints as blank space (no rule).
+    </p>
+
+    <!-- settings bar -->
+    <div class="bar">
+      <div class="seg">
+        <button class="on">Participant</button><button>Leader</button><button>Parallel</button>
+      </div>
+      <div class="setgrp">
+        <span class="setlbl">Aa Font</span>
+        <div class="sizes">
+          <button class="s">S</button><button class="m on">M</button><button class="l">L</button>
+        </div>
+      </div>
+      <div class="setgrp">
+        <span class="ink"><span class="dot"></span> Ink-saver</span>
+      </div>
+    </div>
+
+    <div class="pane">
+      <!-- preview -->
+      <div class="sheet">
+        <div class="doc-h">Luke 1:5–25 · participant handout</div>
+        <div class="qn"><span class="n">1.</span><span class="t" style="font-size:15px">What does “power of Elijah” tell us about John’s role?</span></div>
+        <div class="lines"><div></div><div></div><div></div></div>
+
+        <!-- a spacer block, shown in-preview as a faint guide (invisible when printed) -->
+        <div class="spacer-preview" style="height:74px">⇕ spacer · 4 lines · invisible in print</div>
+
+        <div class="qn"><span class="n">2.</span><span class="t" style="font-size:15px">Why is Zacharias’ doubt met with silence?</span></div>
+        <div class="lines"><div></div><div></div></div>
+
+        <div class="spacer-preview" style="height:36px">⇕ spacer · 2 lines</div>
+
+        <div class="qn"><span class="n">3.</span><span class="t" style="font-size:15px">How does Mary’s response differ?</span></div>
+        <div class="lines"><div></div><div></div></div>
+      </div>
+
+      <!-- assemble panel -->
+      <div class="assemble">
+        <p class="a-h">Assemble</p>
+
+        <div class="card">
+          <div class="top"><span class="grip">⋮⋮</span><span class="vref">Luke 1:17</span><span class="kind">Question</span><span class="x">✕</span></div>
+          <div class="ctext">What does “power of Elijah” tell us…</div>
+        </div>
+
+        <!-- the spacer as a first-class block in the running order -->
+        <div class="spacer-card">
+          <span class="grip">⋮⋮</span>
+          <span class="lab">⇕ Spacer</span>
+          <div class="step"><button>−</button><span>4 lines</span><button>+</button></div>
+          <span class="x">✕</span>
+        </div>
+
+        <div class="card">
+          <div class="top"><span class="grip">⋮⋮</span><span class="vref">Luke 1:18</span><span class="kind">Question</span><span class="x">✕</span></div>
+          <div class="ctext">Why is Zacharias’ doubt met with silence?</div>
+        </div>
+
+        <div class="spacer-card">
+          <span class="grip">⋮⋮</span>
+          <span class="lab">⇕ Spacer</span>
+          <div class="step"><button>−</button><span>2 lines</span><button>+</button></div>
+          <span class="x">✕</span>
+        </div>
+
+        <div class="card">
+          <div class="top"><span class="grip">⋮⋮</span><span class="vref">Luke 1:34</span><span class="kind">Question</span><span class="x">✕</span></div>
+          <div class="ctext">How does Mary’s response differ?</div>
+        </div>
+
+        <div class="addrow">
+          <button class="addbtn">＋ question</button>
+          <button class="addbtn">＋ study note</button>
+          <button class="addbtn spacer">＋ spacer</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="note">
+      <b>Font size</b> (S / M / L, per-study) scales the whole document — passage, questions, notes — via one
+      style on the export root, so preview + print + PDF stay identical. <b>Spacer</b> is a draggable block in the
+      running order with a variable size (a “lines” stepper, or drag a handle); it prints as that much blank
+      space with <b>no visible rule</b> — the dashed guide + label only show here in the on-screen preview so you
+      can grab and resize it. Spacers appear in both the participant and leader documents (they’re layout).
+    </p>
+  </body>
+</html>
