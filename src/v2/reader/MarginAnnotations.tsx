@@ -387,10 +387,10 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
             <button
               type="button"
               onClick={() => props.onAdd('note', 'confusing')}
-              title="Mark something confusing (anchor it to verses later)"
+              title="Flag a confusion — something the group will trip on (anchor it to verses later)"
               className="rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink-soft hover:border-rubric hover:text-rubric"
             >
-              ＋ mark confusing
+              ＋ confusion
             </button>
           </>
         )}
@@ -427,8 +427,8 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
           </div>
         ) : (
           <div className="mb-4 rounded-lg border border-dashed border-line p-3.5 text-[13px] leading-[1.55] text-ink-soft">
-            Select verses, then <b className="font-semibold text-ink">Comment</b> or{' '}
-            <b className="font-semibold text-ink">Mark confusing</b> — or hover between two verses to
+            Select verses, then add a <b className="font-semibold text-ink">Comment</b> or a{' '}
+            <b className="font-semibold text-ink">Confusion</b> — or hover between two verses to
             divide the passage. Reference another passage by typing{' '}
             <b className="font-mono text-[12px] text-lapis-ink">@Malachi 4:5-6</b> inside a comment.
           </div>

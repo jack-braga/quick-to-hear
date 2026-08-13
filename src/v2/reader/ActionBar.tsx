@@ -2,14 +2,15 @@ import type { CSSProperties } from 'react';
 
 /**
  * The floating action bar over a live verse selection (ROADMAP-v2 §2). It anchors work to the
- * **main passage**: a **Note**, a **Question** (the deliverable — keeps the expected-answer hard
- * block), or a **Mark confusing** (a note flagged confusing). A reference to *another* passage is
- * not an action here — you type an `@Malachi 4:5-6` mention inside a note (two gestures, not three).
+ * **main passage**: a **Comment**, a **Question** (the deliverable — keeps the expected-answer hard
+ * block), or a **Confusion** (a comment flagged confusing). Labels are the card-type nouns, so they
+ * match the card tags and the panel "＋" buttons exactly. A reference to *another* passage is not an
+ * action here — you type an `@Malachi 4:5-6` mention inside a comment (two gestures, not three).
  */
 export type ActionKind = 'note' | 'ask' | 'mark';
 
 const ACTION_META: Record<ActionKind, { glyph: string; label: string }> = {
-  mark: { glyph: '⚑', label: 'Mark confusing' },
+  mark: { glyph: '⚑', label: 'Confusion' },
   note: { glyph: '✎', label: 'Comment' },
   ask: { glyph: '?', label: 'Question' },
 };

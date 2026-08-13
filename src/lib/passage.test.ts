@@ -7,6 +7,7 @@ import {
   loadFreshPrimary,
   normaliseStoredPassage,
   primaryText,
+  promotePrimary,
   removeTranslation,
   secondaryTexts,
   setPrimary,
@@ -66,6 +67,20 @@ describe('passage builders (pure)', () => {
     const next = setPrimary(p, asv);
     expect(next.primaryId).toBe('asv');
     expect(Object.keys(next.translations).sort()).toEqual(['asv', 'pasted-niv']);
+  });
+
+  it('promotePrimary re-designates the primary and KEEPS every translation (the old primary is demoted, not dropped)', () => {
+    const p: Passage = { translations: { webbe, asv, 'pasted-niv': pastedNiv }, primaryId: 'webbe' };
+    const next = promotePrimary(p, 'asv');
+    expect(next.primaryId).toBe('asv');
+    expect(Object.keys(next.translations).sort()).toEqual(['asv', 'pasted-niv', 'webbe']); // webbe kept
+    expect(next.translations).toEqual(p.translations); // nothing added, removed, or replaced
+  });
+
+  it('promotePrimary is a no-op for an unloaded id or the current primary', () => {
+    const p: Passage = { translations: { webbe, asv }, primaryId: 'webbe' };
+    expect(promotePrimary(p, 'bsb')).toBe(p); // not loaded
+    expect(promotePrimary(p, 'webbe')).toBe(p); // already primary
   });
 
   it('addSecondary adds without touching the primary', () => {

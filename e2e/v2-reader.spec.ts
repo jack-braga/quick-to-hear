@@ -23,7 +23,7 @@ test('v2 reader: load a passage, mark a verse, and it survives a reload', async 
 
   // Select a verse and mark it confusing.
   await verse8.click();
-  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /confusion/i }).click();
 
   // The margin shows a verse-anchored card.
   await expect(page.getByRole('button', { name: 'Luke 1:8', exact: true })).toBeVisible();
@@ -113,6 +113,27 @@ test('v2 set-up: paste-and-clean lands a passage', async ({ page }) => {
   // The pasted text becomes the real passage and renders in the Map lens.
   await expect(page.locator('[data-v="PS.23.1"]')).toBeVisible();
   await expect(page.getByText(/Jehovah is my shepherd/i)).toBeVisible();
+});
+
+test('v2 Set-up: promoting a loaded translation to primary keeps the others (never drops the old primary)', async ({
+  page,
+}) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /new study/i }).click();
+  await page.fill('#v2-reference', 'Luke 1:5-25');
+  await page.getByRole('button', { name: '+ WEBBE' }).click();
+  await page.getByRole('button', { name: '+ ASV' }).click();
+
+  // Both loaded; WEBBE is primary (added first), ASV is a removable secondary.
+  await expect(page.getByRole('button', { name: /World English Bible/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /American Standard Version/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Remove ASV' })).toBeVisible();
+
+  // Promote ASV → primary. WEBBE must remain (demoted to a comparison text), NOT be dropped.
+  await page.getByRole('button', { name: /American Standard Version/ }).click();
+  await expect(page.getByRole('button', { name: /World English Bible/ })).toBeVisible(); // still there
+  await expect(page.getByRole('button', { name: 'Remove WEBBE' })).toBeVisible(); // now the removable secondary
+  await expect(page.getByRole('button', { name: 'Remove ASV' })).toHaveCount(0); // ASV is the (protected) primary
 });
 
 test('v2 annotations: a question tracks its expected answer (SPEC 6e) and persists', async ({ page }) => {
@@ -205,7 +226,7 @@ test('v2 Read lens is pure reading: annotation tones are suppressed on the passa
   // Mark a verse in Map → v8 paints a (rubric) tone on the passage.
   await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.8"]').click();
-  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /confusion/i }).click();
   await expect(page.locator('[data-v="LUKE.1.8"]')).toHaveClass(/rubric-wash/);
 
   // In the Read lens the same verse carries no tone — pure reading.
@@ -640,7 +661,7 @@ test('v2 Weigh lens: the weighed Theme supersedes (revised leads, original kept)
   // Survey (03): a card to weigh.
   await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.9"]').click();
-  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /confusion/i }).click();
 
   // Weigh (07): the Theme supersede — the weighed revision leads, the original is kept.
   await page.getByRole('button', { name: '07 Weigh' }).click();
@@ -675,7 +696,7 @@ test('v2 Deepen lens: append an own-work revision to a Survey card, and it persi
   // Survey: mark a verse confusing (a round-0 card).
   await page.getByRole('button', { name: '03 Survey' }).click();
   await page.locator('[data-v="LUKE.1.11"]').click();
-  await page.getByRole('toolbar').getByRole('button', { name: /mark confusing/i }).click();
+  await page.getByRole('toolbar').getByRole('button', { name: /confusion/i }).click();
 
   // Deepen (round 1): the Survey card returns with its First pass; append an own-work note.
   await page.getByRole('button', { name: '05 Deepen' }).click();

@@ -5,8 +5,8 @@ import {
   addSecondary,
   loadFreshPrimary,
   primaryText,
+  promotePrimary,
   removeTranslation,
-  setPrimary,
   translationOrder,
 } from '@/lib/passage';
 import { DURATION_OPTIONS, GENRE_LABELS, GENRE_OPTIONS, GROUP_OPTIONS } from '@/lib/setup-options';
@@ -23,7 +23,7 @@ import { PastePanel } from '@/v2/lenses/PastePanel';
  * completion) under a **live normalised-ref validator**, import one or more bundled translations
  * for it, then choose which is the **primary** (everything anchors to it). It reuses the pure
  * libs wholesale — `parseReference` (`bcv_parser`) for parse/normalise, `loadReading` for the
- * bundled text, and the M3 passage builders (`loadFreshPrimary`/`addSecondary`/`setPrimary`).
+ * bundled text, and the M3 passage builders (`loadFreshPrimary`/`addSecondary`/`promotePrimary`).
  *
  * The app is static + offline, so there is **no BibleGateway/YouVersion API**; bundled
  * public-domain texts are one source and **paste-and-clean** (reusing `analysePaste`) is the
@@ -93,9 +93,11 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
   };
 
   const makePrimary = async (id: string) => {
-    const text = passage.translations[id];
-    if (!text) return;
-    await setPassage(setPrimary(passage, text));
+    if (!passage.translations[id]) return;
+    // Just re-designate the primary — every loaded translation stays (the old primary becomes a
+    // comparison text). (Using `setPrimary` here would drop the previous primary — that's the switch
+    // semantic, not what the radio in a multi-translation list means.)
+    await setPassage(promotePrimary(passage, id));
     updateSetup({ primaryTranslationId: id });
   };
 

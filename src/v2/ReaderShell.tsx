@@ -4,7 +4,7 @@ import { BUNDLED_TRANSLATIONS, findTranslation, loadReading } from '@/lib/bible'
 import { newId } from '@/lib/id';
 import { mergeSectionUp, renameSection, splitSectionAt, wholePassageSection } from '@/lib/map';
 import { parseReference } from '@/lib/verse';
-import { addSecondary, primaryText, removeTranslation, translationOrder } from '@/lib/passage';
+import { addSecondary, primaryText, promotePrimary, removeTranslation, translationOrder } from '@/lib/passage';
 import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
@@ -407,11 +407,11 @@ export function ReaderShell({ study }: { study: Study }) {
 
   // Switching among loaded translations only re-designates the primary — every translation is
   // kept (the old primary becomes a comparison text), so the parallel view swaps columns rather
-  // than dropping a side. (`setPrimary` from M3 intentionally *drops* the old primary; that's the
-  // wrong semantics once the reader holds several translations.)
+  // than dropping a side. (`promotePrimary`, shared with the Set-up radio; `setPrimary` intentionally
+  // *drops* the old primary — the switch semantic, wrong once the reader holds several translations.)
   const switchTranslation = async (id: string) => {
     if (id === study.passage.primaryId || !study.passage.translations[id]) return;
-    await setPassage({ ...study.passage, primaryId: id });
+    await setPassage(promotePrimary(study.passage, id));
     updateSetup({ primaryTranslationId: id });
   };
 

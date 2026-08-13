@@ -60,6 +60,15 @@ export function setPrimary(passage: Passage, primary: ParsedText): Passage {
   return { translations, primaryId: primary.translationId };
 }
 
+/** Re-designate an **already-loaded** translation as the primary — keeps every translation, only
+ *  moves `primaryId` (the old primary becomes a comparison text). Unlike {@link setPrimary}, nothing
+ *  is dropped; this is the "promote a loaded translation" gesture (the Set-up radio, the reader's
+ *  translation switch). No-op if `id` isn't loaded or is already primary. */
+export function promotePrimary(passage: Passage, id: string): Passage {
+  if (!passage.translations[id] || passage.primaryId === id) return passage;
+  return { ...passage, primaryId: id };
+}
+
 /** Add (or replace) a comparison translation. Never changes the primary. */
 export function addSecondary(passage: Passage, secondary: ParsedText): Passage {
   return {

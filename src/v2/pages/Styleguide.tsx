@@ -82,7 +82,7 @@ export default function Styleguide() {
                 font-sans — the chrome
               </div>
               <p className="font-sans text-[14px] text-ink-soft">
-                Name this section · Mark confusing · Divide here
+                Name this section · Confusion · Divide here
               </p>
             </div>
           </div>
@@ -123,7 +123,7 @@ export default function Styleguide() {
                 Luke 1:18
               </span>
               <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-ink-faint">
-                Mark · confusing
+                Confusion
               </span>
             </div>
             <p className="font-scripture text-[13.5px] leading-[1.5] text-ink">
@@ -135,7 +135,7 @@ export default function Styleguide() {
             <span className="px-2 pl-1.5 font-mono text-[11px] text-[#cfc9bd]">Luke 1:8</span>
             <span className="mx-0.5 h-[18px] w-px bg-white/15" />
             <span className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] text-[#efe9dd]">
-              <span className="opacity-85">⚑</span>Mark confusing
+              <span className="opacity-85">⚑</span>Confusion
             </span>
           </div>
         </Section>
