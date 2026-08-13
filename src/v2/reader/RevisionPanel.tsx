@@ -12,8 +12,9 @@ import {
   toneFor,
 } from '@/v2/annotations';
 import { LENSES } from '@/v2/lenses';
+import { CardRevisions } from '@/v2/reader/CardRevisions';
 import { formatVerseIds } from '@/v2/reader/selection';
-import { makeRevision, revisionsOf } from '@/v2/revisions';
+import { makeRevision } from '@/v2/revisions';
 import { TONE } from '@/v2/tones';
 
 /**
@@ -26,19 +27,7 @@ import { TONE } from '@/v2/tones';
  * Deepen/Weigh never create a card; they only add revisions. (Weigh's Theme/Aim supersede is a
  * separate surface — it isn't a card.) A thin component; the store writes + pure helpers do the work.
  */
-function autoGrow(el: HTMLTextAreaElement | null) {
-  if (!el) return;
-  el.style.height = 'auto';
-  el.style.height = `${el.scrollHeight}px`;
-}
-
-const REV_INPUT =
-  'w-full resize-none border-none bg-transparent p-0 font-scripture text-[13px] leading-[1.55] text-ink outline-none placeholder:font-sans placeholder:text-[12.5px] placeholder:text-ink-faint';
-
-const ROUND: Record<
-  RevisionOrigin,
-  { head: string; lede: React.ReactNode; addLabel: string; placeholder: string }
-> = {
+const ROUND: Record<RevisionOrigin, { head: string; lede: React.ReactNode; addLabel: string }> = {
   deepen: {
     head: 'Deepen — round 1 · your own work',
     lede: (
@@ -49,7 +38,6 @@ const ROUND: Record<
       </>
     ),
     addLabel: '＋ add a note',
-    placeholder: 'What do you now see — from the text?',
   },
   weigh: {
     head: 'Weigh — round 2 · now with commentaries',
@@ -61,21 +49,8 @@ const ROUND: Record<
       </>
     ),
     addLabel: '＋ add a commentary note',
-    placeholder: 'Did the commentary confirm it, or push back?',
   },
 };
-
-/** Accent + label per revision round — Deepen own-work reads moss, Weigh commentary reads amber. */
-function revAccent(origin: RevisionOrigin) {
-  return origin === 'deepen'
-    ? { border: 'border-l-moss', wash: 'bg-moss-wash', label: 'text-moss-ink', tag: '✚ What I now see · from the text' }
-    : {
-        border: 'border-l-[#b98a1e]',
-        wash: 'bg-amber-wash',
-        label: 'text-[#8a6a16] dark:text-[#e2c87c]',
-        tag: '⚖ From a commentary',
-      };
-}
 
 /** The muted orientation line — where this card lives, and that its first pass is preserved. */
 function orientLine(origin: AnnotationOrigin): string {
@@ -150,7 +125,6 @@ export function RevisionPanel(props: RevisionPanelProps) {
           const m = annotationMeta(a);
           const lit = litVerseId != null && a.verseIds.includes(litVerseId);
           const anchored = a.verseIds.length > 0;
-          const revs = revisionsOf(a);
           return (
             <div
               key={a.id}
@@ -181,63 +155,27 @@ export function RevisionPanel(props: RevisionPanelProps) {
                 {a.text.trim() ? a.text : <span className="italic text-ink-faint">(nothing written)</span>}
               </p>
 
-              {/* the unified revisions list — Deepen own-work + Weigh commentary in one list */}
-              <div className="mt-2.5 flex flex-col gap-2.5 border-l-2 border-line pl-3">
-                {revs.map((r) => {
-                  const acc = revAccent(r.origin);
-                  return (
-                    <div key={r.id} className={cn('group/rev rounded-md border-l-[3px] px-2.5 py-2', acc.border, acc.wash)}>
-                      <div className="mb-1 flex items-center gap-2">
-                        <span className={cn('font-mono text-[8.5px] uppercase tracking-[0.1em]', acc.label)}>{acc.tag}</span>
-                        <span className="flex-1" />
-                        <button
-                          type="button"
-                          onClick={() => props.onRemoveRevision(a.id, r.id)}
-                          aria-label="Remove this note"
-                          className="text-ink-faint opacity-0 transition-opacity hover:text-rubric focus-visible:opacity-100 group-hover/rev:opacity-100"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <textarea
-                        data-focus-rev={r.id}
-                        ref={autoGrow}
-                        rows={2}
-                        className={REV_INPUT}
-                        value={r.text}
-                        placeholder={ROUND[r.origin].placeholder}
-                        onChange={(e) => {
-                          props.onEditRevision(a.id, r.id, { text: e.target.value });
-                          autoGrow(e.currentTarget);
-                        }}
-                      />
-                      {r.origin === 'weigh' && (
-                        <div className="mt-1 flex items-center gap-1 font-mono text-[9.5px] text-ink-faint">
-                          📖
-                          <input
-                            className="w-full border-none bg-transparent p-0 font-mono text-[9.5px] text-ink-soft outline-none placeholder:text-ink-faint"
-                            value={r.source ?? ''}
-                            placeholder="commentary + reference…"
-                            onChange={(e) => props.onEditRevision(a.id, r.id, { source: e.target.value })}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => add(a.id)}
-                  className={cn(
-                    'self-start rounded-md border border-dashed px-2.5 py-1 font-mono text-[11px]',
-                    round === 'deepen'
-                      ? 'border-moss-edge text-moss-ink hover:bg-moss-wash'
-                      : 'border-amber-edge text-[#8a6a16] hover:bg-amber-wash dark:text-[#e2c87c]',
-                  )}
-                >
-                  {meta.addLabel}
-                </button>
-              </div>
+              {/* the unified revisions list — shared with Survey/Write/Build (read-only there) */}
+              <CardRevisions
+                a={a}
+                editable
+                onEditRevision={(revId, patch) => props.onEditRevision(a.id, revId, patch)}
+                onRemoveRevision={(revId) => props.onRemoveRevision(a.id, revId)}
+                footer={
+                  <button
+                    type="button"
+                    onClick={() => add(a.id)}
+                    className={cn(
+                      'self-start rounded-md border border-dashed px-2.5 py-1 font-mono text-[11px]',
+                      round === 'deepen'
+                        ? 'border-moss-edge text-moss-ink hover:bg-moss-wash'
+                        : 'border-amber-edge text-[#8a6a16] hover:bg-amber-wash dark:text-[#e2c87c]',
+                    )}
+                  >
+                    {meta.addLabel}
+                  </button>
+                }
+              />
 
               <div className="mt-2 font-mono text-[9px] text-ink-faint">{orientLine(annotationOrigin(a))}</div>
             </div>

@@ -8,6 +8,7 @@ import { moveBefore, moveBy, QUESTION_TYPE_OPTIONS } from '@/v2/build';
 import { DEFAULT_QUESTION_WRITE_LINES, exportModel, orderedOutput } from '@/v2/exportModel';
 import { AttachImageRow } from '@/v2/reader/AttachImageRow';
 import { AttachReferenceRow } from '@/v2/reader/AttachReferenceRow';
+import { CardRevisions } from '@/v2/reader/CardRevisions';
 import { formatVerseIds } from '@/v2/reader/selection';
 import { parseMentions } from '@/v2/reader/mentions';
 
@@ -177,6 +178,9 @@ export function BuildPanel(props: BuildPanelProps) {
 
                 {/* attached images (question + study-note) — they print with the card (§6) */}
                 <AttachImageRow card={a} onEdit={props.onEdit} />
+
+                {/* Deepen/Weigh notes (read-only) — the deepened context while assembling */}
+                <CardRevisions a={a} />
 
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {isQuestion ? (

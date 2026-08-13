@@ -25,6 +25,7 @@ import {
 import { LENSES } from '@/v2/lenses';
 import { AttachImageRow } from '@/v2/reader/AttachImageRow';
 import { AttachReferenceRow } from '@/v2/reader/AttachReferenceRow';
+import { CardRevisions } from '@/v2/reader/CardRevisions';
 import { FormulaPicker } from '@/v2/reader/FormulaPicker';
 import { MentionEditor } from '@/v2/reader/MentionEditor';
 import { formatVerseIds } from '@/v2/reader/selection';
@@ -305,6 +306,9 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
               </p>
             );
           })}
+
+        {/* Deepen/Weigh notes (read-only here) — shows the deepened thinking wherever the card appears */}
+        <CardRevisions a={a} />
 
         {/* source-step line + recycle-forward (Write lens: seed a question / study note here) */}
         <div className="mt-2 flex items-center justify-between gap-2">

@@ -715,6 +715,14 @@ test('v2 Deepen lens: append an own-work revision to a Survey card, and it persi
   await page.reload();
   await page.getByRole('button', { name: '05 Deepen' }).click();
   await expect(page.locator('[data-focus-rev]').first()).toHaveValue(/incense hour/);
+
+  // The Deepen note also shows on the card in Write — but READ-ONLY (recycle-forward context):
+  // the text is visible with its tag, and there's no editable revision field here.
+  await page.getByRole('button', { name: '08 Write' }).click();
+  const write = page.locator('aside');
+  await expect(write.getByText(/incense hour/)).toBeVisible();
+  await expect(write.getByText(/What I now see/i)).toBeVisible();
+  await expect(write.locator('[data-focus-rev]')).toHaveCount(0); // read-only — no textarea in Write
 });
 
 test('v2 Write lens: author a study note (a prose block that prints for the group), and it persists', async ({ page }) => {
