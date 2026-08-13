@@ -426,11 +426,20 @@ The flow redesign is built. Slices, each gated (typecheck/lint/unit/build/e2e) +
    (type · minutes · ★ essential · write-lines · aim · hide-from-group · attach-reference · ✂ cut);
    downloads/print render from the model (`exportMarkdown`); minutes-vs-session footer.
 
-8. ✅ **Slice 7 — finish-up** (this commit): **`note`→`comment`** display relabel (kept the internal
+8. ✅ **Slice 7 — finish-up** (`be4c7bf`): **`note`→`comment`** display relabel (kept the internal
    `note` kind; the tag/buttons/action-bar now read "Comment"); **question-attached references** added to
    the **Write** lens too (shared `AttachReferenceRow`, reused in Build) — verified they print as support
    passages; **cut → "in study" toggle** — instead of a reserve pool, each output card has a reversible
    `reserved` toggle that drops it from both exported documents (owner call, simpler).
+9. ✅ **Slice 8 — nav + persistence polish** (`e8154ee`, `94c7495`): **remember the active lens on reload**
+   (no more always-back-to-Survey); **`Mark · Confusing`→`Confusion`** (universalised the label); **SVG
+   lens icons** + the lens rail **moved into a footer** with **Next/Prev** buttons (owner chose the
+   rail-in-footer + shovel-icon mockups).
+10. ✅ **Slice 9 — reference-picker unification** (`c8c231f`): question-attached references now use the
+    **same guided book→chapter→verse `@`-autocomplete** the mention editor has — new `ReferenceCombobox`
+    over a pure, unit-tested `referenceSuggest` (versification-aware counts; `position:fixed` so the
+    scrollable margin panel can't clip it; Enter commits a typed reference or advances the picker). Wired
+    into `AttachReferenceRow` (Write + Build). This **closes the last deferred item** below.
 
-**Deferred / not built (deliberate):** question-attached-reference uses a simple text input (not the full
-`@`-autocomplete book→chapter→verse picker the note editor has). Doesn't block the flow.
+**Deferred / not built:** *nothing* — the flow redesign is fully shipped and closed out (2026-08-13).
+(The earlier deferral — question-attached references on a plain text input — was resolved by Slice 9.)

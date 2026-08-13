@@ -1,5 +1,15 @@
 # Handoff — continue the v2 "flow redesign" (Deepen · Weigh · Authoring · Build)
 
+> ## ✅ STATUS: COMPLETE — shipped 2026-08-13. Do not use this as a "to build" list.
+> The whole flow redesign this handoff designed is **built, gated, browser-verified, and pushed to
+> `main`.** The six open questions were resolved (owner, 2026-08-12): authoring-phase → **Write**,
+> Map-phase → **Survey**, `note`→**comment**, personal-commentary→**study note**, Theme/Aim supersede
+> presentation confirmed, **return-question dropped** (bake it into the question). All slices shipped —
+> incl. the reference-picker unification (`c8c231f`) that closed the last deferred item.
+> **Live record: `docs/V2-UX-BACKLOG.md` §7 (authoritative flow) + §7.8 (shipped slices), and
+> `docs/ROADMAP-v2.md` §5 (dated log).** Everything below is kept only as **design provenance** — the
+> reasoning behind the decisions, not open work.
+
 > Paste this whole file into a fresh Claude Code CLI session to continue. This was a **design
 > conversation** (mockup-led, not yet coding). Everything below lives in committed HTML mockups + this
 > file — **nothing is built in code yet.** Your first job is to make it durable in the docs, resolve a

@@ -134,6 +134,33 @@ manuscript that answers to a command line*. Full day/night.
 
 ## 5. Progress log
 
+### 2026-08-13 — Flow redesign COMPLETE: 10 lenses, Deepen/Weigh, Write/Build, reference-picker unified
+
+**Shipped + verified (unit + e2e + live, 0 console errors); gate `typecheck && lint && test (342) &&
+e2e (30) && build`.** The "flow redesign" designed in `docs/HANDOFF-v2-authoring-build.md` is fully
+built and pushed. Full slice-by-slice detail (with commits) is the authoritative list in
+**`docs/V2-UX-BACKLOG.md` §7.8**; §7 is the current-flow spec. Arc summary:
+
+- **10-lens flow** (`4035f4b`): inserted **Deepen (05)** + **Weigh (07)**; renamed **Map→Survey**,
+  **Questions→Write** (labels-only — internal ids `map`/`questions` stay stable so stored studies load).
+- **Append-revision model** (`ad5515f`, `00fcb55`, `43d7d8d`): Deepen/Weigh don't create cards — they
+  append `revisions[]` to Survey/COMA cards, each revision carrying its own `origin` (`deepen`|`weigh`;
+  own-work vs 📖 commentary). Theme/Aim **supersede** (revised leads, original kept, `▾ N earlier`).
+- **Write + Build + export** (`425d6db`, `f17145f`, `cc9859f`): **Write** is the only place group-facing
+  output is authored (questions · study notes · included references); **Build** = live `ExportPreview`
+  + per-card controls; v2-native `exportModel`/`exportMarkdown` (no v1 projection).
+- **Finish-up** (`be4c7bf`): `note`→`comment` display relabel (kind stays `note`); `cut → "in study"`
+  reversible `reserved` toggle instead of a reserve pool.
+- **Nav + persistence** (`e8154ee`, `94c7495`): remember active lens on reload; `Mark · Confusing`→
+  `Confusion`; SVG lens icons + the rail moved into a footer with Next/Prev.
+- **Reference-picker unification** (`c8c231f`): question-attached references now use the same guided
+  book→chapter→verse `@`-autocomplete as the mention editor (`ReferenceCombobox` + pure, unit-tested
+  `referenceSuggest`). **Closed the last deferred item — nothing from the redesign is now outstanding.**
+
+Six open design questions resolved with the owner (2026-08-12): authoring→**Write**, map→**Survey**,
+`note`→`comment`, personal-commentary→**study note**, supersede presentation confirmed, **return-question
+dropped** (bake it into the question's wording; build the field only if a real need appears).
+
 ### 2026-08-11 — Cross-reference collapse: mention carries the toggles, no standalone card
 
 **Shipped + verified (unit + e2e + live, 0 console errors).** Killed the standalone cross-ref /
