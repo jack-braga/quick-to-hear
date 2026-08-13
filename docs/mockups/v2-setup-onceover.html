@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Set-up once-over — A (tidied column) vs B (right-rail passage)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --rubric: #a6321e;
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+        --radius: 10px;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; padding: 26px; }
+      button, input, textarea, select { font-family: inherit; }
+      h2.head { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 3px; }
+      .sub { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 12px; max-width: 40rem; }
+      .cols { display: flex; gap: 26px; align-items: flex-start; flex-wrap: wrap; }
+      .col { flex: 1 1 560px; min-width: 460px; }
+      .tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 3px 8px; margin-bottom: 8px; }
+      .note { font-size: 12px; color: var(--ink-soft); margin: 8px 2px 0; }
+      .note b { color: var(--ink); }
+
+      /* ---- app-ish primitives ---- */
+      .leaf { width: 100%; background: var(--leaf); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 26px clamp(22px,3vw,40px) 34px; }
+      .leaf h1 { font-family: var(--font-scripture); font-size: 25px; margin: 0 0 3px; }
+      .leaf .lede { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 22px; }
+      .lbl { display: block; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: var(--ink-faint); }
+      .field { height: 38px; width: 100%; border: 1px solid var(--line); background: var(--panel); border-radius: 9px; padding: 0 12px; font-size: 14px; color: var(--ink); }
+      .field::placeholder { color: var(--ink-faint); }
+      .block { margin-top: 20px; }
+      .passline { display: flex; align-items: center; gap: 12px; }
+      .pill { border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 4px 10px; font-family: var(--font-scripture); font-size: 15px; }
+      .link { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); text-decoration: underline; text-underline-offset: 2px; background: none; border: none; cursor: pointer; }
+
+      /* translation rows */
+      .trow { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); background: var(--panel); border-radius: 9px; padding: 8px 12px; font-size: 14px; margin-bottom: 6px; }
+      .radio { width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--ink-faint); flex: 0 0 auto; }
+      .radio.on { border: 4px solid var(--lapis); }
+      .primary-badge { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 4px; padding: 2px 6px; }
+      .short { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+      .count { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+      .x { color: var(--ink-faint); background: none; border: none; cursor: pointer; font-size: 13px; }
+      .addrow { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; color: var(--ink-soft); }
+      .addbtn { border: 1px solid var(--line); background: var(--panel); border-radius: 9px; padding: 6px 12px; font-size: 13px; color: var(--ink); cursor: pointer; }
+
+      /* the shape divider */
+      .shape { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
+      .shape-h { font-family: var(--font-scripture); font-size: 16px; color: var(--ink); margin: 0 0 2px; }
+      .shape-sub { font-size: 12px; color: var(--ink-faint); margin: 0 0 16px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 11px; font-size: 12.5px; color: var(--ink-soft); }
+      .chip.on { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .star { color: var(--lapis); font-size: 10px; margin-right: 3px; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+      .cta { display: flex; justify-content: flex-end; margin-top: 22px; }
+      .cta button { background: var(--lapis); color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+      /* Option B two-pane */
+      .pane { display: grid; grid-template-columns: 1fr 300px; gap: 18px; align-items: start; }
+      .rail { position: sticky; top: 10px; }
+      .railcard { background: var(--leaf); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 14px 15px; }
+      .railcard + .railcard { margin-top: 12px; }
+      .rail-h { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .13em; color: var(--ink-faint); margin: 0 0 9px; display: flex; justify-content: space-between; align-items: center; }
+      .rail-h .link { font-size: 11px; }
+      .mini { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 5px 0; }
+      .mini + .mini { border-top: 1px dashed var(--line); }
+    </style>
+  </head>
+  <body>
+    <h2 class="head">Set-up once-over — two directions to react to</h2>
+    <p class="sub">
+      Same fields, two layouts. The translation list in both reflects the just-shipped fix (changing the
+      primary keeps every loaded translation — the old primary just becomes a comparison text). Passage: Luke 1:5–25.
+    </p>
+
+    <div class="cols">
+      <!-- ============ OPTION A ============ -->
+      <div class="col">
+        <span class="tag">Option A · tidied single column (recommended)</span>
+        <div class="leaf">
+          <h1>Set up the study</h1>
+          <p class="lede">Name the passage, import your translations, choose the primary — then shape the study.</p>
+
+          <div class="passline">
+            <span class="lbl" style="letter-spacing:.14em">Passage</span>
+            <span class="pill">Luke 1:5–25</span>
+            <button class="link">change passage</button>
+          </div>
+
+          <div class="block">
+            <span class="lbl">Translations</span>
+            <div style="margin-top:8px">
+              <div class="trow">
+                <span class="radio on"></span>
+                <span style="font-weight:600">World English Bible <span class="short">WEBBE</span></span>
+                <span class="primary-badge">primary</span>
+                <span class="count">21 verses</span>
+              </div>
+              <div class="trow">
+                <span class="radio"></span>
+                <span style="font-weight:600">American Standard Version <span class="short">ASV</span></span>
+                <span class="count">21 verses</span>
+                <button class="x">✕</button>
+              </div>
+            </div>
+            <div class="addrow"><span>Add another:</span><button class="addbtn">+ BSB</button><button class="addbtn">+ Paste your own</button></div>
+          </div>
+
+          <div class="block">
+            <label class="lbl" for="a-title">Study title <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(optional)</span></label>
+            <input id="a-title" class="field" style="margin-top:8px" placeholder="Defaults to the reference" />
+          </div>
+
+          <!-- the one real tidy: a titled divider that groups the after-load config -->
+          <div class="shape">
+            <p class="shape-h">The shape of the study</p>
+            <p class="shape-sub">Drives the COMA prompts, the timing, and the handout.</p>
+
+            <span class="lbl">Text-type <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(inferred; pick one or more)</span></span>
+            <div class="chips" style="margin-top:8px">
+              <span class="chip on"><span class="star">★</span>Gospels &amp; Acts</span>
+              <span class="chip">OT narrative</span>
+              <span class="chip">Epistles</span>
+              <span class="chip">Wisdom &amp; poetry</span>
+              <span class="chip">Prophetic</span>
+            </div>
+
+            <div class="grid2">
+              <div><label class="lbl">Duration</label><select class="field" style="margin-top:8px"><option>1 hour</option></select></div>
+              <div><label class="lbl">Group</label><select class="field" style="margin-top:8px"><option>Believers</option></select></div>
+            </div>
+
+            <div class="block"><label class="lbl">Series note <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(optional)</span></label>
+              <input class="field" style="margin-top:8px" placeholder="e.g. Week 3 of 8 through Luke 1–2" /></div>
+            <div class="block"><label class="lbl">Introduction <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(optional — printed on the handout)</span></label>
+              <input class="field" style="margin-top:8px;height:52px" placeholder="A sentence or two to set the scene." /></div>
+          </div>
+
+          <div class="cta"><button>Read the passage →</button></div>
+        </div>
+        <p class="note"><b>What changed vs today:</b> only a titled <i>“The shape of the study”</i> divider + tighter spacing so the after-load fields read as one grouped block, not “extra stuff.” Structure and single column are unchanged — lowest-risk.</p>
+      </div>
+
+      <!-- ============ OPTION B ============ -->
+      <div class="col">
+        <span class="tag">Option B · passage &amp; translations in the right rail</span>
+        <div class="pane">
+          <div class="leaf" style="padding-top:22px">
+            <h1>Shape the study</h1>
+            <p class="lede">The passage is loaded (right). Now set what drives the prompts, timing, and handout.</p>
+
+            <span class="lbl">Text-type <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(inferred; pick one or more)</span></span>
+            <div class="chips" style="margin-top:8px">
+              <span class="chip on"><span class="star">★</span>Gospels &amp; Acts</span>
+              <span class="chip">OT narrative</span>
+              <span class="chip">Epistles</span>
+              <span class="chip">Wisdom &amp; poetry</span>
+            </div>
+
+            <div class="grid2">
+              <div><label class="lbl">Duration</label><select class="field" style="margin-top:8px"><option>1 hour</option></select></div>
+              <div><label class="lbl">Group</label><select class="field" style="margin-top:8px"><option>Believers</option></select></div>
+            </div>
+            <div class="block"><label class="lbl">Study title <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(optional)</span></label>
+              <input class="field" style="margin-top:8px" placeholder="Defaults to the reference" /></div>
+            <div class="block"><label class="lbl">Series note <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(optional)</span></label>
+              <input class="field" style="margin-top:8px" placeholder="e.g. Week 3 of 8 through Luke 1–2" /></div>
+            <div class="block"><label class="lbl">Introduction <span style="text-transform:none;letter-spacing:normal;color:var(--ink-faint)">(optional — printed)</span></label>
+              <input class="field" style="margin-top:8px;height:52px" placeholder="A sentence or two to set the scene." /></div>
+
+            <div class="cta"><button>Read the passage →</button></div>
+          </div>
+
+          <aside class="rail">
+            <div class="railcard">
+              <p class="rail-h">Passage <button class="link">change</button></p>
+              <span class="pill" style="font-size:15px">Luke 1:5–25</span>
+            </div>
+            <div class="railcard">
+              <p class="rail-h">Translations <button class="link">+ add</button></p>
+              <div class="mini"><span class="radio on"></span><b style="font-weight:600">WEBBE</b><span class="primary-badge" style="margin-left:auto">primary</span></div>
+              <div class="mini"><span class="radio"></span><span>ASV</span><button class="x" style="margin-left:auto">✕</button></div>
+            </div>
+          </aside>
+        </div>
+        <p class="note"><b>What changed vs today:</b> after the first load, the passage + translation controls move into the right rail (where the panel sits during reading), so the centre leaf holds only the “shape” config. More moving parts; the payoff is a calmer centre and a rail that’s consistent with the rest of the app.</p>
+      </div>
+    </div>
+  </body>
+</html>
