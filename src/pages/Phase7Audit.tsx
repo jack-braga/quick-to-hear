@@ -385,7 +385,7 @@ export default function Phase7Audit() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => downloadProjectFile(study)}
+            onClick={() => void downloadProjectFile(study)}
             data-testid="export-project"
           >
             <FileText aria-hidden /> Export project file

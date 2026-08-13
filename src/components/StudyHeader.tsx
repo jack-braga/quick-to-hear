@@ -38,7 +38,7 @@ export function StudyHeader({ study }: { study: Study }) {
           <span className="text-xs text-muted-foreground" aria-live="polite" data-testid="save-state">
             {dirty ? 'Saving…' : 'Saved'}
           </span>
-          <Button variant="outline" size="sm" onClick={() => downloadProjectFile(study)}>
+          <Button variant="outline" size="sm" onClick={() => void downloadProjectFile(study)}>
             <Download aria-hidden />
             Export
           </Button>

@@ -190,6 +190,20 @@ export const RevisionSchema = z.object({
 });
 export type Revision = z.infer<typeof RevisionSchema>;
 
+/** A user-attached **image** on a question or study-note card (a map, a diagram, a manuscript scan,
+ *  a photo). The bytes live in a **separate IndexedDB store keyed by `id`** — never in the autosaved
+ *  study body or the passage — so only this lightweight ref rides on the annotation. `caption` prints
+ *  under the image and doubles as its alt text; `w`/`h` are the intrinsic pixel dimensions, cached so
+ *  the print/preview can reserve the right aspect-ratio before the bytes resolve. The image is the
+ *  user's own upload — the tool never sources or generates one (rule 1). */
+export const ImageRefSchema = z.object({
+  id: z.string(),
+  caption: z.string().default(''),
+  w: z.number().optional(),
+  h: z.number().optional(),
+});
+export type ImageRef = z.infer<typeof ImageRefSchema>;
+
 /**
  * A v2 annotation. It anchors to **main-passage verses** by canonical id (translation-
  * independent — no reconcile needed); an empty `verseIds` is a **floating / study-level** note
@@ -239,6 +253,10 @@ export const AnnotationSchema = z.object({
   // note — inline @-mention metadata, keyed by the mention's OSIS (the reference text lives in
   // `text`). Only present once a mention is given include-for-group / a return question.
   mentions: z.record(z.string(), MentionMetaSchema).optional(),
+  // question/study-note — attached images (a map, diagram, photo…), ordered. The bytes live in a
+  // separate IndexedDB store keyed by each ref's `id` (out of the autosaved body); this holds only
+  // the ref + caption. See {@link ImageRefSchema}. Additive-optional.
+  images: z.array(ImageRefSchema).optional(),
 });
 export type Annotation = z.infer<typeof AnnotationSchema>;
 

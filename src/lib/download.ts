@@ -1,4 +1,4 @@
-import { serializeStudy } from '@/lib/storage';
+import { collectStudyImages, serializeStudy } from '@/lib/storage';
 import { studyLabel, type Study } from '@/types/study';
 
 /** Slug for a downloaded file name (kept short, filesystem-safe). */
@@ -25,11 +25,13 @@ export function downloadTextFile(filename: string, text: string, mime = 'text/ma
   URL.revokeObjectURL(url);
 }
 
-/** Trigger a browser download of the study's re-importable project file (SPEC §4). */
-export function downloadProjectFile(study: Study): void {
+/** Trigger a browser download of the study's re-importable project file (SPEC §4). Async because it
+ *  fetches the attached-image bytes from IndexedDB and embeds them (base64) so the file is portable. */
+export async function downloadProjectFile(study: Study): Promise<void> {
+  const images = await collectStudyImages(study.id);
   downloadTextFile(
     `${slugify(studyLabel({ reference: study.setup.reference }))}.qth.json`,
-    serializeStudy(study),
+    serializeStudy(study, images),
     'application/json',
   );
 }

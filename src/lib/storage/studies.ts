@@ -1,9 +1,12 @@
+import { base64ToBytes, bytesToBase64 } from '@/lib/images/encode';
 import { newId, nowIso } from '@/lib/id';
 import {
   getDB,
+  STORE_IMAGES,
   STORE_PASSAGES,
   STORE_QUARANTINE,
   STORE_STUDIES,
+  type ImageRecord,
   type QuarantineRecord,
 } from '@/lib/storage/db';
 import { hydrate } from '@/lib/storage/hydrate';
@@ -12,16 +15,27 @@ import { toSummary, type Passage, type Study, type StudySummary } from '@/types/
 /**
  * The study CRUD + project-file API (PLAN §4.4). The study body and its passage
  * payload live in separate stores; autosave writes only the body ({@link putStudy}),
- * while create/import/passage-confirm write both.
+ * while create/import/passage-confirm write both. Attached-image bytes live in a third
+ * store keyed by image id (see {@link putImage}) and ride the project file as base64.
  */
 
 /** Envelope tag written into every exported project file, for friendly detection. */
 export const EXPORT_FORMAT = 'quick-to-hear/study-project';
 
+/** An attached image embedded in a project file (base64 — JSON can't carry a Blob). */
+export interface EnvelopeImage {
+  id: string;
+  mime: string;
+  w: number;
+  h: number;
+  dataBase64: string;
+}
+
 interface ProjectFileEnvelope {
   format: typeof EXPORT_FORMAT;
   exportedAt: string;
   study: Study;
+  images: EnvelopeImage[];
 }
 
 /** Detach the passage payload so the body can be persisted on its own. */
@@ -82,27 +96,78 @@ export async function putStudyFull(study: Study): Promise<void> {
 
 export async function deleteStudy(id: string): Promise<void> {
   const db = await getDB();
-  await Promise.all([db.delete(STORE_STUDIES, id), db.delete(STORE_PASSAGES, id)]);
+  const imageIds = await db.getAllKeysFromIndex(STORE_IMAGES, 'by-study', id);
+  await Promise.all([
+    db.delete(STORE_STUDIES, id),
+    db.delete(STORE_PASSAGES, id),
+    ...imageIds.map((imageId) => db.delete(STORE_IMAGES, imageId)),
+  ]);
+}
+
+// ---------------------------------------------------------------------------
+// Attached images — bytes in their own store (out of the autosaved body), keyed
+// by image id and tagged with the owning studyId (the `by-study` index) for GC.
+// ---------------------------------------------------------------------------
+
+/** Store an image's bytes under its id (the annotation keeps only the lightweight ref). */
+export async function putImage(id: string, record: ImageRecord): Promise<void> {
+  const db = await getDB();
+  await db.put(STORE_IMAGES, record, id);
+}
+
+/** Read an image's bytes + metadata, or null if it isn't stored. */
+export async function getImage(id: string): Promise<ImageRecord | null> {
+  const db = await getDB();
+  return (await db.get(STORE_IMAGES, id)) ?? null;
+}
+
+/** The ids of every image owned by a study (via the `by-study` index). */
+export async function imageIdsForStudy(studyId: string): Promise<string[]> {
+  const db = await getDB();
+  return db.getAllKeysFromIndex(STORE_IMAGES, 'by-study', studyId);
+}
+
+/** Remove an image's bytes (called when a card's image is deleted). */
+export async function deleteImage(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete(STORE_IMAGES, id);
 }
 
 // ---------------------------------------------------------------------------
 // Export / import (project file — SPEC §4 "Project file. Re-importable.")
 // ---------------------------------------------------------------------------
 
-/** Serialise a study to the project-file JSON string (with envelope). */
-export function serializeStudy(study: Study): string {
+/** Serialise a study to the project-file JSON string (with envelope). Image bytes are pre-collected
+ *  (async — see {@link collectStudyImages}) and passed in; `serializeStudy` itself stays pure/sync. */
+export function serializeStudy(study: Study, images: EnvelopeImage[] = []): string {
   const envelope: ProjectFileEnvelope = {
     format: EXPORT_FORMAT,
     exportedAt: nowIso(),
     study,
+    images,
   };
   return JSON.stringify(envelope, null, 2);
+}
+
+/** Read a study's image blobs and base64-encode them for embedding in the project file (so a
+ *  shared/backed-up study keeps its images — rule 6, work is never lost). */
+export async function collectStudyImages(studyId: string): Promise<EnvelopeImage[]> {
+  const db = await getDB();
+  const ids = await db.getAllKeysFromIndex(STORE_IMAGES, 'by-study', studyId);
+  const out: EnvelopeImage[] = [];
+  for (const id of ids) {
+    const rec = await db.get(STORE_IMAGES, id);
+    if (!rec) continue;
+    out.push({ id, mime: rec.mime, w: rec.w, h: rec.h, dataBase64: bytesToBase64(rec.bytes) });
+  }
+  return out;
 }
 
 export async function exportStudyBlob(id: string): Promise<Blob | null> {
   const study = await getStudy(id);
   if (!study) return null;
-  return new Blob([serializeStudy(study)], { type: 'application/json' });
+  const images = await collectStudyImages(id);
+  return new Blob([serializeStudy(study, images)], { type: 'application/json' });
 }
 
 /** Pull the study out of a parsed file, tolerating a bare (envelope-less) study. */
@@ -117,6 +182,26 @@ function unwrap(parsed: unknown): unknown {
     return (parsed as { study: unknown }).study;
   }
   return parsed;
+}
+
+/** Pull the embedded image bytes out of a parsed project file (absent/old files → none). */
+function extractEnvelopeImages(parsed: unknown): EnvelopeImage[] {
+  if (
+    parsed !== null &&
+    typeof parsed === 'object' &&
+    'images' in parsed &&
+    Array.isArray((parsed as { images?: unknown }).images)
+  ) {
+    return (parsed as { images: unknown[] }).images.filter(
+      (im): im is EnvelopeImage =>
+        im !== null &&
+        typeof im === 'object' &&
+        typeof (im as EnvelopeImage).id === 'string' &&
+        typeof (im as EnvelopeImage).mime === 'string' &&
+        typeof (im as EnvelopeImage).dataBase64 === 'string',
+    );
+  }
+  return [];
 }
 
 export type ImportResult =
@@ -157,9 +242,42 @@ export async function importStudy(text: string): Promise<ImportResult> {
     return { ok: false, error: result.reason };
   }
 
-  // Fresh identity: new id (already applied) + updatedAt now so it sorts to the top.
-  const study: Study = { ...result.study, id: freshId, updatedAt: now };
+  // Re-mint image ids on import (so re-importing the same file twice never makes two studies fight
+  // over one image record), remap the annotation refs to the new ids, and drop any ref whose bytes
+  // aren't in the file. Fresh identity: new study id + updatedAt now so it sorts to the top.
+  const envImages = extractEnvelopeImages(parsed);
+  const idMap = new Map<string, string>();
+  for (const img of envImages) idMap.set(img.id, newId());
+
+  const study: Study = {
+    ...result.study,
+    id: freshId,
+    updatedAt: now,
+    annotations: result.study.annotations.map((a) =>
+      a.images && a.images.length
+        ? {
+            ...a,
+            images: a.images.flatMap((ref) => {
+              const mapped = idMap.get(ref.id);
+              return mapped ? [{ ...ref, id: mapped }] : [];
+            }),
+          }
+        : a,
+    ),
+  };
+
   await putStudyFull(study);
+  await Promise.all(
+    envImages.map((img) =>
+      putImage(idMap.get(img.id)!, {
+        studyId: freshId,
+        bytes: base64ToBytes(img.dataBase64),
+        mime: img.mime,
+        w: img.w,
+        h: img.h,
+      }),
+    ),
+  );
   return { ok: true, study, upgraded: result.upgraded };
 }
 
