@@ -19,8 +19,10 @@ a place, a manuscript scan.
 2. `CLAUDE.md` — the **inviolable rules** (esp. rule 1 & rule 6 & rule 7) and the commit/branching policy.
 3. `docs/V2-UX-BACKLOG.md` **§6** (this is item "Images in a study, somehow — 'definitely defer'") and
    **§7** (the current 10-lens flow, so you know where Write/Build sit).
-4. The mockup `docs/mockups/v2-images.html` (serve: `cd docs/mockups && python3 -m http.server 8899`) —
-   the **card affordance (Variant A, chosen)** + the print layout.
+4. The mockups (serve: `cd docs/mockups && python3 -m http.server 8899`):
+   `v2-images.html` — the **card affordance (Variant A, chosen)** + the print layout; and
+   `v2-images-states.html` — the **attach-image interaction states** (resting · hover · processing ·
+   attached · quota-warning · storage-full · rejected-file · multiple/reorder).
 5. The files in **"Surface map"** below — read them before touching anything.
 6. Auto-memories: `v2-ui-overhaul` (current shipped state), `pause-for-confirmation-between-steps`,
    `prefer-chat-questions-over-tool`, `no-claude-coauthor-in-commits`, `form-state-controlled-inputs-standard`.
@@ -103,13 +105,18 @@ Either way: **downscale + compress on import** (e.g. cap the longest edge ~1600p
 2. **Authoring** — `AttachImageRow` on question + study-note cards (upload → downscale → thumbnail →
    caption → remove), wired in `MarginAnnotations` (Write) and `BuildPanel` (Build). Browser-verify:
    attach, reload, still there. **Card affordance = Variant A (thumbnail strip) — DECIDED (owner,
-   2026-08-13);** see the mockup `docs/mockups/v2-images.html` (an `🖼 add image` button beside
-   `↗ add reference`; attached images as ~90px thumbnails with an inline caption + a delete corner).
+   2026-08-13);** see `docs/mockups/v2-images.html` (an `🖼 add image` button beside `↗ add reference`;
+   attached images as ~90px thumbnails with an inline caption + a delete corner). Build the **interaction
+   states** in `docs/mockups/v2-images-states.html`: resting · hover/focus (lapis edge) · processing
+   (shimmer skeleton + spinner + disabled `adding…` while the canvas downscales/encodes) · attached ·
+   rejected-file (rubric note; nothing added) · multiple/drag-to-reorder (pending open Q5).
 3. **Export** — `imagesFor` + block fields + `ExportPreview` `<img>` render + `resolveImageDataUrls` for
    print + the markdown data-URI emitter. Browser-verify the **print route** shows the image
    (participant vs leader per the decision) and page-cuts sensibly.
-4. **Polish** — quota warning (`useStorageEstimate`), `hideFromGroup` interaction, alt text, and a mockup
-   pass if the card/print layout needs owner reaction.
+4. **Polish** — the **quota warning** (`useStorageEstimate`): an amber inline note near the add button
+   at ~80% (adding still allowed), and a rubric "storage full" note that **disables adding** at the
+   ceiling / on a failed write — existing images are never lost, only new bytes are blocked (see states
+   5–6 in `v2-images-states.html`). Plus `hideFromGroup` interaction and alt text.
 
 ## House rules (from CLAUDE.md — non-negotiable)
 - **Prototype-led:** for any non-trivial UI (the card affordance, the print layout), build a mockup in

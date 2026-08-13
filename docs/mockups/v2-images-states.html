@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attach-image — interaction states (slice 2)</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --amber-wash: rgba(185,138,30,0.18); --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.5);
+        --rubric: #a6321e; --rubric-wash: rgba(166,50,30,0.12); --rubric-edge: rgba(166,50,30,0.4);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; padding: 26px; }
+      button, input { font-family: inherit; }
+      h2.head { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 3px; }
+      .sub { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 20px; max-width: 48rem; }
+
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; max-width: 1080px; }
+      .cell { }
+      .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 3px 8px; display: inline-block; margin-bottom: 8px; }
+      .desc { font-size: 11.5px; color: var(--ink-soft); margin: 8px 3px 0; }
+      .desc b { color: var(--ink); }
+
+      /* the attach-area of a card (what these states show) */
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--amber-edge); border-radius: 9px; box-shadow: var(--shadow); padding: 11px 13px; }
+      .qtext { font-family: var(--font-scripture); font-size: 14px; color: var(--ink); margin: 0 0 9px; }
+      .attach { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+      .chip-ref { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); border-radius: 5px; padding: 2px 7px; font-family: var(--font-mono); font-size: 9.5px; }
+      .addbtn { border: 1px solid transparent; background: none; color: var(--ink-soft); font-family: var(--font-mono); font-size: 9.5px; cursor: pointer; padding: 2px 6px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px; }
+      .addbtn.hover { border-color: var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); }
+      .addbtn.disabled { color: var(--ink-faint); cursor: not-allowed; opacity: .7; }
+
+      /* thumbnails */
+      .thumbs { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+      .thumb { width: 92px; }
+      .frame { width: 92px; height: 69px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; position: relative; background: var(--panel); }
+      .frame .del { position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: rgba(30,27,20,0.6); color: #fff; font-size: 10px; display: grid; place-items: center; cursor: pointer; }
+      .cap { width: 100%; margin-top: 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); font-size: 10px; color: var(--ink-soft); padding: 3px 6px; }
+      .cap.empty { color: var(--ink-faint); font-style: italic; }
+      svg.ph { display: block; width: 100%; height: 100%; }
+
+      /* uploading skeleton + spinner */
+      .skel { background: linear-gradient(90deg, var(--panel) 0%, #efece3 45%, var(--panel) 90%); background-size: 220% 100%; animation: shimmer 1.25s linear infinite; display: grid; place-items: center; }
+      @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+      .spin { width: 16px; height: 16px; border: 2px solid var(--lapis-edge); border-top-color: var(--lapis); border-radius: 50%; animation: rot .8s linear infinite; }
+      @keyframes rot { to { transform: rotate(360deg); } }
+      .adding { font-family: var(--font-mono); font-size: 9px; color: var(--ink-faint); text-align: center; margin-top: 5px; }
+
+      /* inline alerts */
+      .alert { display: flex; align-items: flex-start; gap: 7px; border-radius: 7px; padding: 6px 9px; font-size: 11px; margin-top: 9px; }
+      .alert .ico { font-size: 12px; line-height: 1.3; }
+      .alert.warn { border: 1px solid var(--amber-edge); background: var(--amber-wash); color: var(--amber-ink); }
+      .alert.err { border: 1px solid var(--rubric-edge); background: var(--rubric-wash); color: var(--rubric); }
+      .alert b { font-weight: 600; }
+      .barwrap { height: 5px; border-radius: 3px; background: rgba(0,0,0,0.08); margin-top: 5px; overflow: hidden; }
+      .bar { height: 100%; border-radius: 3px; }
+      .bar.warn { width: 82%; background: var(--amber-ink); }
+      .bar.full { width: 97%; background: var(--rubric); }
+    </style>
+  </head>
+  <body>
+    <h2 class="head">Attach-image — interaction states (slice 2)</h2>
+    <p class="sub">
+      The <b>🖼 add image</b> affordance (Variant A) through its states: an <code>&lt;input type="file"
+      accept="image/*"&gt;</code> behind the button; on pick it downscales + encodes, then the thumbnail
+      lands. Quota comes from <code>navigator.storage.estimate()</code> (reuse <code>useStorageEstimate</code>).
+      Everything below is on a question card; study-notes behave identically.
+    </p>
+
+    <div class="grid">
+      <!-- 1 empty / resting -->
+      <div class="cell">
+        <span class="lbl">1 · resting (no images)</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach">
+            <span class="chip-ref">↗ Mal 4:5 <span>✕</span></span>
+            <button class="addbtn">↗ add reference</button>
+            <button class="addbtn">🖼 add image</button>
+          </div>
+        </div>
+        <p class="desc">Default: a quiet mono button beside <b>↗ add reference</b>. No images yet.</p>
+      </div>
+
+      <!-- 2 hover / focus -->
+      <div class="cell">
+        <span class="lbl">2 · hover / keyboard focus</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach">
+            <span class="chip-ref">↗ Mal 4:5 <span>✕</span></span>
+            <button class="addbtn">↗ add reference</button>
+            <button class="addbtn hover">🖼 add image</button>
+          </div>
+        </div>
+        <p class="desc">Hover/focus: lapis edge + wash (matches other panel affordances). Click opens the OS file picker.</p>
+      </div>
+
+      <!-- 3 uploading -->
+      <div class="cell">
+        <span class="lbl">3 · processing (downscale + encode)</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach">
+            <span class="chip-ref">↗ Mal 4:5 <span>✕</span></span>
+            <button class="addbtn disabled"><span class="spin"></span> adding…</button>
+          </div>
+          <div class="thumbs">
+            <div class="thumb">
+              <div class="frame skel"><span class="spin"></span></div>
+              <div class="adding">resizing…</div>
+            </div>
+          </div>
+        </div>
+        <p class="desc">On pick: a shimmer skeleton + spinner while the canvas downscales/re-encodes; the button reads <b>adding…</b> and is disabled. Usually a blink; shown here held.</p>
+      </div>
+
+      <!-- 4 attached success -->
+      <div class="cell">
+        <span class="lbl">4 · attached (success)</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach">
+            <span class="chip-ref">↗ Mal 4:5 <span>✕</span></span>
+            <button class="addbtn">🖼 add image</button>
+          </div>
+          <div class="thumbs">
+            <div class="thumb">
+              <div class="frame"><svg class="ph" viewBox="0 0 120 90"><rect width="120" height="90" fill="#eef0ea"/><path d="M8 66 Q40 34 70 52 T112 26" stroke="#b7a98a" stroke-width="3" fill="none" stroke-dasharray="5 3"/><circle cx="70" cy="52" r="4.5" fill="#a6321e"/></svg><span class="del">✕</span></div>
+              <input class="cap" value="The Jordan region" />
+            </div>
+          </div>
+        </div>
+        <p class="desc">Landed: thumbnail + a caption input (also the alt text) + a delete corner. The <b>🖼 add image</b> button stays to add more.</p>
+      </div>
+
+      <!-- 5 quota warning -->
+      <div class="cell">
+        <span class="lbl">5 · quota warning (getting full)</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach">
+            <button class="addbtn">🖼 add image</button>
+          </div>
+          <div class="alert warn">
+            <span class="ico">⚠</span>
+            <span><b>Browser storage ~82% full.</b> Big images may not save — this app keeps everything in your browser. Export a copy to be safe.<div class="barwrap"><div class="bar warn"></div></div></span>
+          </div>
+        </div>
+        <p class="desc">When <code>estimate()</code> crosses a threshold (~80%): an amber inline note near the add button. Adding is still allowed.</p>
+      </div>
+
+      <!-- 6 quota full / blocked -->
+      <div class="cell">
+        <span class="lbl">6 · storage full (blocked)</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach">
+            <button class="addbtn disabled">🖼 add image</button>
+          </div>
+          <div class="alert err">
+            <span class="ico">◆</span>
+            <span><b>Storage is full — can’t add more images.</b> Remove an image, or export your study and clear space.<div class="barwrap"><div class="bar full"></div></div></span>
+          </div>
+        </div>
+        <p class="desc">At the ceiling (or a failed write): the add button disables and a rubric note explains. Never lose existing work — only block new bytes.</p>
+      </div>
+
+      <!-- 7 errors -->
+      <div class="cell">
+        <span class="lbl">7 · rejected file</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach">
+            <button class="addbtn">🖼 add image</button>
+          </div>
+          <div class="alert err"><span class="ico">◆</span><span>That file isn’t an image (PNG, JPG, WebP, GIF).</span></div>
+          <div class="alert err" style="margin-top:6px"><span class="ico">◆</span><span>Couldn’t read that image — it may be corrupted.</span></div>
+        </div>
+        <p class="desc">Wrong type or a decode failure: a brief rubric message; nothing is added. (Size is handled by auto-downscale, so “too big” shouldn’t normally appear.)</p>
+      </div>
+
+      <!-- 8 reorder hint (multi) -->
+      <div class="cell">
+        <span class="lbl">8 · multiple (drag to reorder)</span>
+        <div class="card">
+          <div class="qtext">What does “power of Elijah” tell us about John?</div>
+          <div class="attach"><button class="addbtn">🖼 add image</button></div>
+          <div class="thumbs">
+            <div class="thumb">
+              <div class="frame"><svg class="ph" viewBox="0 0 120 90"><rect width="120" height="90" fill="#eef0ea"/><path d="M8 66 Q40 34 70 52 T112 26" stroke="#b7a98a" stroke-width="3" fill="none" stroke-dasharray="5 3"/><circle cx="70" cy="52" r="4.5" fill="#a6321e"/></svg><span class="del">✕</span></div>
+              <input class="cap" value="Jordan region" />
+            </div>
+            <div class="thumb">
+              <div class="frame"><svg class="ph" viewBox="0 0 120 90"><rect width="120" height="90" fill="#dfe3e0"/><circle cx="92" cy="24" r="9" fill="#e6cfa0"/><path d="M0 90 L38 52 L66 90 Z" fill="#b9c3ab"/><path d="M32 90 L78 46 L120 90 Z" fill="#a7b39a"/></svg><span class="del">✕</span></div>
+              <input class="cap empty" placeholder="caption…" />
+            </div>
+          </div>
+        </div>
+        <p class="desc">If multiple images are allowed (open Q5): thumbnails sit in a row; drag to reorder (print follows this order). One-vs-many is still the owner’s call.</p>
+      </div>
+    </div>
+  </body>
+</html>
