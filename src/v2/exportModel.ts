@@ -1,7 +1,7 @@
 import { SUPPORT_MINUTES } from '@/lib/questions';
 import { verseRefLabel } from '@/lib/map';
 import { compareVerseIds } from '@/lib/verse/ids';
-import type { AimComponent, Annotation, QuestionType, Study } from '@/types/study';
+import type { AimComponent, Annotation, ImageRef, QuestionType, Study } from '@/types/study';
 import { annotationMinutes } from '@/v2/annotations';
 import { mentionKey, parseMentions } from '@/v2/reader/mentions';
 
@@ -42,6 +42,8 @@ export interface QuestionBlock {
   minutes: number;
   writeLines: number;
   support: SupportRef[];
+  /** Attached images (bytes resolved separately by id — see `resolveImageDataUrls`). */
+  images: ImageRef[];
 }
 
 export interface StudyNoteBlock {
@@ -53,6 +55,7 @@ export interface StudyNoteBlock {
   hideFromGroup: boolean;
   writeLines: number;
   support: SupportRef[];
+  images: ImageRef[];
 }
 
 export type ExportBlock = QuestionBlock | StudyNoteBlock;
@@ -131,6 +134,12 @@ export function supportFor(a: Annotation): SupportRef[] {
   return out;
 }
 
+/** The attached images on an output item, in order. Same shape for questions + study notes; the bytes
+ *  are resolved separately (by id) at render time so the pure model stays synchronous. */
+export function imagesFor(a: Annotation): ImageRef[] {
+  return a.images ?? [];
+}
+
 export function exportModel(study: Study): ExportModel {
   // `orderedOutput` keeps every output item (the Build panel shows reserved ones dimmed); the export
   // itself drops anything held back via the "in study" toggle (`reserved`).
@@ -140,6 +149,7 @@ export function exportModel(study: Study): ExportModel {
   const blocks: ExportBlock[] = ordered.map((a): ExportBlock => {
     const anchorLabel = a.verseIds.map(verseRefLabel).join(', ');
     const support = supportFor(a);
+    const images = imagesFor(a);
     if (a.kind === 'study-note') {
       return {
         kind: 'study-note',
@@ -149,6 +159,7 @@ export function exportModel(study: Study): ExportModel {
         hideFromGroup: a.hideFromGroup === true,
         writeLines: a.writeLines ?? 0,
         support,
+        images,
       };
     }
     qNumber += 1;
@@ -165,6 +176,7 @@ export function exportModel(study: Study): ExportModel {
       minutes: annotationMinutes(a),
       writeLines: a.writeLines ?? DEFAULT_QUESTION_WRITE_LINES,
       support,
+      images,
     };
   });
 

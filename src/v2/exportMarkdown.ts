@@ -22,7 +22,16 @@ function support(block: ExportBlock): string[] {
   return block.support.map((s) => `> ↗ Support passage — ${s.reference}`);
 }
 
-export function handoutMarkdown(study: Study): string {
+/** Attached images as self-contained markdown — `![caption](data:…)`. `imageUrls` is resolved by the
+ *  caller (base64 data URLs so the .md is portable); an unresolved image is simply omitted. */
+function images(block: ExportBlock, imageUrls: Record<string, string>): string[] {
+  return block.images.flatMap((im) => {
+    const url = imageUrls[im.id];
+    return url ? [`![${im.caption || 'image'}](${url})`] : [];
+  });
+}
+
+export function handoutMarkdown(study: Study, imageUrls: Record<string, string> = {}): string {
   const model = exportModel(study);
   const opts = exportOptions(study);
   const out: string[] = [`# ${model.reference || 'Bible study'}`];
@@ -32,9 +41,11 @@ export function handoutMarkdown(study: Study): string {
     if (block.kind === 'question') {
       out.push('', `${block.number}. ${block.text}`.trimEnd());
       out.push(...support(block));
+      out.push(...images(block, imageUrls));
     } else {
       out.push('', `> **Study note** — ${noteText(block.text)}`);
       out.push(...support(block));
+      out.push(...images(block, imageUrls));
     }
   }
 
@@ -43,7 +54,7 @@ export function handoutMarkdown(study: Study): string {
   return out.join('\n');
 }
 
-export function leaderMarkdown(study: Study): string {
+export function leaderMarkdown(study: Study, imageUrls: Record<string, string> = {}): string {
   const model = exportModel(study);
   const opts = exportOptions(study);
   const theme = supersede(study.themeAim.theme, study.themeAim.themeRevisions).primary.trim();
@@ -67,9 +78,11 @@ export function leaderMarkdown(study: Study): string {
       ].filter(Boolean);
       out.push(`- _${meta.join(' · ')}_`);
       out.push(...support(block));
+      out.push(...images(block, imageUrls));
     } else {
       out.push('', `> **Study note**${block.hideFromGroup ? ' (leader only)' : ''} — ${noteText(block.text)}`);
       out.push(...support(block));
+      out.push(...images(block, imageUrls));
     }
   }
 

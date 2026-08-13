@@ -18,6 +18,7 @@ import { LENSES, type LensId } from '@/v2/lenses';
 import { BuildPanel } from '@/v2/lenses/BuildPanel';
 import { CheckLens } from '@/v2/lenses/CheckLens';
 import { ExportPreview } from '@/v2/print/ExportPreview';
+import { resolveImageDataUrls } from '@/v2/print/supportTexts';
 import { SetupLens } from '@/v2/lenses/SetupLens';
 import { ThemeAimLens, ThemeBand } from '@/v2/lenses/ThemeAimLens';
 import { buildReaderModel, manuscriptModel } from '@/v2/reader/model';
@@ -96,6 +97,21 @@ export function ReaderShell({ study }: { study: Study }) {
   const [lens, setLens] = useState<LensId>(() => loadLens(study.id, passage != null));
   // Build lens: which export document the centre previews (Participant / Leader / Parallel).
   const [buildVariant, setBuildVariant] = useState<'participant' | 'leader' | 'parallel'>('participant');
+  // Attached-image data URLs for the live Build preview, resolved from the image store; re-run when
+  // the set of image ids changes (a caption edit doesn't touch bytes) or we enter Build.
+  const [buildImageUrls, setBuildImageUrls] = useState<Record<string, string>>({});
+  const imageIdsKey = annotations.flatMap((a) => a.images ?? []).map((r) => r.id).join(',');
+  useEffect(() => {
+    if (lens !== 'build') return;
+    let live = true;
+    void resolveImageDataUrls(study).then((urls) => {
+      if (live) setBuildImageUrls(urls);
+    });
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lens, imageIdsKey]);
   const [readingMode, setReadingMode] = useState<ReadingMode>(loadReadingMode);
   // Which non-primary translations are ticked to view side-by-side (v2.9). Persisted per-study so the
   // parallel view survives a reload; the primary itself is always shown (its switch persists to the study).
@@ -531,11 +547,11 @@ export function ReaderShell({ study }: { study: Study }) {
         </div>
         {buildVariant === 'parallel' ? (
           <div className="flex items-start gap-4">
-            <ExportPreview study={study} variant="participant" fill />
-            <ExportPreview study={study} variant="leader" fill />
+            <ExportPreview study={study} variant="participant" fill imageUrls={buildImageUrls} />
+            <ExportPreview study={study} variant="leader" fill imageUrls={buildImageUrls} />
           </div>
         ) : (
-          <ExportPreview study={study} variant={buildVariant} />
+          <ExportPreview study={study} variant={buildVariant} imageUrls={buildImageUrls} />
         )}
       </div>
     );

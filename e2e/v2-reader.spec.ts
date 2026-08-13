@@ -784,11 +784,16 @@ test('v2 Write: attach an image to a question — thumbnail + caption persist ac
   await page.getByRole('textbox', { name: 'Image caption' }).fill('The temple');
 
   // Persist across reload — the bytes live in the IndexedDB image store, the ref in the study body.
+  const studyId = page.url().match(/study\/([^/]+)/)?.[1];
   await page.waitForTimeout(1000);
   await page.reload();
   await page.getByRole('button', { name: '08 Write' }).click();
   await expect(page.getByRole('textbox', { name: 'Image caption' })).toHaveValue('The temple');
   await expect(page.locator('aside').getByRole('img', { name: 'The temple' })).toBeVisible();
+
+  // The image prints in the participant handout (bytes resolved from the store to a data URL).
+  await page.goto(`./#/print/${studyId}/handout`);
+  await expect(page.getByRole('figure', { name: 'The temple' })).toBeVisible();
 });
 
 test('v2 Build: attach a reference to a question (prints as support) + "in study" holds a card back', async ({

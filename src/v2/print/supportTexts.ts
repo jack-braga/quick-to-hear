@@ -1,4 +1,6 @@
 import { DEFAULT_TRANSLATION_ID, loadReading } from '@/lib/bible';
+import { bytesToDataUrl } from '@/lib/images/encode';
+import { getImage } from '@/lib/storage';
 import { parseReference } from '@/lib/verse/reference';
 import type { ParsedText } from '@/types/passage';
 import type { Study } from '@/types/study';
@@ -27,6 +29,29 @@ export async function resolveSupportTextsV2(study: Study): Promise<Record<string
         out[s.osis] = await loadReading(translationId, ref);
       } catch {
         out[s.osis] = null;
+      }
+    }),
+  );
+  return out;
+}
+
+/**
+ * Resolve every attached image's bytes to a `data:` URL, keyed by image id — the durable form the
+ * print DOM renders (a `data:` URI survives `window.print()`, unlike an ephemeral object URL). The
+ * in-app Build preview uses object URLs instead; this is the print/markdown path. A missing image
+ * resolves to nothing (never blocks export).
+ */
+export async function resolveImageDataUrls(study: Study): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  const refs = exportModel(study).blocks.flatMap((b) => b.images);
+  await Promise.all(
+    refs.map(async (im) => {
+      if (im.id in out) return;
+      try {
+        const rec = await getImage(im.id);
+        if (rec) out[im.id] = bytesToDataUrl(rec.bytes, rec.mime);
+      } catch {
+        // skip — a missing image just doesn't render
       }
     }),
   );

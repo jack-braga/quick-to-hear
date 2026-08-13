@@ -55,3 +55,23 @@ describe('leaderMarkdown (everything)', () => {
     expect(md).not.toContain('**Theme:** original');
   });
 });
+
+describe('attached images in markdown', () => {
+  const q: Annotation = {
+    id: 'q1',
+    kind: 'question',
+    verseIds: ['LUKE.1.8'],
+    text: 'Q?',
+    images: [{ id: 'img1', caption: 'The temple', w: 10, h: 10 }],
+  };
+
+  it('emits ![caption](dataUrl) on a question in both documents when resolved', () => {
+    const urls = { img1: 'data:image/png;base64,AAA' };
+    expect(handoutMarkdown(studyWith([q]), urls)).toContain('![The temple](data:image/png;base64,AAA)');
+    expect(leaderMarkdown(studyWith([q]), urls)).toContain('![The temple](data:image/png;base64,AAA)');
+  });
+
+  it('omits an image whose bytes did not resolve (graceful — no broken markdown)', () => {
+    expect(handoutMarkdown(studyWith([q]), {})).not.toContain('![');
+  });
+});

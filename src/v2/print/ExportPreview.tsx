@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { exportOptions } from '@/lib/export';
 import { primaryText } from '@/lib/passage';
 import type { ParsedText } from '@/types/passage';
-import type { Study } from '@/types/study';
+import type { ImageRef, Study } from '@/types/study';
 import { exportModel, participantBlocks, type ExportBlock, type SupportRef } from '@/v2/exportModel';
 import { PrintPassage } from '@/v2/print/PrintPassage';
 import { parseMentions } from '@/v2/reader/mentions';
@@ -57,6 +57,24 @@ function SupportPassage({ support, text }: { support: SupportRef; text?: ParsedT
   );
 }
 
+function AttachedImage({ image, src }: { image: ImageRef; src?: string }) {
+  if (!src) return null; // bytes not resolved (or missing) → render nothing rather than a broken box
+  const ratio = image.w && image.h ? `${image.w} / ${image.h}` : undefined;
+  return (
+    <figure className="my-2 max-w-[340px]">
+      <img
+        src={src}
+        alt={image.caption || 'Attached image'}
+        style={ratio ? { aspectRatio: ratio } : undefined}
+        className="w-full rounded border border-[#ddd7c9] object-contain"
+      />
+      {image.caption && (
+        <figcaption className="mt-1 font-mono text-[9px] italic text-[#6f6a60]">{image.caption}</figcaption>
+      )}
+    </figure>
+  );
+}
+
 function QuestionMeta({ block }: { block: Extract<ExportBlock, { kind: 'question' }> }) {
   const bits = [
     block.anchorLabel,
@@ -72,6 +90,9 @@ export interface ExportPreviewProps {
   study: Study;
   variant: 'participant' | 'leader';
   supportTexts?: Record<string, ParsedText | null>;
+  /** Attached-image sources keyed by image id — a `data:` URL (print) or object URL (preview). The
+   *  caller resolves these (see `resolveImageDataUrls`); absent → images don't render. */
+  imageUrls?: Record<string, string>;
   /** Fill the container (drop the centered max-width) — for the side-by-side Parallel view. */
   fill?: boolean;
   /** `preview` (default) = the in-app paper with page-cut guides; `print` = bare content for the
@@ -79,7 +100,7 @@ export interface ExportPreviewProps {
   mode?: 'preview' | 'print';
 }
 
-export function ExportPreview({ study, variant, supportTexts, fill, mode = 'preview' }: ExportPreviewProps) {
+export function ExportPreview({ study, variant, supportTexts, imageUrls, fill, mode = 'preview' }: ExportPreviewProps) {
   const isPrint = mode === 'print';
   const model = exportModel(study);
   const opts = exportOptions(study);
@@ -98,7 +119,8 @@ export function ExportPreview({ study, variant, supportTexts, fill, mode = 'prev
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [study, variant]);
+    // `imageUrls` in the deps so the page count re-measures once async images load in.
+  }, [study, variant, imageUrls]);
 
   const theme = supersede(study.themeAim.theme, study.themeAim.themeRevisions).primary.trim();
   const aim = supersede(study.themeAim.groupAim, study.themeAim.aimRevisions).primary.trim();
@@ -185,6 +207,9 @@ export function ExportPreview({ study, variant, supportTexts, fill, mode = 'prev
                   {block.support.map((s) => (
                     <SupportPassage key={s.osis} support={s} text={supportTexts?.[s.osis]} />
                   ))}
+                  {block.images.map((im) => (
+                    <AttachedImage key={im.id} image={im} src={imageUrls?.[im.id]} />
+                  ))}
                   {isLeader ? (
                     <>
                       {block.expectedAnswer.trim() && (
@@ -217,6 +242,9 @@ export function ExportPreview({ study, variant, supportTexts, fill, mode = 'prev
                   </p>
                   {block.support.map((s) => (
                     <SupportPassage key={s.osis} support={s} text={supportTexts?.[s.osis]} />
+                  ))}
+                  {block.images.map((im) => (
+                    <AttachedImage key={im.id} image={im} src={imageUrls?.[im.id]} />
                   ))}
                 </div>
               ),

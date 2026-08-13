@@ -2,6 +2,7 @@ import { downloadTextFile, slugify } from '@/lib/download';
 import { emptyStudyBuild, studyLabel, type Question, type Study, type SupportPassage } from '@/types/study';
 import { orderedQuestions } from '@/v2/build';
 import { handoutMarkdown, leaderMarkdown } from '@/v2/exportMarkdown';
+import { resolveImageDataUrls } from '@/v2/print/supportTexts';
 import { mentionKey, parseMentions } from '@/v2/reader/mentions';
 
 /**
@@ -80,12 +81,12 @@ function baseName(study: Study): string {
   return slugify(studyLabel({ reference: study.setup.title || study.setup.reference }));
 }
 
-export function downloadV2Handout(study: Study): Promise<void> {
-  downloadTextFile(`${baseName(study)}-handout.md`, handoutMarkdown(study));
-  return Promise.resolve();
+export async function downloadV2Handout(study: Study): Promise<void> {
+  const imageUrls = await resolveImageDataUrls(study);
+  downloadTextFile(`${baseName(study)}-handout.md`, handoutMarkdown(study, imageUrls));
 }
 
-export function downloadV2Leader(study: Study): Promise<void> {
-  downloadTextFile(`${baseName(study)}-leader.md`, leaderMarkdown(study));
-  return Promise.resolve();
+export async function downloadV2Leader(study: Study): Promise<void> {
+  const imageUrls = await resolveImageDataUrls(study);
+  downloadTextFile(`${baseName(study)}-leader.md`, leaderMarkdown(study, imageUrls));
 }

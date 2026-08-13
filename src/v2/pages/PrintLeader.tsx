@@ -5,7 +5,7 @@ import { useOpenStudy } from '@/hooks/useOpenStudy';
 import type { ParsedText } from '@/types/passage';
 import { ExportPreview } from '@/v2/print/ExportPreview';
 import { PrintShell } from '@/v2/print/PrintShell';
-import { resolveSupportTextsV2 } from '@/v2/print/supportTexts';
+import { resolveImageDataUrls, resolveSupportTextsV2 } from '@/v2/print/supportTexts';
 
 /** `#/print/:id/leader` (v2) — the leader's notes, rendered from the v2 export model. Carries
  *  everything: the interleaved running order with expected answers + metadata, the weighed theme/aim,
@@ -14,10 +14,14 @@ export default function PrintLeader() {
   const { id = '' } = useParams();
   const { study } = useOpenStudy(id);
   const [supportTexts, setSupportTexts] = useState<Record<string, ParsedText | null>>({});
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let live = true;
-    if (study) void resolveSupportTextsV2(study).then((t) => live && setSupportTexts(t));
+    if (study) {
+      void resolveSupportTextsV2(study).then((t) => live && setSupportTexts(t));
+      void resolveImageDataUrls(study).then((u) => live && setImageUrls(u));
+    }
     return () => {
       live = false;
     };
@@ -33,7 +37,13 @@ export default function PrintLeader() {
 
   return (
     <PrintShell backTo={`/study/${study.id}/reader`} toolbarNote="Everything — including the expected answers.">
-      <ExportPreview study={study} variant="leader" mode="print" supportTexts={supportTexts} />
+      <ExportPreview
+        study={study}
+        variant="leader"
+        mode="print"
+        supportTexts={supportTexts}
+        imageUrls={imageUrls}
+      />
     </PrintShell>
   );
 }
