@@ -19,8 +19,10 @@ a place, a manuscript scan.
 2. `CLAUDE.md` — the **inviolable rules** (esp. rule 1 & rule 6 & rule 7) and the commit/branching policy.
 3. `docs/V2-UX-BACKLOG.md` **§6** (this is item "Images in a study, somehow — 'definitely defer'") and
    **§7** (the current 10-lens flow, so you know where Write/Build sit).
-4. The files in **"Surface map"** below — read them before touching anything.
-5. Auto-memories: `v2-ui-overhaul` (current shipped state), `pause-for-confirmation-between-steps`,
+4. The mockup `docs/mockups/v2-images.html` (serve: `cd docs/mockups && python3 -m http.server 8899`) —
+   the **card affordance (Variant A, chosen)** + the print layout.
+5. The files in **"Surface map"** below — read them before touching anything.
+6. Auto-memories: `v2-ui-overhaul` (current shipped state), `pause-for-confirmation-between-steps`,
    `prefer-chat-questions-over-tool`, `no-claude-coauthor-in-commits`, `form-state-controlled-inputs-standard`.
 
 ## Inviolable constraints (these shape the whole design)
@@ -100,7 +102,9 @@ Either way: **downscale + compress on import** (e.g. cap the longest edge ~1600p
    tests, no UI.** Include a project-file round-trip test (export → import keeps images).
 2. **Authoring** — `AttachImageRow` on question + study-note cards (upload → downscale → thumbnail →
    caption → remove), wired in `MarginAnnotations` (Write) and `BuildPanel` (Build). Browser-verify:
-   attach, reload, still there.
+   attach, reload, still there. **Card affordance = Variant A (thumbnail strip) — DECIDED (owner,
+   2026-08-13);** see the mockup `docs/mockups/v2-images.html` (an `🖼 add image` button beside
+   `↗ add reference`; attached images as ~90px thumbnails with an inline caption + a delete corner).
 3. **Export** — `imagesFor` + block fields + `ExportPreview` `<img>` render + `resolveImageDataUrls` for
    print + the markdown data-URI emitter. Browser-verify the **print route** shows the image
    (participant vs leader per the decision) and page-cuts sensibly.

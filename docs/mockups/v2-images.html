@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Images on cards — affordance variants + print layout</title>
+    <style>
+      :root {
+        --font-scripture: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+        --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+        --desk: #e7e4db; --leaf: #fbf9f2; --panel: #f2efe6;
+        --ink: #1d1b17; --ink-soft: #77726a; --ink-faint: #a49e92; --line: #e2ddd0;
+        --lapis: #28468a; --lapis-ink: #17305f; --lapis-wash: rgba(40,70,138,0.14); --lapis-edge: rgba(40,70,138,0.34);
+        --amber-ink: #8a6a16; --amber-edge: rgba(185,138,30,0.42);
+        --rubric: #a6321e; --rubric-edge: rgba(166,50,30,0.35);
+        --violet: #6b4ba8; --violet-ink: #4c3480; --violet-wash: rgba(107,75,168,0.13); --violet-edge: rgba(107,75,168,0.36);
+        --shadow: 0 1px 2px rgba(30,27,20,0.05), 0 10px 26px -12px rgba(30,27,20,0.2);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: var(--font-ui); background: var(--desk); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5; padding: 26px; }
+      button, input, textarea { font-family: inherit; }
+      h2.head { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 3px; }
+      .sub { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 16px; max-width: 46rem; }
+      .cols { display: flex; gap: 26px; align-items: flex-start; flex-wrap: wrap; }
+      .col { min-width: 360px; }
+      .col.author { flex: 1 1 420px; }
+      .col.print { flex: 1 1 460px; }
+      .tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--lapis-ink); background: var(--lapis-wash); border-radius: 5px; padding: 3px 8px; margin-bottom: 10px; }
+      .note { font-size: 12px; color: var(--ink-soft); margin: 9px 2px 22px; }
+      .note b { color: var(--ink); }
+
+      /* ---- panel card (authoring) ---- */
+      .panel { background: color-mix(in srgb, var(--desk) 55%, var(--leaf)); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+      .card { background: var(--leaf); border: 1px solid var(--line); border-left: 3px solid var(--amber-edge); border-radius: 9px; box-shadow: var(--shadow); padding: 11px 13px; }
+      .card.note { border-left-color: var(--violet-edge); }
+      .crow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+      .vref { border-radius: 5px; background: var(--lapis-wash); color: var(--lapis-ink); padding: 2px 6px; font-family: var(--font-mono); font-size: 11px; }
+      .kind { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+      .kind.q { color: var(--amber-ink); }
+      .kind.n { color: var(--violet-ink); }
+      .badge { font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--rubric); border: 1px solid var(--rubric-edge); border-radius: 4px; padding: 1px 5px; }
+      .qtext { font-family: var(--font-scripture); font-size: 15px; color: var(--ink); margin: 2px 0 8px; }
+      .exp { font-family: var(--font-ui); font-size: 12.5px; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 7px; background: var(--panel); padding: 6px 9px; margin-bottom: 9px; }
+
+      /* attach row */
+      .attach { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+      .chip-ref { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--lapis-edge); background: var(--lapis-wash); color: var(--lapis-ink); border-radius: 5px; padding: 2px 7px; font-family: var(--font-mono); font-size: 9.5px; }
+      .addbtn { border: none; background: none; color: var(--lapis-ink); font-family: var(--font-mono); font-size: 9.5px; cursor: pointer; }
+      .addbtn.img { color: var(--ink-soft); }
+      .x { color: var(--ink-faint); cursor: pointer; }
+
+      /* Variant A — thumbnail strip */
+      .thumbs { display: flex; gap: 10px; margin-top: 9px; flex-wrap: wrap; }
+      .thumb { width: 92px; }
+      .thumb .frame { width: 92px; height: 69px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; position: relative; background: var(--panel); }
+      .thumb .frame .del { position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; border-radius: 50%; background: rgba(30,27,20,0.6); color: #fff; font-size: 10px; display: grid; place-items: center; cursor: pointer; }
+      .thumb .cap { width: 100%; margin-top: 5px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); font-size: 10px; color: var(--ink-soft); padding: 3px 6px; }
+      .thumb .cap.empty { color: var(--ink-faint); font-style: italic; }
+
+      /* Variant B — filename chips */
+      .chip-img { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft); border-radius: 5px; padding: 2px 7px; font-family: var(--font-mono); font-size: 9.5px; }
+      .chip-img .mini { width: 15px; height: 12px; border-radius: 2px; overflow: hidden; display: inline-block; }
+      .srcline { margin-top: 9px; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-faint); }
+
+      /* ---- print (handout) ---- */
+      .sheet { background: #fff; color: #16130f; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 30px 34px; }
+      .sheet .doc-h { font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #9b978c; border-bottom: 1px solid #ece7dc; padding-bottom: 10px; margin-bottom: 18px; display: flex; justify-content: space-between; }
+      .qblock { margin-bottom: 8px; }
+      .qnum { display: flex; gap: 10px; align-items: baseline; }
+      .qnum .n { font-family: var(--font-mono); font-size: 13px; color: #b0330f; }
+      .qnum .t { font-family: var(--font-scripture); font-size: 16px; line-height: 1.5; }
+      .lines { margin: 12px 0 14px 26px; }
+      .lines div { border-bottom: 1px solid #e4ded2; height: 21px; }
+      .support { margin: 10px 0 12px 26px; border-left: 2px solid #cbd3e6; background: #f6f7fb; padding: 8px 11px; border-radius: 0 6px 6px 0; }
+      .support .lab { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .09em; color: #5b6b93; }
+      .support .body { font-family: var(--font-scripture); font-size: 12.5px; color: #33302a; margin-top: 3px; }
+      /* the printed image */
+      .figure { margin: 12px 0 16px 26px; max-width: 340px; }
+      .figure .pic { border: 1px solid #ddd7c9; border-radius: 4px; overflow: hidden; }
+      .figure figcaption { font-family: var(--font-mono); font-size: 10px; font-style: italic; color: #6f6a60; margin-top: 5px; }
+
+      svg.ph { display: block; width: 100%; height: 100%; }
+    </style>
+  </head>
+  <body>
+    <h2 class="head">Images on cards — 2 authoring affordances + the print layout</h2>
+    <p class="sub">
+      Images attach to a <b>question</b> or <b>study-note</b> card the same way references do (the
+      <span style="font-family:var(--font-mono)">↗ add reference</span> pattern) and print in the handout /
+      leader docs. Left: two ways the attached images could look while authoring. Right: how one renders in the
+      participant handout. Placeholders stand in for the user's own uploaded images.
+    </p>
+
+    <div class="cols">
+      <!-- ============ AUTHORING ============ -->
+      <div class="col author">
+        <span class="tag">Authoring · Variant A — thumbnail strip</span>
+        <div class="panel">
+          <div class="card">
+            <div class="crow">
+              <span class="vref">Luke 1:17</span><span class="kind q">Question</span>
+            </div>
+            <div class="qtext">What does “in the spirit and power of Elijah” tell us about John’s role?</div>
+            <div class="exp">Expected: he is the promised forerunner (Mal 4) who turns hearts, preparing the Lord’s way.</div>
+            <div class="attach">
+              <span class="chip-ref">↗ Mal 4:5 <span class="x">✕</span></span>
+              <button class="addbtn">↗ add reference</button>
+              <button class="addbtn img">🖼 add image</button>
+            </div>
+            <div class="thumbs">
+              <div class="thumb">
+                <div class="frame"><svg class="ph" viewBox="0 0 120 90"><rect width="120" height="90" fill="#eef0ea"/><path d="M8 66 Q40 34 70 52 T112 26" stroke="#b7a98a" stroke-width="3" fill="none" stroke-dasharray="5 3"/><circle cx="70" cy="52" r="4.5" fill="#a6321e"/><circle cx="24" cy="60" r="2.5" fill="#8a8574"/><circle cx="104" cy="30" r="2.5" fill="#8a8574"/></svg><span class="del">✕</span></div>
+                <input class="cap" value="The Jordan region" />
+              </div>
+              <div class="thumb">
+                <div class="frame"><svg class="ph" viewBox="0 0 120 90"><rect width="120" height="90" fill="#dfe3e0"/><circle cx="92" cy="24" r="9" fill="#e6cfa0"/><path d="M0 90 L38 52 L66 90 Z" fill="#b9c3ab"/><path d="M32 90 L78 46 L120 90 Z" fill="#a7b39a"/></svg><span class="del">✕</span></div>
+                <input class="cap empty" placeholder="caption…" />
+              </div>
+            </div>
+            <div class="srcline">▸ step 08 · Write</div>
+          </div>
+        </div>
+        <p class="note"><b>Variant A:</b> attached images sit as ~90px thumbnails with an inline caption + a delete corner. You see them at a glance; the card grows a little. Good if images are central to the study.</p>
+
+        <span class="tag">Authoring · Variant B — filename chips (compact)</span>
+        <div class="panel">
+          <div class="card note">
+            <div class="crow">
+              <span class="vref">Luke 1:8–10</span><span class="kind n">Study note</span>
+            </div>
+            <div class="qtext" style="font-size:13.5px">The incense offering was a daily temple duty — the crowd outside is praying while Zacharias serves inside.</div>
+            <div class="attach">
+              <span class="chip-img"><span class="mini"><svg class="ph" viewBox="0 0 120 90"><rect width="120" height="90" fill="#eef0ea"/><rect x="30" y="24" width="60" height="46" fill="#cdd3c4"/><rect x="52" y="40" width="16" height="30" fill="#b3bba7"/></svg></span> temple-plan.png <span class="x">✕</span></span>
+              <span class="chip-img"><span class="mini"><svg class="ph" viewBox="0 0 120 90"><rect width="120" height="90" fill="#dfe3e0"/><circle cx="92" cy="24" r="9" fill="#e6cfa0"/><path d="M0 90 L40 52 L120 90 Z" fill="#aab69b"/></svg></span> altar-of-incense.jpg <span class="x">✕</span></span>
+              <button class="addbtn img">🖼 add image</button>
+            </div>
+            <div class="srcline">▸ step 08 · Write · ☐ hide from group</div>
+          </div>
+        </div>
+        <p class="note"><b>Variant B:</b> attached images show as compact filename chips (like the reference chip), with a tiny preview swatch; the full image only appears in the preview/print. Keeps the card small — best for the “passage stays the subject” rule. Click a chip to preview + edit its caption.</p>
+      </div>
+
+      <!-- ============ PRINT ============ -->
+      <div class="col print">
+        <span class="tag">Print · participant handout</span>
+        <div class="sheet">
+          <div class="doc-h"><span>Luke 1:5–25 · participant handout</span><span>Quick to Hear</span></div>
+          <div class="qblock">
+            <div class="qnum"><span class="n">3.</span><span class="t">What does “in the spirit and power of Elijah” tell us about John’s role?</span></div>
+            <figure class="figure">
+              <div class="pic"><svg class="ph" viewBox="0 0 120 78" style="height:auto;aspect-ratio:120/78"><rect width="120" height="78" fill="#eef0ea"/><path d="M8 58 Q40 30 70 46 T112 22" stroke="#b7a98a" stroke-width="2.4" fill="none" stroke-dasharray="5 3"/><circle cx="70" cy="46" r="4" fill="#a6321e"/><text x="70" y="70" font-size="7" fill="#8a8574" font-family="monospace" text-anchor="middle">JORDAN</text></svg></div>
+              <figcaption>Fig. — the Jordan region, where John later baptised.</figcaption>
+            </figure>
+            <div class="support">
+              <div class="lab">↗ Support passage — Mal 4:5–6</div>
+              <div class="body">“Behold, I will send you Elijah the prophet … he will turn the hearts of the fathers to the children …”</div>
+            </div>
+            <div class="lines"><div></div><div></div><div></div></div>
+          </div>
+          <div class="qblock">
+            <div class="qnum"><span class="n">4.</span><span class="t">Why is Zacharias’ doubt met with silence?</span></div>
+            <div class="lines"><div></div><div></div></div>
+          </div>
+        </div>
+        <p class="note"><b>Print:</b> the image sits under its host question (before the ruled answer lines), capped to the column width with a thin frame + an italic caption. Monochrome-friendly. A study-note image prints under the note; <b>a question image</b> — participant + leader, or leader-only? (open Q3). Placement/size is open Q7.</p>
+      </div>
+    </div>
+  </body>
+</html>
