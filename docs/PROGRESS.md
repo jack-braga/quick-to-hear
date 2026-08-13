@@ -31,11 +31,20 @@ e2e (30) && build`, 0 console errors):**
   commentary); **Write** is the only place group-facing output is authored; **Build** = live export
   preview + per-card controls. Model + export are v2-native (`revisions.ts`, `exportModel.ts`).
 
-**Next up (recommended):** no large threads are open — the redesign is fully shipped with nothing
-deferred. Remaining items are smaller **`V2-UX-BACKLOG.md §4/§1` polish**: the Set-Up UX once-over, the
-"add a prior step's card-type in a later lens" question, and the ParallelCanvas gaps (multi-tone stripe +
-manuscript transform not applied in the parallel view). (§3 "missing v1 value" — formulas/litmus/traps/
-soft-warnings — landed with the Write/Theme lenses; e2e locks it.)
+**Next up:** no large threads are open — the redesign is fully shipped with nothing deferred. The
+remaining backlog items are small and mostly **owner-decision-gated** (not "just build"):
+- **§4 Set-Up UX once-over** — make the Set-Up page sleeker; consider doing step 1 in the right panel.
+  Subjective/visual → prototype-led (mock, then the owner picks).
+- **§2 Study-level annotation on phase 1** — add an unanchored question/note to the whole study on
+  Set-Up (`verseIds:[]` already supported). *Re-confirm it still fits post-flow-redesign before building.*
+- **§1 select-range → make a section** — owner yes/no (today: divide/merge + band-click only).
+- **§1 add a prior card-type in a later lens** — owner to confirm the leaning (each lens adds its own
+  type; a secondary affordance adds a prior type on demand).
+- **§2 card-naming convention** — the flagged case is fixed (`Mark · Confusing`→`Confusion`, `note`→
+  `comment`); residual is "owner may have more input."
+(§3 "missing v1 value" — formulas/litmus/traps/soft-warnings — already landed with the Write/Theme
+lenses; e2e locks it. The ParallelCanvas multi-tone/manuscript/sectioning gaps are also already fixed —
+`bd0ae7a`/`9fce981`/`148caa7`.)
 
 ---
 
