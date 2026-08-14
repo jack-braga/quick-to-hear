@@ -1,4 +1,5 @@
 import { base64ToBytes, bytesToBase64 } from '@/lib/images/encode';
+import { ACCEPTED_MIME, MAX_BYTES } from '@/lib/images/processImage';
 import { newId, nowIso } from '@/lib/id';
 import {
   getDB,
@@ -198,7 +199,9 @@ function extractEnvelopeImages(parsed: unknown): EnvelopeImage[] {
         typeof im === 'object' &&
         typeof (im as EnvelopeImage).id === 'string' &&
         typeof (im as EnvelopeImage).mime === 'string' &&
-        typeof (im as EnvelopeImage).dataBase64 === 'string',
+        typeof (im as EnvelopeImage).dataBase64 === 'string' &&
+        typeof (im as EnvelopeImage).w === 'number' &&
+        typeof (im as EnvelopeImage).h === 'number',
     );
   }
   return [];
@@ -246,6 +249,36 @@ export async function importStudy(text: string): Promise<ImportResult> {
   // over one image record), remap the annotation refs to the new ids, and drop any ref whose bytes
   // aren't in the file. Fresh identity: new study id + updatedAt now so it sorts to the top.
   const envImages = extractEnvelopeImages(parsed);
+
+  // Validate + decode every embedded image BEFORE persisting anything. Import is the app's untrusted
+  // surface, so it enforces the same allow-list + size cap processImageFile applies on upload, and it
+  // must never leave a half-imported "ghost" study: the study body used to be committed first and a
+  // corrupt base64 then threw from atob(), rejecting the promise while stranding a study with dangling
+  // image refs. A bad image now fails the whole import (quarantined, like a malformed body).
+  const decoded = new Map<string, ArrayBuffer>();
+  for (const img of envImages) {
+    let reason: string | null = null;
+    let bytes: ArrayBuffer | null = null;
+    if (!(ACCEPTED_MIME as readonly string[]).includes(img.mime)) {
+      reason = `The project file has an image of an unsupported type (${img.mime}).`;
+    } else {
+      try {
+        bytes = base64ToBytes(img.dataBase64);
+      } catch {
+        reason = 'The project file has a corrupted image (its data could not be decoded).';
+      }
+    }
+    if (!reason && bytes && bytes.byteLength > MAX_BYTES) {
+      reason = 'The project file has an image larger than the 12 MB limit.';
+    }
+    if (reason || !bytes) {
+      const err = reason ?? 'The project file has an unreadable image.';
+      await quarantineRaw(parsed, 'import', err);
+      return { ok: false, error: err };
+    }
+    decoded.set(img.id, bytes);
+  }
+
   const idMap = new Map<string, string>();
   for (const img of envImages) idMap.set(img.id, newId());
 
@@ -271,7 +304,7 @@ export async function importStudy(text: string): Promise<ImportResult> {
     envImages.map((img) =>
       putImage(idMap.get(img.id)!, {
         studyId: freshId,
-        bytes: base64ToBytes(img.dataBase64),
+        bytes: decoded.get(img.id)!,
         mime: img.mime,
         w: img.w,
         h: img.h,

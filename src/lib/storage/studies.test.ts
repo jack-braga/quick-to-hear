@@ -132,4 +132,34 @@ describe('project-file export / import', () => {
     expect(await listStudies()).toHaveLength(0);
     expect(await listQuarantine()).toHaveLength(1);
   });
+
+  it('imports a valid embedded image, storing the study', async () => {
+    const study = { ...freshStudy('img', 'Luke 1'), passage: samplePassageContainer };
+    const file = serializeStudy(study, [{ id: 'im1', mime: 'image/png', w: 1, h: 1, dataBase64: 'AAAA' }]);
+    const result = await importStudy(file);
+    expect(result.ok).toBe(true);
+    expect(await listStudies()).toHaveLength(1);
+  });
+
+  it('rejects a corrupt embedded image WITHOUT leaving a half-imported study (rule 6)', async () => {
+    const file = serializeStudy(freshStudy('bad', 'Luke 1'), [
+      { id: 'im1', mime: 'image/png', w: 1, h: 1, dataBase64: '!!!not-base64!!!' },
+    ]);
+    const result = await importStudy(file);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/corrupted image|could not be decoded/i);
+    // The critical property: nothing was persisted (no ghost study) and the file is quarantined.
+    expect(await listStudies()).toHaveLength(0);
+    expect(await listQuarantine()).toHaveLength(1);
+  });
+
+  it('rejects an embedded image whose type is outside the upload allow-list (e.g. SVG)', async () => {
+    const file = serializeStudy(freshStudy('svg', 'Luke 1'), [
+      { id: 'im1', mime: 'image/svg+xml', w: 1, h: 1, dataBase64: 'AAAA' },
+    ]);
+    const result = await importStudy(file);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/unsupported type/i);
+    expect(await listStudies()).toHaveLength(0);
+  });
 });
