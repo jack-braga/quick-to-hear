@@ -16,7 +16,11 @@ fixed is at the bottom (§9) and in the git log. Gate is green at every commit
 >   (`a18ab08`): §1.9 — done.
 > - ✅ **Group F** (`541b858`): §3.3 — done. **Group G** (`75463fe`): §1.3 — done. **Group H**
 >   (`6387148`): §1.2 — done. **Group I** (`7b1c609`): §1.7 + §6.1 + §6.2 — done.
-> - ⏭️ Groups J–O pending. See the handoff for the owner-triaged decision on each.
+> - ✅ **Group J**: §2.1 + §2.2 — done. **Group K**: §4 — done. **Group L**: §5.1 — done.
+>   **Group M**: §6.4 — done. **Group N**: §3.4 — done. **Group O**: §8 (this doc reorg) — done.
+> - ✅ **ALL GROUPS COMPLETE.** Every triaged item in `docs/HANDOFF-sweep-fixes.md` is landed +
+>   pushed to `main`. (Deferred-by-design items — §3.1, §3.2, §1.10e, Talk mode, BSB — remain in
+>   `docs/ROADMAP-v2.md`.)
 
 > Severity is the reviewer's, re-checked by me. "Latent" = real defect with no currently-reachable
 > trigger (guard it before the feature that would reach it lands).

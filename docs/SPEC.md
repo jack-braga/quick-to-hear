@@ -1,12 +1,27 @@
 # Bible Study Preparation Tool — Flow Specification
 
-> This is the authoritative specification for *what the tool does and why*. It is
-> reproduced verbatim from the original brief. It intentionally contains no
-> technical implementation detail — those decisions live in `PLAN.md`.
->
-> When `PLAN.md` and this document disagree about *behaviour*, this document wins
-> and `PLAN.md` should be corrected. When they disagree about *implementation*,
-> `PLAN.md` wins (this document has no opinion on implementation).
+> This is the authoritative specification for *what the tool does and why*, reproduced verbatim
+> from the original brief. It intentionally contains no technical implementation detail. It still
+> governs **behaviour intent**, but the app is now the **v2 ten-lens flow**, not the seven phases
+> named below — read the map first. (The v1 tech plan is archived at `docs/archive/PLAN.md`.)
+
+## v1 phases → v2 lenses (read this first)
+
+The seven phases below map onto the v2 flow of **ten lenses** (v2 added Deepen + Weigh, renamed
+Map→Survey and Questions→Write, and split old Phase 6 into Write + Build). The *behaviour* each
+phase describes still holds; only the surface changed.
+
+| v1 phase (below)              | v2 lens(es)                              | note |
+|-------------------------------|------------------------------------------|------|
+| Phase 1 — Set up              | **01 Set up**                            | |
+| Phase 2 — Pray and read       | **02 Read**                              | |
+| Phase 3 — Map the passage     | **03 Survey**                            | renamed; sub-verse "marks" are now plain `note` annotations by verse id (§1.7 removed the old mark model) |
+| Phase 4 — COMA                | **04 COMA**                              | answers are genre-scoped cards |
+| —                             | **05 Deepen**                            | *new* — append own-work revisions to a card |
+| Phase 5 — Theme and aim       | **06 Theme & aim**                       | |
+| —                             | **07 Weigh**                             | *new* — append 📖 commentary revisions (supersede) |
+| Phase 6 — Build the questions | **08 Write** + **09 Build**              | Write authors the group-facing output; Build is the running order + live export preview |
+| Phase 7 — Check and export    | **10 Check**                             | audits the actual exported document |
 
 ---
 

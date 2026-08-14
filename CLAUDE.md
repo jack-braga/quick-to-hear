@@ -8,20 +8,21 @@ content.** Its reason to exist is to (a) enforce disciplines paper cannot and
 
 ## Start every session here
 
-> **v1 (Stages 0–10) is complete and frozen as a reference. The active work is the v2
-> text-central overhaul.** Building v2? Read **`docs/V2-SESSION-PROMPT.md`** →
-> **`docs/ROADMAP-v2.md`** first; the v1 docs below are the reference crib. Clean break:
-> no users, studies non-upgradable, v1 not maintained.
+> **The app is 100% v2 (the text-central, ten-lens flow). v1 was deleted, not frozen** — a clean
+> break: no users, studies non-upgradable, v1 not maintained. The v1 build log + tech plan live
+> in `docs/archive/` as a reference crib only.
 
 1. **`docs/PROGRESS.md`** — where the build actually is + how to resume. Read first.
-2. **`docs/PLAN.md`** — locked tech decisions, architecture, and the staged build
-   order (Stages 0–9). Read the stage you're on.
-3. **`docs/SPEC.md`** — the authoritative behaviour spec (the seven phases). Read
-   the phase you're building.
-4. **`docs/TEACHING-TEXT.md`** — the inventory of guidance/help text (user-authored).
+2. **`docs/ROADMAP-v2.md`** — the v2 model, the build order (§4), and the per-item log (§5).
+3. **`docs/V2-UX-BACKLOG.md`** §7 — the authoritative current flow + the durable owner feedback;
+   §4 — the remaining polish backlog.
+4. **`docs/SPEC.md`** — the authoritative behaviour *intent* (opens with a v1-phase → v2-lens map).
+5. **`docs/TEACHING-TEXT.md`** — the inventory of guidance/help text (user-authored).
 
-Then check `git log --oneline` and, once Stage 0 has landed,
-`npm run typecheck && npm run lint && npm test && npm run build`.
+Then check `git log --oneline` and run the gate:
+`npm run typecheck && npm run lint && npm test && npm run build && npm run test:e2e`.
+
+*(Archived reference: `docs/archive/PROGRESS-v1.md`, `docs/archive/PLAN.md` — the v1 Stages 0–10.)*
 
 **Reusable sibling repos:** `../twice-daily` (USFM→JSON Bible pipeline + eBible
 sources on disk — reuse & extend), `../local-ledger` (Vite/Pages/HashRouter/PWA
@@ -29,11 +30,11 @@ template), `../krenoda` (theming, Zustand, vitest jsdom+fake-indexeddb).
 
 ## Working agreement
 
-- **Build one stage at a time** (`PLAN.md` §6). Each stage ends testable and
-  committable. When a stage is done: run its "how to test" gate, **update
-  `docs/PROGRESS.md`** (status, what changed, next up, deviations), then commit.
-- The plan is designed for **fresh sessions to hand off cleanly** — keep
-  `PROGRESS.md` accurate enough that a new agent can continue without you.
+- **Land one scoped increment at a time.** Each ends testable and committable: run the full gate
+  (`typecheck && lint && test && build && test:e2e`), **update `docs/PROGRESS.md`** (status, what
+  changed, next up, deviations), then commit.
+- Keep `PROGRESS.md` accurate enough that a **fresh session can resume without you** — that hand-off
+  is the point.
 
 ## Commits & branching (owner policy)
 
@@ -64,7 +65,7 @@ template), `../krenoda` (theming, Zustand, vitest jsdom+fake-indexeddb).
 8. **COMA attribution** (Matthias Media / Holy Trinity Church) must render wherever
    COMA content appears — it's stored inside the data so it can't drift.
 
-## Stack (locked — see `PLAN.md` §2)
+## Stack (locked — see `docs/archive/PLAN.md` §2)
 
 React 18 + Vite + TypeScript (**strict**) · shadcn/ui + Tailwind (`darkMode:'class'`) ·
 **Zustand** (study store) + controlled inputs (fields — no form library) · `idb` (IndexedDB) · `zod` ·
@@ -72,11 +73,11 @@ React 18 + Vite + TypeScript (**strict**) · shadcn/ui + Tailwind (`darkMode:'cl
 `react-markdown` + `js-yaml` (content) · Vitest **jsdom + fake-indexeddb** + Playwright ·
 GitHub Pages (official Pages Actions, `base:"/quick-to-hear/"`) · `vite-plugin-pwa`
 (Bibles via runtimeCaching) · light/dark/system theming (krenoda-style, no next-themes).
-Bundled Bibles: **WEBBE + ASV** (no KJV; BSB deferred — PLAN §8 #4, not shipped). Verse IDs
+Bundled Bibles: **WEBBE + ASV** (no KJV; BSB deferred, not shipped). Verse IDs
 **anchored to the `kjv` versification** (`bcv_parser` set to `kjv`); they share KJV numbering so they
-align by number-equality + a per-verse `present` flag; cross-versification mapping is
-M3-only. (Verified — see PROGRESS decision log.) Modelled on `../local-ledger`; Bible pipeline from
-`../twice-daily`.
+align by number-equality + a per-verse `present` flag. Cross-versification *mapping* is **not built**
+— the old Hebrew-Psalms remap was removed (§1.8); pasted comparison assumes standard English numbering
+(a note says so). Modelled on `../local-ledger`; Bible pipeline from `../twice-daily`.
 
 ## Licensing boundary
 
@@ -90,4 +91,4 @@ judgement call.
   lib,pages,types,utils}`; `content/{help,method,bibles}`; `docs/`.
 - Two workflows: `ci.yml` (typecheck+lint+test+build) and `deploy.yml` (Pages).
 - ESLint flat config + Prettier. Node 20 in CI.
-- `ROADMAP.md` captures deliberately-deferred work (Talk mode, series mgmt, etc.).
+- `docs/ROADMAP-v2.md` captures deliberately-deferred work (Talk mode, series mgmt, etc.).
