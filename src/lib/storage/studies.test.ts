@@ -184,6 +184,19 @@ describe('project-file export / import', () => {
     expect(await listQuarantine()).toHaveLength(1);
   });
 
+  it('§3.4 fails the WHOLE import atomically when only one of several images is corrupt', async () => {
+    // One valid + one corrupt image: the import must reject before persisting anything, so a good
+    // image can never smuggle a half-imported (ghost) study past the corrupt one (rule 6).
+    const file = serializeStudy({ ...freshStudy('mix', 'Luke 1'), passage: samplePassageContainer }, [
+      { id: 'ok', mime: 'image/png', w: 1, h: 1, dataBase64: 'AAAA' },
+      { id: 'bad', mime: 'image/png', w: 1, h: 1, dataBase64: '!!!not-base64!!!' },
+    ]);
+    const result = await importStudy(file);
+    expect(result.ok).toBe(false);
+    expect(await listStudies()).toHaveLength(0); // no ghost study
+    expect(await listQuarantine()).toHaveLength(1);
+  });
+
   it('rejects an embedded image whose type is outside the upload allow-list (e.g. SVG)', async () => {
     const file = serializeStudy(freshStudy('svg', 'Luke 1'), [
       { id: 'im1', mime: 'image/svg+xml', w: 1, h: 1, dataBase64: 'AAAA' },

@@ -20,6 +20,9 @@ bcv.set_options({
   // A bare "Luke 1" means the whole chapter, not an ambiguous book/chapter token.
   book_alone_strategy: 'full',
   book_range_strategy: 'include',
+  // In a single-chapter book (Jude, Philemon, Obadiah…) a bare "Jude 5" means chapter 1, verse 5.
+  // Pinned so `chapterCount`/`verseCount` for those books don't ride an unpinned default (§3.4).
+  single_chapter_1_strategy: 'chapter',
 });
 
 export interface RefEndpoint {

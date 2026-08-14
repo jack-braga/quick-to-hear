@@ -95,4 +95,21 @@ describe('chapterCount / verseCount (KJV versification)', () => {
     expect(chapterCount('Nowhere')).toBeNull();
     expect(verseCount('Malachi', 9)).toBeNull();
   });
+
+  it('§3.4 single-chapter books count deterministically (pinned single_chapter_1_strategy)', () => {
+    // A single-chapter book has 1 chapter; its verses are chapter 1 (Jude 5 = verse 5, not ch 5).
+    for (const [book, verses] of [
+      ['Jude', 25],
+      ['Philemon', 25],
+      ['Obadiah', 21],
+      ['2 John', 13],
+      ['3 John', 14], // KJV clamps to 14
+    ] as const) {
+      expect(chapterCount(book)).toBe(1);
+      expect(verseCount(book, 1)).toBe(verses);
+    }
+    // A bare number in a single-chapter book is a verse of chapter 1.
+    expect(parseReference('Jude 5')?.start.verseId).toBe('JUDE.1.5');
+    expect(parseReference('Philemon 10-16')?.end.verseId).toBe('PHLM.1.16');
+  });
 });

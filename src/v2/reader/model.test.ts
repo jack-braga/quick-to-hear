@@ -59,6 +59,30 @@ const PSALM: ParsedText = ParsedTextSchema.parse({
   ],
 });
 
+/** A passage that spans a chapter boundary (Luke 1:80 → 2:2) — exercises the cross-chapter label. */
+const CROSS_CHAPTER: ParsedText = ParsedTextSchema.parse({
+  translationId: 'webbe',
+  reference: 'Luke 1:80-2:2',
+  blocks: [
+    {
+      kind: 'p',
+      verses: [
+        { verseId: 'LUKE.1.80', present: true, fragments: [{ text: 'The child grew.', qlevel: 0 }] },
+        { verseId: 'LUKE.2.1', present: true, fragments: [{ text: 'A decree went out.', qlevel: 0 }] },
+        { verseId: 'LUKE.2.2', present: true, fragments: [{ text: 'The first enrollment.', qlevel: 0 }] },
+      ],
+    },
+  ],
+});
+
+describe('buildReaderModel — cross-chapter range label (§3.4)', () => {
+  it('labels a band that spans a chapter boundary as "Luke 1:80–2:2"', () => {
+    const model = buildReaderModel(CROSS_CHAPTER, []);
+    expect(model.bands).toHaveLength(1);
+    expect(model.bands[0]!.ref).toBe('Luke 1:80–2:2');
+  });
+});
+
 describe('buildReaderModel — undivided passage', () => {
   it('renders one implicit band spanning the whole passage', () => {
     const model = buildReaderModel(LUKE, []);
