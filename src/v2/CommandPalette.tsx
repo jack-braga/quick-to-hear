@@ -23,6 +23,31 @@ export function CommandPalette({
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Modal focus trap + Esc (§4.3): keep Tab inside the dialog, and close on Esc even when focus has
+  // moved onto a result row (the input's own handler covers Esc only while the input is focused).
+  const onDialogKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose();
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    const focusables = dialogRef.current?.querySelectorAll<HTMLElement>(
+      'input, button, [href], [tabindex]:not([tabindex="-1"])',
+    );
+    if (!focusables || focusables.length === 0) return;
+    const first = focusables[0]!;
+    const last = focusables[focusables.length - 1]!;
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   const items = useMemo(() => buildPaletteItems(query, ctx), [query, ctx]);
 
@@ -68,8 +93,11 @@ export function CommandPalette({
       }}
     >
       <div
+        ref={dialogRef}
         role="dialog"
+        aria-modal="true"
         aria-label="Command palette"
+        onKeyDown={onDialogKeyDown}
         className="w-[min(560px,92vw)] overflow-hidden rounded-[14px] border border-line bg-leaf shadow-[0_24px_60px_-12px_rgba(0,0,0,0.45)]"
       >
         <div className="flex items-center gap-2.5 border-b border-line px-[18px] py-[15px]">

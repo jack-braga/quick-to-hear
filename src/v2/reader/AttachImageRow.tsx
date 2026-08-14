@@ -18,7 +18,8 @@ const ACCEPT = ACCEPTED_MIME.join(',');
  * original bytes untouched unless oversized (fidelity-first), then the bytes go to the IndexedDB image
  * store keyed by id while the card keeps only an ordered `{ id, caption }` ref list (via `onEdit`).
  * Renders a thumbnail strip: each image has an inline caption (doubling as alt text) + a delete corner,
- * and thumbnails drag to reorder (print follows the order). Mirrors {@link AttachReferenceRow}.
+ * and thumbnails drag — or use the ◀ ▶ buttons — to reorder (print follows the order). Mirrors
+ * {@link AttachReferenceRow}.
  */
 export function AttachImageRow({
   card,
@@ -109,11 +110,22 @@ export function AttachImageRow({
     patchImages(next);
   };
 
+  // Keyboard-accessible reorder (§4.4) — an alternative to drag, since the order sets print order.
+  const move = (id: string, dir: -1 | 1) => {
+    const from = images.findIndex((r) => r.id === id);
+    const to = from + dir;
+    if (from < 0 || to < 0 || to >= images.length) return;
+    const next = [...images];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved!);
+    patchImages(next);
+  };
+
   return (
     <div className="mt-1.5">
       {images.length > 0 && (
         <div className="flex flex-wrap gap-2.5">
-          {images.map((ref) => (
+          {images.map((ref, i) => (
             <div
               key={ref.id}
               draggable
@@ -131,6 +143,29 @@ export function AttachImageRow({
                   />
                 ) : (
                   <span className="grid h-full w-full place-items-center text-ink-faint">🖼</span>
+                )}
+                {/* Keyboard-accessible reorder (drag alternative) — the order is the print order. */}
+                {images.length > 1 && (
+                  <div className="absolute bottom-1 left-1 flex gap-0.5">
+                    <button
+                      type="button"
+                      aria-label="Move image earlier"
+                      disabled={i === 0}
+                      onClick={() => move(ref.id, -1)}
+                      className="grid size-4 place-items-center rounded bg-black/55 text-[10px] leading-none text-white hover:bg-black/75 disabled:opacity-30"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Move image later"
+                      disabled={i === images.length - 1}
+                      onClick={() => move(ref.id, 1)}
+                      className="grid size-4 place-items-center rounded bg-black/55 text-[10px] leading-none text-white hover:bg-black/75 disabled:opacity-30"
+                    >
+                      ▶
+                    </button>
+                  </div>
                 )}
                 <button
                   type="button"

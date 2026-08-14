@@ -75,6 +75,8 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
   // Two-step confirm before "change passage" clears the annotations/theme/map anchored to the
   // old text (§1.6) — an inline prompt rather than a native confirm() (testable, non-blocking).
   const [confirmingChange, setConfirmingChange] = useState(false);
+  // Active book-completion suggestion (keyboard nav + aria-activedescendant, §4.2).
+  const [activeSuggestion, setActiveSuggestion] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Parse the effective reference. Before a passage exists we parse what the user is typing; once a
@@ -200,17 +202,57 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                 placeholder="e.g. Luke 1:5-25"
                 autoComplete="off"
                 spellCheck={false}
-                onChange={(e) => setReference(e.target.value)}
+                role="combobox"
+                aria-expanded={suggestions.length > 0}
+                aria-controls="v2-reference-suggest"
+                aria-autocomplete="list"
+                aria-activedescendant={
+                  suggestions.length > 0 ? `v2-ref-opt-${activeSuggestion}` : undefined
+                }
+                onChange={(e) => {
+                  setReference(e.target.value);
+                  setActiveSuggestion(0);
+                }}
+                onKeyDown={(e) => {
+                  if (suggestions.length === 0) return;
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setActiveSuggestion((i) => Math.min(suggestions.length - 1, i + 1));
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActiveSuggestion((i) => Math.max(0, i - 1));
+                  } else if (e.key === 'Enter') {
+                    const b = suggestions[Math.min(activeSuggestion, suggestions.length - 1)];
+                    if (b) {
+                      e.preventDefault();
+                      setReference(`${b.name} `);
+                      setActiveSuggestion(0);
+                    }
+                  }
+                }}
               />
               {suggestions.length > 0 && (
-                <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-line bg-leaf shadow-leaf">
-                  {suggestions.map((b) => (
-                    <li key={b.id}>
+                <ul
+                  id="v2-reference-suggest"
+                  role="listbox"
+                  aria-label="Book suggestions"
+                  className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-line bg-leaf shadow-leaf"
+                >
+                  {suggestions.map((b, i) => (
+                    <li key={b.id} role="presentation">
                       <button
                         type="button"
-                        className="flex w-full items-baseline gap-2 px-3 py-2 text-left text-[14px] hover:bg-lapis-wash"
+                        role="option"
+                        id={`v2-ref-opt-${i}`}
+                        aria-selected={i === activeSuggestion}
+                        className={cn(
+                          'flex w-full items-baseline gap-2 px-3 py-2 text-left text-[14px] hover:bg-lapis-wash',
+                          i === activeSuggestion && 'bg-lapis-wash',
+                        )}
+                        onMouseEnter={() => setActiveSuggestion(i)}
                         onClick={() => {
                           setReference(`${b.name} `);
+                          setActiveSuggestion(0);
                           inputRef.current?.focus();
                         }}
                       >

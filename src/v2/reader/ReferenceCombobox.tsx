@@ -68,12 +68,22 @@ export function ReferenceCombobox({
   const estH = suggest?.mode === 'book' ? Math.min(count * 32 + 8, 200) : 130;
   const flip = rect ? rect.bottom + 4 + estH > window.innerHeight - 8 : false;
 
+  // Combobox ARIA (§4.1/§4.2): the input owns the listbox; the active option is referenced by id.
+  const open = !!(rect && suggest && count > 0);
+  const listboxId = 'refcombo-listbox';
+  const optId = (i: number) => `refcombo-opt-${i}`;
+
   return (
     <>
       <input
         ref={inputRef}
         autoFocus
         value={value}
+        role="combobox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        aria-autocomplete="list"
+        aria-activedescendant={open ? optId(active) : undefined}
         onChange={(e) => change(e.target.value)}
         onBlur={() => window.setTimeout(onCancel, 150)}
         onKeyDown={(e) => {
@@ -98,6 +108,8 @@ export function ReferenceCombobox({
       {rect && suggest && count > 0 && (
         <div
           role="listbox"
+          id={listboxId}
+          aria-label="Reference suggestions"
           data-testid="ref-suggest"
           data-mode={suggest.mode}
           style={{
@@ -110,25 +122,27 @@ export function ReferenceCombobox({
           className="z-[60] max-h-[200px] overflow-y-auto rounded-lg border border-line bg-leaf shadow-[0_2px_6px_rgba(30,27,20,0.08),0_20px_44px_-14px_rgba(30,27,20,0.34)]"
         >
           {suggest.mode === 'book' ? (
-            <ul className="py-1">
+            <div className="py-1">
               {books.map((b, i) => (
-                <li key={b.id} role="option" aria-selected={i === active}>
-                  <button
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onMouseEnter={() => setIdx(i)}
-                    onClick={() => pickBook(b.name)}
-                    className={cn(
-                      'flex w-full items-center gap-2 px-3 py-1.5 text-left font-sans text-[12.5px] text-ink',
-                      i === active && 'bg-lapis-wash',
-                    )}
-                  >
-                    <span className="text-ink-faint">📖</span>
-                    {b.name}
-                  </button>
-                </li>
+                <button
+                  key={b.id}
+                  type="button"
+                  role="option"
+                  id={optId(i)}
+                  aria-selected={i === active}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onMouseEnter={() => setIdx(i)}
+                  onClick={() => pickBook(b.name)}
+                  className={cn(
+                    'flex w-full items-center gap-2 px-3 py-1.5 text-left font-sans text-[12.5px] text-ink',
+                    i === active && 'bg-lapis-wash',
+                  )}
+                >
+                  <span className="text-ink-faint">📖</span>
+                  {b.name}
+                </button>
               ))}
-            </ul>
+            </div>
           ) : (
             <>
               <div className="border-b border-line px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.1em] text-ink-faint">
@@ -140,6 +154,7 @@ export function ReferenceCombobox({
                     key={n}
                     type="button"
                     role="option"
+                    id={optId(i)}
                     aria-selected={i === active}
                     onMouseDown={(e) => e.preventDefault()}
                     onMouseEnter={() => setIdx(i)}
