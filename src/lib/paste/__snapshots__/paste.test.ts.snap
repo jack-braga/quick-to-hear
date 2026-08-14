@@ -97,6 +97,88 @@ exports[`golden corpus — full assembled snapshots > bg-ephesians1-webbe 1`] = 
 }
 `;
 
+exports[`golden corpus — full assembled snapshots > bg-luke1-2-crosschapter-webbe 1`] = `
+{
+  "blocks": [
+    {
+      "kind": "q",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 1,
+              "text": "to shine on those who sit in darkness and the shadow of death;",
+            },
+            {
+              "qlevel": 2,
+              "text": "to guide our feet into the way of peace.”",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.79",
+        },
+      ],
+    },
+    {
+      "kind": "p",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "The child was growing, and becoming strong in spirit, and was in the desert until the day of his public appearance to Israel.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.1.80",
+        },
+      ],
+    },
+    {
+      "editorial": true,
+      "kind": "s1",
+      "text": [
+        {
+          "qlevel": 0,
+          "text": "The birth of Jesus",
+        },
+      ],
+      "verses": [],
+    },
+    {
+      "kind": "p",
+      "verses": [
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "Now in those days, a decree went out from Caesar Augustus that all the world should be enrolled.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.2.1",
+        },
+        {
+          "fragments": [
+            {
+              "qlevel": 0,
+              "text": "This was the first enrollment made when Quirinius was governor of Syria.",
+            },
+          ],
+          "present": true,
+          "verseId": "LUKE.2.2",
+        },
+      ],
+    },
+  ],
+  "notes": [],
+  "reference": "Luke 1:79-2:2",
+  "source": "pasted",
+  "translationId": "webbe",
+  "versification": "kjv",
+}
+`;
+
 exports[`golden corpus — full assembled snapshots > bg-luke1-birth-webbe 1`] = `
 {
   "blocks": [

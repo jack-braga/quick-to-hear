@@ -11,6 +11,7 @@ import birth from './__fixtures__/bg-luke1-birth-webbe.txt?raw';
 import psalm1 from './__fixtures__/bg-psalm1-webbe.txt?raw';
 import ephesians from './__fixtures__/bg-ephesians1-webbe.txt?raw';
 import psalm80 from './__fixtures__/bg-psalm80-webbe.txt?raw';
+import crossChapter from './__fixtures__/bg-luke1-2-crosschapter-webbe.txt?raw';
 import yvJonah from './__fixtures__/yv-jonah1-webbe.txt?raw';
 
 /** Analyse a paste then assemble it into a ParsedText, deriving the anchoring context
@@ -213,6 +214,41 @@ describe('regression — a stanza’s first un-numbered line is poetry, not a he
   });
 });
 
+describe('§1.1 cross-chapter paste — the BibleGateway chapter-boundary shape', () => {
+  // A real Luke 1:79–2:2 BibleGateway copy, rebuilt with PD (WEBBE) text — rule 7 keeps any
+  // copyrighted translation out of the repo. The chapter boundary shows as a standalone "2"
+  // (the printed chapter number) leading the *unnumbered* verse 1: "2 Now in those days…".
+  it('splits chapters instead of folding chapter 2 into the last verse of chapter 1', () => {
+    const { analysis, passage } = run(crossChapter);
+    expect(analysis.detectedReference).toBe('Luke 1:79-2:2');
+    // The four verses land in the right chapters (not all under LUKE.1.80).
+    expect(verseIds(passage)).toEqual(['LUKE.1.79', 'LUKE.1.80', 'LUKE.2.1', 'LUKE.2.2']);
+    // Verse 2:1 is the census decree, kept whole; 2:2 is the Quirinius note.
+    const v21 = allVerses(passage).find((v) => v.verseId === 'LUKE.2.1')!;
+    expect(verseText(v21)).toMatch(/^Now in those days/);
+    expect(verseText(v21)).not.toMatch(/Quirinius/); // v2 did not fold into v1
+    const v22 = allVerses(passage).find((v) => v.verseId === 'LUKE.2.2')!;
+    expect(verseText(v22)).toMatch(/Quirinius/);
+    // The last verse of chapter 1 did not swallow chapter 2.
+    const v180 = allVerses(passage).find((v) => v.verseId === 'LUKE.1.80')!;
+    expect(verseText(v180)).not.toMatch(/Caesar Augustus/);
+  });
+
+  it('flags the chapter boundary for the review screen (never silent)', () => {
+    const { analysis } = run(crossChapter);
+    expect(analysis.flags.some((f) => /chapter boundary/i.test(f))).toBe(true);
+    // The opening verse of the new chapter is highlighted for a quick check.
+    const v21Seg = analysis.segments.find((s) => s.startsVerse && s.verseNumber === 1);
+    expect(v21Seg?.flagged).toBe(true);
+  });
+
+  it('does not false-trigger a chapter reset on a normal ascending single-chapter paste', () => {
+    // Birth of John (Luke 1:57-66) climbs monotonically — no downward leading number, so no reset.
+    const { analysis } = run(birth);
+    expect(analysis.flags.some((f) => /chapter boundary/i.test(f))).toBe(false);
+  });
+});
+
 describe('edge cases — lone verse-number line, mid-verse start, name-vs-prose', () => {
   it('§1.10a keeps the verse boundary when a poetry verse number sits on its own line', () => {
     // The verse number "2" is on its own physical line; its text follows on the next line.
@@ -300,6 +336,9 @@ describe('golden corpus — full assembled snapshots', () => {
   });
   it('bg-psalm80-webbe', () => {
     expect(run(psalm80).passage).toMatchSnapshot();
+  });
+  it('bg-luke1-2-crosschapter-webbe', () => {
+    expect(run(crossChapter).passage).toMatchSnapshot();
   });
 });
 

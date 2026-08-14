@@ -134,18 +134,40 @@ function seg(
 interface VerseCursor {
   n: number;
   assigned: boolean;
+  /** How many chapter boundaries (verse numbering resets) were detected — for the review header. */
+  chapterResets: number;
+}
+
+interface MarkerDecision {
+  marker: boolean;
+  flagged: boolean;
+  /** The verse number to record on the segment: `n` normally; `1` at a chapter boundary — the
+   *  new chapter's opening verse — whether the printed digit was a reset-to-1 or a chapter no. */
+  verseNumber: number;
 }
 
 /** Decide whether digit `n` is the next verse marker, and whether that jump is anomalous
- *  enough to flag for review. Mutates the cursor when it accepts. */
-function acceptMarker(cur: VerseCursor, n: number): { marker: boolean; flagged: boolean } {
-  if (n < 1 || n > MAX_VERSE) return { marker: false, flagged: false };
+ *  enough to flag for review. Mutates the cursor when it accepts.
+ *
+ *  `atBoundary` is true when `n` leads its paragraph/line (a strong marker position). A number
+ *  in that position that breaks the sequence **downward** mid-passage is a **chapter boundary**
+ *  (§1.1): either a reset-to-1 (YouVersion) or the printed chapter number BibleGateway puts in
+ *  front of the *unnumbered* verse 1 — e.g. Luke 2 pastes as "2 In those days…". Either way it
+ *  opens verse 1 of the next chapter (the assembler bumps the chapter on the reset); it is
+ *  flagged so the mandatory review screen can catch a false positive (a stray leading number). */
+function acceptMarker(cur: VerseCursor, n: number, atBoundary: boolean): MarkerDecision {
+  if (n < 1 || n > MAX_VERSE) return { marker: false, flagged: false, verseNumber: n };
+  if (cur.assigned && atBoundary && n <= cur.n) {
+    cur.n = 1;
+    cur.chapterResets += 1;
+    return { marker: true, flagged: true, verseNumber: 1 };
+  }
   const marker = !cur.assigned || n === cur.n + 1 || (n > cur.n && n <= cur.n + 3);
-  if (!marker) return { marker: false, flagged: false };
+  if (!marker) return { marker: false, flagged: false, verseNumber: n };
   const flagged = cur.assigned && n !== cur.n + 1;
   cur.n = n;
   cur.assigned = true;
-  return { marker: true, flagged };
+  return { marker: true, flagged, verseNumber: n };
 }
 
 /** Split a joined prose paragraph into verse segments on monotonic digit tokens. Leading
@@ -156,10 +178,9 @@ function splitProseParagraph(text: string, cur: VerseCursor): PasteSegment[] {
   NUM_TOKEN_RE.lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = NUM_TOKEN_RE.exec(text)) !== null) {
-    const n = Number(m[2]);
     const numStart = m.index + m[1]!.length;
-    const { marker, flagged } = acceptMarker(cur, n);
-    if (marker) markers.push({ at: numStart, end: numStart + m[2]!.length, n, flagged });
+    const { marker, flagged, verseNumber } = acceptMarker(cur, Number(m[2]), numStart === 0);
+    if (marker) markers.push({ at: numStart, end: numStart + m[2]!.length, n: verseNumber, flagged });
   }
 
   const segments: PasteSegment[] = [];
@@ -196,8 +217,8 @@ function splitPoetryParagraph(lines: string[], cur: VerseCursor): PasteSegment[]
     let m: RegExpExecArray | null;
     while ((m = NUM_TOKEN_RE.exec(line)) !== null) {
       const at = m.index + m[1]!.length;
-      const { marker, flagged } = acceptMarker(cur, Number(m[2]));
-      if (marker) markers.push({ at, end: at + m[2]!.length, n: Number(m[2]), flagged });
+      const { marker, flagged, verseNumber } = acceptMarker(cur, Number(m[2]), at === 0);
+      if (marker) markers.push({ at, end: at + m[2]!.length, n: verseNumber, flagged });
     }
 
     if (markers.length === 0) {
@@ -301,7 +322,7 @@ export function analysePaste(raw: string, opts: AnalyseOptions = {}): PasteAnaly
   const segments: PasteSegment[] = [];
   // Seed the cursor from the kept reference when we have one, but leave it `unassigned`
   // so the paste's first number is always trusted (the seed only sizes the monotonic gap).
-  const cursor: VerseCursor = { n: (opts.startVerse ?? 1) - 1, assigned: false };
+  const cursor: VerseCursor = { n: (opts.startVerse ?? 1) - 1, assigned: false, chapterResets: 0 };
   for (let p of paragraphs) {
     // A heading or superscription glued to the front of a versed paragraph (no blank
     // between) → split it off. A title-cased section heading (title case, no end
@@ -360,6 +381,9 @@ export function analysePaste(raw: string, opts: AnalyseOptions = {}): PasteAnaly
   }
   if (!detectedTranslationId) {
     flags.push('Translation not recognised — confirm it below (it drives the copyright line).');
+  }
+  if (cursor.chapterResets > 0) {
+    flags.push('A chapter boundary was detected (the verse numbers reset) — check the highlighted rows.');
   }
   if (segments.some((s) => s.flagged)) {
     flags.push('Some lines looked uncertain (a verse number or a heading) — check the highlighted rows.');
