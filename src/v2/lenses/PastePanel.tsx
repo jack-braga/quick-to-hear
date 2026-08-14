@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { BUNDLED_TRANSLATIONS, findTranslation } from '@/lib/bible';
-import { FOREIGN_SYSTEMS, findVersificationSystem, reversifyToKjv } from '@/lib/compare';
 import { addSecondary, loadFreshPrimary, translationOrder } from '@/lib/passage';
 import {
   analysePaste,
@@ -20,8 +19,8 @@ import type { Study } from '@/types/study';
  * so this is the only way to bring in a non-bundled translation: the user pastes text copied
  * from an app or site (BibleGateway, YouVersion, a PDF), it's normalised by the **pure**
  * `analysePaste` pipeline, and — after a mandatory review — `assembleParsedText` turns the
- * reviewed segments into the same block/line model the bundled loader produces. Foreign verse
- * numbering is remapped onto the KJV anchor with the small `reversifyToKjv` converter.
+ * reviewed segments into the same block/line model the bundled loader produces. Alignment
+ * assumes standard English (KJV) verse numbering on both sides (a note on-screen says so).
  *
  * On accept the text is added to the study's passage exactly like a bundled import: the first
  * translation becomes the primary, the rest are comparison secondaries. Nothing is fabricated —
@@ -143,7 +142,6 @@ export function PastePanel({
   const [reference, setReference] = useState(defaultReference);
   const [translationChoice, setTranslationChoice] = useState('other');
   const [customName, setCustomName] = useState('');
-  const [versificationId, setVersificationId] = useState('');
   const [showChrome, setShowChrome] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -160,13 +158,9 @@ export function PastePanel({
     });
   }, [reference, translationId, segments]);
 
-  const remapped = useMemo(() => {
-    if (!assembled) return null;
-    const system = findVersificationSystem(versificationId);
-    return system ? reversifyToKjv(assembled, system) : { text: assembled, unmappable: [] };
-  }, [assembled, versificationId]);
-  const preview = remapped?.text ?? null;
-  const unmappable = remapped?.unmappable ?? [];
+  // Comparison assumes standard English (KJV) verse numbering; there is no cross-versification
+  // remap (§1.8 removed the unfinished Hebrew-Psalms table). The paste screen notes the caveat.
+  const preview = assembled;
 
   const analyse = () => {
     const seedRef = parseReference(reference || defaultReference);
@@ -333,26 +327,10 @@ export function PastePanel({
                   the handout yourself.
                 </p>
               )}
-              <label htmlFor="v2-paste-vers" className="mt-1 block font-mono text-[11px] text-ink-faint">
-                Verse numbering
-              </label>
-              <select
-                id="v2-paste-vers"
-                className={FIELD}
-                value={versificationId}
-                onChange={(e) => setVersificationId(e.target.value)}
-              >
-                <option value="">Standard (KJV numbering) — usually correct</option>
-                {FOREIGN_SYSTEMS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-              {unmappable.length > 0 && (
-                <p className="text-[12px] text-rubric">
-                  {unmappable.length} verse{unmappable.length === 1 ? '' : 's'} have no KJV verse to
-                  line up with — they won’t be compared.
+              {asSecondary && (
+                <p className="text-[12px] text-ink-soft">
+                  Comparison assumes standard English verse numbering. If your pasted translation
+                  numbers Psalm verses differently, the alignment may be off.
                 </p>
               )}
             </div>

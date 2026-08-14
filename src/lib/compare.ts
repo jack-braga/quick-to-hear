@@ -1,24 +1,22 @@
 import { allVerses, verseText, type ParsedText, type VerseSpan } from '@/types/passage';
-import { makeVerseId, parseVerseId } from '@/lib/verse/ids';
 
 /**
  * Translation comparison (M3 / Stage 9, SPEC Phase 1).
  *
- * Two pure concerns, no side effects — safe in the store, pages, and tests:
+ * One pure concern, no side effects — safe in the store, pages, and tests:
  *
- *  1. {@link alignTranslations} — line a secondary reading up against the primary **by verse
- *     number** (verse-id equality) plus the per-verse `present` flag. All three bundled
- *     texts share KJV numbering, so this is exactly right: a verse present in one and
- *     gapped/absent in another is **flagged as a mismatch, never silently aligned** (PLAN
- *     §4.3 "within the bundle: equate, don't map"). This is what stops a naive present-verse
- *     zip from pairing e.g. Acts 8:38 against the other text's 8:37.
+ *  {@link alignTranslations} — line a secondary reading up against the primary **by verse
+ *  number** (verse-id equality) plus the per-verse `present` flag. All bundled texts share KJV
+ *  numbering, so this is exactly right: a verse present in one and gapped/absent in another is
+ *  **flagged as a mismatch, never silently aligned** (PLAN §4.3 "within the bundle: equate,
+ *  don't map"). This is what stops a naive present-verse zip from pairing e.g. Acts 8:38
+ *  against the other text's 8:37.
  *
- *  2. {@link reversifyToKjv} — the **small safe converter** for the rare case of a pasted
- *     secondary whose verses follow a *foreign* numbering (classically Hebrew Psalms, where
- *     the superscription is counted as verse 1, shifting everything up). It remaps those
- *     numbers onto the KJV anchor from a small, explicit data table and **flags every verse
- *     it cannot map** (e.g. a title that KJV doesn't number), rather than misaligning. No
- *     `reversify` npm plugin, no `bcv_parser` monkey-patch, no new deps.
+ * The alignment assumes **standard English (KJV) verse numbering** on both sides. A pasted
+ * translation that numbers Psalm verses differently (e.g. counting the superscription as verse
+ * 1) may line up off by one; the paste screen says so. Cross-versification *mapping* is
+ * deliberately out of scope (it was an unfinished 8-row table that silently misaligned any
+ * psalm it didn't list — removed §1.8) and is deferred to a real M3-only feature if needed.
  *
  * Comparison exists to *notice that translators made an interpretive decision* — not to pick
  * a preferred rendering (SPEC Phase 1). That framing lives in the guidance beside the UI.
@@ -113,101 +111,4 @@ export function alignVerse(
   const sv = allVerses(secondary).find((v) => v.verseId === verseId);
   if (!pv && !sv) return null;
   return makeRow(verseId, pv, sv);
-}
-
-// ---------------------------------------------------------------------------
-// 2. Versification converter (foreign paste → KJV anchor)
-// ---------------------------------------------------------------------------
-
-/**
- * A per-chapter rule for a foreign numbering system. `titleVerses` is how many leading
- * verses the foreign scheme spends on the superscription/title that KJV does **not** number
- * (those are unmappable); `delta` is how much higher the foreign numbers run for the rest
- * (KJV verse = foreign verse − delta). For a plain "title = verse 1" Psalm, both are 1.
- */
-interface ChapterRule {
-  titleVerses: number;
-  delta: number;
-}
-
-export interface VersificationSystem {
-  id: string;
-  label: string;
-  /** Keyed by `"BOOK.chapter"` (uppercased OSIS). Chapters absent here map identically —
-   *  correct for the overwhelming majority of verses even under Hebrew numbering. */
-  chapters: Record<string, ChapterRule>;
-}
-
-/**
- * The one shipped foreign system: original/Hebrew Psalm numbering, where the psalm title is
- * counted among the verses. The table is **deliberately small and explicit** (the common,
- * verifiable heading-shift cases) — the mechanism is data-driven, so it extends by adding
- * rows, and any chapter not listed maps identically. Verified against BHS: Ps 3 & 4 title =
- * v1; Ps 51 & 52 title = vv1–2.
- */
-export const HEBREW_PSALMS: VersificationSystem = {
-  id: 'hebrew-psalms',
-  label: 'Hebrew / original Psalm numbering',
-  chapters: {
-    'PS.3': { titleVerses: 1, delta: 1 },
-    'PS.4': { titleVerses: 1, delta: 1 },
-    'PS.5': { titleVerses: 1, delta: 1 },
-    'PS.6': { titleVerses: 1, delta: 1 },
-    'PS.51': { titleVerses: 2, delta: 2 },
-    'PS.52': { titleVerses: 2, delta: 2 },
-    'PS.54': { titleVerses: 2, delta: 2 },
-    'PS.60': { titleVerses: 2, delta: 2 },
-  },
-};
-
-/** Foreign systems the UI offers for a pasted secondary (besides the default KJV = identity). */
-export const FOREIGN_SYSTEMS: VersificationSystem[] = [HEBREW_PSALMS];
-
-export function findVersificationSystem(id: string | null | undefined): VersificationSystem | undefined {
-  return FOREIGN_SYSTEMS.find((s) => s.id === id);
-}
-
-export interface ReversifyResult {
-  /** The secondary remapped onto the KJV anchor (verse ids shifted). */
-  text: ParsedText;
-  /** Original (foreign) verse ids that have no KJV slot — the title verses. Flagged, not
-   *  aligned. */
-  unmappable: string[];
-}
-
-/**
- * Remap a foreign-numbered secondary onto the KJV anchor using `system`. Each verse's number
- * is shifted per its chapter rule; a title verse (no KJV equivalent) is dropped from the text
- * and its original id collected in `unmappable`. Verse ids in unruled chapters pass through
- * unchanged. Pure — returns a new `ParsedText`, never mutates the input.
- */
-export function reversifyToKjv(secondary: ParsedText, system: VersificationSystem): ReversifyResult {
-  const unmappable: string[] = [];
-
-  const remapId = (verseId: string): string | null => {
-    const parts = parseVerseId(verseId);
-    if (!parts) return verseId; // unparseable — leave it, let alignment flag it
-    const osis = parts.book.osis.toUpperCase();
-    const rule = system.chapters[`${osis}.${parts.chapter}`];
-    if (!rule) return verseId; // unruled chapter → identical numbering
-    if (parts.verse <= rule.titleVerses) return null; // the title — no KJV verse
-    return makeVerseId(osis, parts.chapter, parts.verse - rule.delta);
-  };
-
-  const blocks = secondary.blocks.map((block) => ({
-    ...block,
-    verses: block.verses.flatMap((v) => {
-      const mapped = remapId(v.verseId);
-      if (mapped === null) {
-        unmappable.push(v.verseId);
-        return [];
-      }
-      return [{ ...v, verseId: mapped }];
-    }),
-  }));
-
-  return {
-    text: { ...secondary, blocks },
-    unmappable,
-  };
 }

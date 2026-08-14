@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { allVerses, type ParsedText, type VerseSpan } from '@/types/passage';
-import {
-  HEBREW_PSALMS,
-  alignTranslations,
-  alignVerse,
-  reversifyToKjv,
-} from '@/lib/compare';
+import { type ParsedText, type VerseSpan } from '@/types/passage';
+import { alignTranslations, alignVerse } from '@/lib/compare';
 
 /** A verse span with (or without) text — `present:false` is a numbered gap. */
 function span(verseId: string, present = true, text = verseId): VerseSpan {
@@ -88,38 +83,5 @@ describe('alignVerse — the on-demand-at-a-verse case', () => {
 
   it('returns null when the verse is in neither reading', () => {
     expect(alignVerse(primary, secondary, 'MATT.99.1')).toBeNull();
-  });
-});
-
-describe('reversifyToKjv — the small safe converter (foreign → KJV anchor)', () => {
-  it('shifts a Hebrew-numbered Psalm onto KJV numbering and flags the title verses', () => {
-    // Ps 51 in Hebrew numbers the two-line superscription as vv1–2; KJV starts at content.
-    const foreign = reading('pasted-hebrew', [
-      span('PS.51.1'),
-      span('PS.51.2'),
-      span('PS.51.3', true, 'Have mercy on me'),
-      span('PS.51.4'),
-      span('PS.51.5'),
-    ]);
-    const { text, unmappable } = reversifyToKjv(foreign, HEBREW_PSALMS);
-
-    // Foreign 3,4,5 → KJV 1,2,3; foreign 1,2 (the title) have no KJV slot.
-    expect(allVerses(text).map((v) => v.verseId)).toEqual(['PS.51.1', 'PS.51.2', 'PS.51.3']);
-    expect(allVerses(text)[0]!.fragments[0]!.text).toBe('Have mercy on me');
-    expect(unmappable).toEqual(['PS.51.1', 'PS.51.2']);
-  });
-
-  it('leaves an unruled chapter identical (most verses do not shift)', () => {
-    const ps23 = reading('pasted-hebrew', [span('PS.23.1'), span('PS.23.2')]);
-    const { text, unmappable } = reversifyToKjv(ps23, HEBREW_PSALMS);
-
-    expect(allVerses(text).map((v) => v.verseId)).toEqual(['PS.23.1', 'PS.23.2']);
-    expect(unmappable).toEqual([]);
-  });
-
-  it('does not mutate its input', () => {
-    const foreign = reading('pasted-hebrew', [span('PS.3.1'), span('PS.3.2')]);
-    reversifyToKjv(foreign, HEBREW_PSALMS);
-    expect(allVerses(foreign).map((v) => v.verseId)).toEqual(['PS.3.1', 'PS.3.2']);
   });
 });
