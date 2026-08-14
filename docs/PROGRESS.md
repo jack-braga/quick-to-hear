@@ -7,9 +7,13 @@
 > - ✅ **Group A** (`33dcd56`) — store/persistence hardening (§1.4 setPassage dirty-before-write,
 >   §1.5 SetupLens swallowed errors, §1.6 change-passage confirm+clear via new `resetPassage`,
 >   §1.10f getStudy quarantine dedup + ghost-row hiding). Browser-verified. 351 unit.
-> - ⏭️ **Group B next** — paste parser overhaul (§1.1 multi-chapter + §1.10a/b/c). **Needs the
->   owner in the loop for the §1.1 cross-chapter paste test.**
-> - Groups C–O pending (see the handoff for the suggested sequence).
+> - ✅ **Group B** — paste parser overhaul. Part 1 (`b366c82`): §1.10a lone verse-number line,
+>   §1.10b phantom-verse-0 floor, §1.10c name-vs-prose guard. Part 2 (`10586f3`): §1.1 cross-chapter
+>   paste — `acceptMarker` detects a chapter boundary (reset-to-1 OR BibleGateway's chapter number
+>   before the unnumbered verse 1). **Owner-verified live** against a real Luke 1:79–2:2 NIV paste.
+>   PD-rebuilt fixture (rule 7). 357 unit.
+> - ⏭️ **Group C next** — drop Hebrew psalm numbering (§1.8).
+> - Groups D–O pending (see the handoff for the suggested sequence).
 
 ---
 
