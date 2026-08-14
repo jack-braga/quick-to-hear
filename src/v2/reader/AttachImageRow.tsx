@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useStorageEstimate } from '@/hooks/useStorageEstimate';
 import { newId } from '@/lib/id';
 import { bytesToBlob } from '@/lib/images/encode';
-import { isProcessed, processImageFile } from '@/lib/images/processImage';
+import { ACCEPTED_MIME, isProcessed, processImageFile } from '@/lib/images/processImage';
 import { deleteImage, getImage, putImage } from '@/lib/storage';
 import { useStudyStore } from '@/store/study';
 import type { Annotation, ImageRef } from '@/types/study';
 
 const MAX_IMAGES = 6; // "a few" (owner) — a soft cap so a card can't sprawl
-const ACCEPT = 'image/png,image/jpeg,image/webp,image/gif';
+// Single source of truth with the processImageFile allow-list — the <input accept> can't drift.
+const ACCEPT = ACCEPTED_MIME.join(',');
 
 /**
  * Attach images to a **question** or **study-note** card (V2 §6, Variant A — the owner's pick). The
