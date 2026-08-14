@@ -367,11 +367,14 @@ export function ReaderShell({ study }: { study: Study }) {
 
   // COMA answer-on-demand (#4b): ✎ Answer spawns an empty answer-card (origin 'coma') tagged with
   // its heading + the prompt it answers; the user writes the answer, then anchors it via capture.
-  const onAddComaAnswer = (comaType: QuestionType, prompt: string) =>
+  const onAddComaAnswer = (comaType: QuestionType, prompt: string, genre: string) =>
     addAnnotation({
       ...makeAnnotation(newId(), { kind: 'note', verseIds: [], origin: 'coma' }),
       comaType,
       comaPrompt: prompt,
+      // Genres can share a verbatim-identical prompt — tag the answer to its own genre's row so it
+      // doesn't also render/count under another's (§1.3).
+      comaGenre: genre,
     });
 
   const onEditAnnotation = (id: string, patch: Partial<Annotation>) =>

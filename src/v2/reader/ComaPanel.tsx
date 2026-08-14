@@ -43,7 +43,7 @@ export interface ComaPanelProps {
   capturingId: string | null;
   /** Primary translation id — for the answer-card's inline @-mention peek. */
   translationId: string;
-  onAddComaAnswer: (comaType: QuestionType, prompt: string) => void;
+  onAddComaAnswer: (comaType: QuestionType, prompt: string, genre: string) => void;
   onEdit: (id: string, patch: Partial<Annotation>) => void;
   onRemove: (id: string) => void;
   onStartCapture: (id: string) => void;
@@ -77,8 +77,18 @@ export function ComaPanel(props: ComaPanelProps) {
     /* method file unreadable — omit the line rather than block the lens */
   }
 
-  const answersFor = (comaType: QuestionType, prompt: string): Annotation[] =>
-    annotations.filter((a) => a.kind === 'note' && a.comaType === comaType && a.comaPrompt === prompt);
+  // An answer belongs to the (genre, heading, prompt) it was written under. Genres can carry a
+  // verbatim-identical prompt, so scoping by genre stops one answer rendering + counting under
+  // another genre's identical row (§1.3). A legacy answer with no `comaGenre` (pre-fix) matches any
+  // genre for its prompt, so it is never lost.
+  const answersFor = (comaType: QuestionType, prompt: string, genre: string): Annotation[] =>
+    annotations.filter(
+      (a) =>
+        a.kind === 'note' &&
+        a.comaType === comaType &&
+        a.comaPrompt === prompt &&
+        (a.comaGenre == null || a.comaGenre === genre),
+    );
 
   const multi = genreSets.length > 1;
   const shown = genreSets.filter((g) => activeGenres.size === 0 || activeGenres.has(g.genre));
@@ -147,8 +157,14 @@ export function ComaPanel(props: ComaPanelProps) {
     );
   };
 
-  const promptRow = (comaType: QuestionType, prompt: string, genreLabel: string, key: string) => {
-    const answers = answersFor(comaType, prompt);
+  const promptRow = (
+    comaType: QuestionType,
+    prompt: string,
+    genre: string,
+    genreLabel: string,
+    key: string,
+  ) => {
+    const answers = answersFor(comaType, prompt, genre);
     return (
       <div key={key} className="mb-1">
         <div className="flex items-start gap-2 rounded-md px-2 py-1.5 text-[12.5px] leading-[1.45] text-ink-soft hover:bg-panel/50">
@@ -160,7 +176,7 @@ export function ComaPanel(props: ComaPanelProps) {
           <span className="flex-1">{prompt}</span>
           <button
             type="button"
-            onClick={() => props.onAddComaAnswer(comaType, prompt)}
+            onClick={() => props.onAddComaAnswer(comaType, prompt, genre)}
             title="Write an answer to this prompt (it becomes a card you can anchor)"
             className="shrink-0 whitespace-nowrap rounded-md border border-line bg-panel px-2 py-0.5 font-mono text-[10.5px] text-ink-soft hover:border-lapis-edge hover:text-ink"
           >
@@ -213,7 +229,9 @@ export function ComaPanel(props: ComaPanelProps) {
             {HEADINGS.map((h) => {
               const rows = shown.flatMap((g) => g.set[h.key].map((prompt) => ({ genre: g, prompt })));
               if (rows.length === 0) return null;
-              const answered = rows.filter((r) => answersFor(h.key, r.prompt).length > 0).length;
+              const answered = rows.filter(
+                (r) => answersFor(h.key, r.prompt, r.genre.genre).length > 0,
+              ).length;
               const isOpen = openHeading === h.key;
               return (
                 <div key={h.key} className="border-t border-line first:border-t-0">
@@ -244,7 +262,13 @@ export function ComaPanel(props: ComaPanelProps) {
                   {isOpen && (
                     <div className="pb-2">
                       {rows.map(({ genre, prompt }, i) =>
-                        promptRow(h.key, prompt, SHORT_GENRE[genre.genre] ?? genre.label, `${genre.genre}-${i}`),
+                        promptRow(
+                          h.key,
+                          prompt,
+                          genre.genre,
+                          SHORT_GENRE[genre.genre] ?? genre.label,
+                          `${genre.genre}-${i}`,
+                        ),
                       )}
                     </div>
                   )}

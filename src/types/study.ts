@@ -226,6 +226,11 @@ export const AnnotationSchema = z.object({
   // COMA answer-card (#4b): the Helm prompt this answer responds to — links the answer to its
   // prompt (so "answer again" groups under it) + shows it as context. Additive-optional.
   comaPrompt: z.string().optional(),
+  // COMA answer-card: the text-type (genre id) whose row this answer was written under. Genres can
+  // share a verbatim-identical prompt, so this discriminates the answer to one genre's row and stops
+  // it double-rendering + double-counting under another's (§1.3). Additive-optional; a legacy answer
+  // with no genre matches its prompt under any genre (kept, never lost).
+  comaGenre: z.string().optional(),
   // question — the one enforced discipline (SPEC 6e): no promotion without an expected answer.
   expectedAnswer: z.string().optional(),
   questionType: QuestionTypeSchema.optional(),
