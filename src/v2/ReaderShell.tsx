@@ -548,8 +548,22 @@ export function ReaderShell({ study }: { study: Study }) {
     [study.passage],
   );
   // Viewed translations in display order (primary first). Two or more → the parallel view.
-  const viewedTranslations = loadedTranslations.filter((t) => t.isViewed);
+  // Memoized so hovering a verse (which sets state every mouseenter) doesn't hand ParallelCanvas
+  // fresh array identities each render — otherwise it rebuilds N verse Maps + a bands walk per
+  // pointer move (§5.1). The derived column arrays below are memoized for the same reason.
+  const viewedTranslations = useMemo(
+    () => loadedTranslations.filter((t) => t.isViewed),
+    [loadedTranslations],
+  );
   const parallelActive = viewedTranslations.length >= 2 && passage != null;
+  const parallelTranslations = useMemo(
+    () => viewedTranslations.map((t) => study.passage.translations[t.id]!),
+    [viewedTranslations, study.passage],
+  );
+  const parallelLabels = useMemo(
+    () => viewedTranslations.map((t) => t.shortName),
+    [viewedTranslations],
+  );
 
   // Set the primary (★). In **parallel**, keep the outgoing primary viewed so switching swaps
   // columns rather than dropping one; in **single** view, switching just changes which translation
@@ -747,8 +761,8 @@ export function ReaderShell({ study }: { study: Study }) {
     const canvasTones = lens === 'read' ? NO_TONES : verseToneSets;
     center = parallelActive ? (
       <ParallelCanvas
-        translations={viewedTranslations.map((t) => study.passage.translations[t.id]!)}
-        labels={viewedTranslations.map((t) => t.shortName)}
+        translations={parallelTranslations}
+        labels={parallelLabels}
         leafTitle={leafTitle}
         interactive={interactive}
         model={model}
