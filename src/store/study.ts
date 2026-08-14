@@ -94,18 +94,7 @@ export const useStudyStore = create<StudyState>((set, get) => ({
       current: study,
       dirty: false,
       conflict: false,
-      studies: [
-        {
-          id: study.id,
-          reference: study.setup.reference,
-          seriesNote: study.setup.seriesNote,
-          genre: study.setup.genres[0] ?? null,
-          updatedAt: study.updatedAt,
-          createdAt: study.createdAt,
-          questionCount: 0,
-        },
-        ...s.studies,
-      ],
+      studies: [toSummary(study), ...s.studies],
     }));
     return study;
   },

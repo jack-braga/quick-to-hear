@@ -43,6 +43,17 @@ describe('Study schema', () => {
     });
     expect('passage' in sum).toBe(false);
   });
+
+  it('toSummary counts question annotations (the v2 source of truth), not build.questions', () => {
+    const s = makeStudy('q', NOW);
+    const ann = (id: string, kind: 'question' | 'note') =>
+      AnnotationSchema.parse({ id, kind, verseIds: ['LUKE.1.8'], text: 't' });
+    const withQuestions = {
+      ...s,
+      annotations: [ann('q1', 'question'), ann('n1', 'note'), ann('q2', 'question')],
+    };
+    expect(toSummary(withQuestions).questionCount).toBe(2);
+  });
 });
 
 describe('v2 flow-redesign fields', () => {

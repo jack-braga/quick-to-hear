@@ -482,7 +482,10 @@ export function toSummary(study: Study): StudySummary {
     genre: study.setup.genres?.[0] ?? null,
     updatedAt: study.updatedAt,
     createdAt: study.createdAt,
-    questionCount: study.build.format === 'study' ? study.build.questions.length : 0,
+    // v2 authors questions as `annotations` (kind 'question'); `build.questions` is only the
+    // throwaway v1-shaped projection and is never persisted, so it is always empty on a stored
+    // study. Count the annotations. (`?? []` guards a raw/legacy body handed in by listStudies.)
+    questionCount: (study.annotations ?? []).filter((a) => a.kind === 'question').length,
   };
 }
 
