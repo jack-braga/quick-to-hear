@@ -7,7 +7,7 @@ import type { ImageRef, Study } from '@/types/study';
 import { exportModel, participantBlocks, type ExportBlock, type SpacerBlock, type SupportRef } from '@/v2/exportModel';
 import { PrintPassage } from '@/v2/print/PrintPassage';
 import { parseMentions } from '@/v2/reader/mentions';
-import { supersede } from '@/v2/revisions';
+import { weighedText } from '@/v2/revisions';
 
 /**
  * The v2 export renderer (V2-UX-BACKLOG §7.5) — one component for both the **Build live preview**
@@ -141,8 +141,8 @@ export function ExportPreview({ study, variant, supportTexts, imageUrls, fill, m
     // `imageUrls` in the deps so the page count re-measures once async images load in.
   }, [study, variant, imageUrls]);
 
-  const theme = supersede(study.themeAim.theme, study.themeAim.themeRevisions).primary.trim();
-  const aim = supersede(study.themeAim.groupAim, study.themeAim.aimRevisions).primary.trim();
+  const theme = weighedText(study.themeAim.theme, study.themeAim.themeRevisions).trim();
+  const aim = weighedText(study.themeAim.groupAim, study.themeAim.aimRevisions).trim();
 
   return (
     <div

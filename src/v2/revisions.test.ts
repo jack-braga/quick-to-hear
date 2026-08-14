@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Annotation, ThemeAimRevision } from '@/types/study';
-import { hasBookSource, makeRevision, revisionsByOrigin, revisionsOf, supersede } from '@/v2/revisions';
+import {
+  hasBookSource,
+  makeRevision,
+  revisionsByOrigin,
+  revisionsOf,
+  supersede,
+  weighedText,
+} from '@/v2/revisions';
 
 const card = (revisions?: Annotation['revisions']): Pick<Annotation, 'revisions'> => ({ revisions });
 
@@ -61,5 +68,23 @@ describe('supersede', () => {
       was: 'v2',
       earlier: ['v1', 'v0'],
     });
+  });
+});
+
+describe('weighedText (committed value for the leader export)', () => {
+  const rev = (text: string): ThemeAimRevision => ({ text });
+  it('returns the original when there are no revisions', () => {
+    expect(weighedText('theme A', [])).toBe('theme A');
+  });
+  it('ignores a blank in-progress "revise" draft and keeps the original', () => {
+    // The bug: clicking "revise" appends {text:''} before typing; supersede().primary would be '',
+    // which used to blank the Theme/Aim line out of the leader's notes entirely.
+    expect(weighedText('theme A', [rev('')])).toBe('theme A');
+  });
+  it('falls back to the last non-empty revision when a newer one is still blank', () => {
+    expect(weighedText('theme A', [rev('theme B'), rev('   ')])).toBe('theme B');
+  });
+  it('returns the latest revision when it carries text', () => {
+    expect(weighedText('theme A', [rev('theme B')])).toBe('theme B');
   });
 });

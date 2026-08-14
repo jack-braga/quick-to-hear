@@ -2,7 +2,7 @@ import { exportOptions } from '@/lib/export';
 import type { Study } from '@/types/study';
 import { exportModel, participantBlocks, type ExportBlock } from '@/v2/exportModel';
 import { parseMentions } from '@/v2/reader/mentions';
-import { supersede } from '@/v2/revisions';
+import { weighedText } from '@/v2/revisions';
 
 /**
  * Markdown renderers for the v2 export (V2-UX-BACKLOG §7.5), from the same {@link exportModel} the
@@ -60,8 +60,8 @@ export function handoutMarkdown(study: Study, imageUrls: Record<string, string> 
 export function leaderMarkdown(study: Study, imageUrls: Record<string, string> = {}): string {
   const model = exportModel(study);
   const opts = exportOptions(study);
-  const theme = supersede(study.themeAim.theme, study.themeAim.themeRevisions).primary.trim();
-  const aim = supersede(study.themeAim.groupAim, study.themeAim.aimRevisions).primary.trim();
+  const theme = weighedText(study.themeAim.theme, study.themeAim.themeRevisions).trim();
+  const aim = weighedText(study.themeAim.groupAim, study.themeAim.aimRevisions).trim();
 
   const out: string[] = [`# ${model.reference || 'Bible study'} — leader’s notes`];
   if (theme) out.push('', `**Theme:** ${theme}`);

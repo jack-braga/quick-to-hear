@@ -54,3 +54,16 @@ export function supersede(original: string, revisions: ThemeAimRevision[]): Supe
     earlier: chain.slice(0, chain.length - 2).reverse(),
   };
 }
+
+/**
+ * The committed value of a Theme/Aim field for downstream/export use: the latest **non-empty**
+ * revision text, else the original. Unlike {@link supersede}'s `primary` (the raw latest revision,
+ * which is `''` while a just-started "revise" draft is still empty), this never lets a blank
+ * in-progress revision silently suppress the committed theme/aim from the leader's notes.
+ */
+export function weighedText(original: string, revisions: ThemeAimRevision[]): string {
+  for (let i = revisions.length - 1; i >= 0; i -= 1) {
+    if (revisions[i]!.text.trim()) return revisions[i]!.text;
+  }
+  return original;
+}
