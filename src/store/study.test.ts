@@ -8,7 +8,6 @@ vi.mock('@/lib/broadcast', () => ({
   SENDER_ID: 'test-sender',
 }));
 
-import { deriveRecycleSources } from '@/lib/recycle';
 import { __resetDbForTests } from '@/lib/storage/db';
 import { getStudy } from '@/lib/storage/studies';
 import { useStudyStore } from '@/store/study';
@@ -87,52 +86,5 @@ describe('study store', () => {
     useStudyStore.getState().applyExternalDelete(s.id);
     expect(useStudyStore.getState().current).toBeNull();
     expect(useStudyStore.getState().studies.map((r) => r.id)).not.toContain(s.id);
-  });
-
-  it('recycleToPool snapshots an anchored COMA note into the candidate pool, idempotently', async () => {
-    await useStudyStore.getState().createStudy();
-
-    // Add an anchored meaning note (Phase 4 does this inline via applyToCurrent).
-    useStudyStore.getState().applyToCurrent((study) => ({
-      ...study,
-      coma: {
-        ...study.coma,
-        meaning: [{ id: 'n1', text: 'Zechariah doubts', anchor: { verseIds: ['LUKE.1.18'] } }],
-      },
-    }));
-
-    const source = deriveRecycleSources(useStudyStore.getState().current!).find(
-      (s) => s.source.id === 'n1',
-    )!;
-    useStudyStore.getState().recycleToPool(source);
-
-    const build1 = useStudyStore.getState().current!.build;
-    expect(build1.format).toBe('study');
-    const candidates1 = build1.format === 'study' ? build1.candidates : [];
-    expect(candidates1).toHaveLength(1);
-    expect(candidates1[0]).toMatchObject({
-      kind: 'question',
-      questionType: 'meaning',
-      text: 'Zechariah doubts',
-      status: 'open',
-      source: { kind: 'comaNote', id: 'n1' },
-    });
-
-    // Recycling the same source again is a no-op.
-    useStudyStore.getState().recycleToPool(source);
-    const build2 = useStudyStore.getState().current!.build;
-    expect(build2.format === 'study' ? build2.candidates : []).toHaveLength(1);
-
-    // Editing the source note never mutates the promoted candidate's snapshot.
-    useStudyStore.getState().applyToCurrent((study) => ({
-      ...study,
-      coma: {
-        ...study.coma,
-        meaning: [{ id: 'n1', text: 'EDITED', anchor: { verseIds: ['LUKE.1.18'] } }],
-      },
-    }));
-    const build3 = useStudyStore.getState().current!.build;
-    const candidates3 = build3.format === 'study' ? build3.candidates : [];
-    expect(candidates3[0]!.text).toBe('Zechariah doubts');
   });
 });

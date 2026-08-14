@@ -1,38 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Annotation, ThemeAimRevision } from '@/types/study';
-import {
-  hasBookSource,
-  makeRevision,
-  revisionsByOrigin,
-  revisionsOf,
-  supersede,
-  weighedText,
-} from '@/v2/revisions';
+import { makeRevision, revisionsOf, supersede, weighedText } from '@/v2/revisions';
 
 const card = (revisions?: Annotation['revisions']): Pick<Annotation, 'revisions'> => ({ revisions });
 
-describe('revisionsOf / revisionsByOrigin', () => {
+describe('revisionsOf', () => {
   it('returns [] when a card has no revisions', () => {
     expect(revisionsOf(card())).toEqual([]);
-    expect(revisionsByOrigin(card(), 'deepen')).toEqual([]);
   });
-  it('splits the one unified list by round', () => {
+  it('returns every revision in append order', () => {
     const c = card([
       makeRevision('r1', 'deepen', { text: 'own work' }),
       makeRevision('r2', 'weigh', { text: 'per Bock', source: 'Bock, Luke' }),
     ]);
-    expect(revisionsByOrigin(c, 'deepen').map((r) => r.id)).toEqual(['r1']);
-    expect(revisionsByOrigin(c, 'weigh').map((r) => r.id)).toEqual(['r2']);
-  });
-});
-
-describe('hasBookSource', () => {
-  it('is true only for a weigh revision that names a source', () => {
-    expect(hasBookSource(card([makeRevision('r', 'deepen', { text: 'x', source: 'nope' })]))).toBe(false);
-    expect(hasBookSource(card([makeRevision('r', 'weigh', { text: 'x' })]))).toBe(false); // no source
-    expect(hasBookSource(card([makeRevision('r', 'weigh', { text: 'x', source: '  ' })]))).toBe(false);
-    expect(hasBookSource(card([makeRevision('r', 'weigh', { text: 'x', source: 'France, Luke' })]))).toBe(true);
+    expect(revisionsOf(c).map((r) => r.id)).toEqual(['r1', 'r2']);
   });
 });
 

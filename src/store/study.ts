@@ -2,14 +2,6 @@ import { create } from 'zustand';
 
 import { postStudyEvent } from '@/lib/broadcast';
 import { newId, nowIso } from '@/lib/id';
-import { reconcileMarks } from '@/lib/map';
-import { primaryText } from '@/lib/passage';
-import {
-  addCandidate,
-  candidateForSource,
-  makeCandidateFromSource,
-  type RecycleSource,
-} from '@/lib/recycle';
 import {
   deleteStudy as dbDeleteStudy,
   getStudy,
@@ -63,7 +55,7 @@ interface StudyState {
   applyToCurrent: (recipe: (study: Study) => Study) => void;
   /** Confirm the passage (M3: the whole translations map + primaryId): persist body +
    *  passage together and refresh the row. The page composes the next passage via the pure
-   *  `@/lib/passage` builders; this is the single choke point that reconciles marks + saves.
+   *  `@/lib/passage` builders; this is the single choke point that saves it.
    *  (The passage store isn't touched by keystroke autosave, so this is explicit.) */
   setPassage: (passage: Passage) => Promise<void>;
   /** Change the passage: reset the translations AND clear everything anchored to the old verse
@@ -71,10 +63,6 @@ interface StudyState {
   resetPassage: () => Promise<void>;
   /** Phase-2 read counter tap (autosaved with the body). */
   incrementRead: () => void;
-  /** Materialise a recycled source (a Phase-3 mark or a Phase-4 anchored note) into the
-   *  Phase-6 candidate pool as a snapshot with provenance — copy-on-promote (§4.2).
-   *  Idempotent: a source already in the pool is left untouched. */
-  recycleToPool: (source: RecycleSource) => void;
   deleteStudy: (id: string) => Promise<void>;
   importProjectFile: (text: string) => Promise<ImportResult>;
   clearError: () => void;
@@ -164,15 +152,10 @@ export const useStudyStore = create<StudyState>((set, get) => {
     setPassage: async (passage) => {
       const cur = get().current;
       if (!cur) return;
-      // The primary text may have changed — degrade any sub-verse marks whose text no longer
-      // matches (PLAN §4.3). This is the single choke point for a primary-text change (initial
-      // load, translation switch, re-parse); marks anchor to the primary only, and reconcile
-      // is idempotent when the primary is unchanged (e.g. merely adding a secondary).
-      const primary = primaryText(passage);
-      const map = primary ? reconcileMarks(cur.map, primary) : cur.map;
       // Persist body + passage now (bundled passage is a re-derivable cache — §4.4); a failed
-      // write keeps `dirty` + surfaces (§1.4), so the passage is never silently lost.
-      await persistFull(touched({ ...cur, passage, map }));
+      // write keeps `dirty` + surfaces (§1.4), so the passage is never silently lost. The v2 reader
+      // anchors marks/comments as annotations by verse id, so a text change needs no reconcile.
+      await persistFull(touched({ ...cur, passage, map: cur.map }));
     },
 
     resetPassage: async () => {
@@ -195,18 +178,6 @@ export const useStudyStore = create<StudyState>((set, get) => {
 
     incrementRead: () =>
       get().applyToCurrent((study) => ({ ...study, read: { count: study.read.count + 1 } })),
-
-    recycleToPool: (source) =>
-      get().applyToCurrent((study) => {
-        // Talk-mode builds (§4.9) have no candidate pool; nothing to recycle into.
-        if (study.build.format !== 'study') return study;
-        if (candidateForSource(study.build.candidates, source.source)) return study;
-        const candidate = makeCandidateFromSource(source, newId());
-        return {
-          ...study,
-          build: { ...study.build, candidates: addCandidate(study.build.candidates, candidate) },
-        };
-      }),
 
     deleteStudy: async (id) => {
       await dbDeleteStudy(id);

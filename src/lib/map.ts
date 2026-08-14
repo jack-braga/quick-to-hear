@@ -1,18 +1,17 @@
-import type { ParsedText, VerseSpan } from '@/types/passage';
-import { allVerses, verseIds, verseText } from '@/types/passage';
+import type { ParsedText } from '@/types/passage';
+import { verseIds } from '@/types/passage';
 import { parseVerseId } from '@/lib/verse/ids';
-import type { Mark, Section, StudyMap } from '@/types/study';
+import type { Section } from '@/types/study';
 
 /**
- * Pure logic for Phase 3 — Map the passage (SPEC Phase 3, PLAN §4.3). Two tasks:
+ * Pure logic for the Survey lens — **structure** the passage (SPEC Phase 3a, PLAN §4.3):
+ * divide it into contiguous, named sections following the author's own breaks. Sections are
+ * the source of truth (stored as `{startVerseId, endVerseId}` pairs); the operations here
+ * preserve a valid partition of the loaded passage — split adds a break, merge removes one,
+ * neither leaves a gap or overlap.
  *
- * - **Structure**: divide the passage into contiguous, named sections following the
- *   author's own breaks. Sections are the source of truth (stored as `{startVerseId,
- *   endVerseId}` pairs); the operations here preserve a valid partition of the loaded
- *   passage — split adds a break, merge removes one, neither leaves a gap or overlap.
- * - **Marks**: a verse / phrase / word the user did not understand. Phrase/word marks
- *   carry character offsets into the verse's NFC text and **degrade to whole-verse**
- *   when the underlying text later changes (a translation switch, a re-parse).
+ * (The old v1 sub-verse **marks** — degrade-on-text-change — were removed with §1.7; the v2
+ * reader anchors "mark confusing" as a plain annotation by verse id, so no reconcile is needed.)
  *
  * Everything is kept pure (ids are passed in, not generated) so it is trivially
  * testable and the store/page just wrap it.
@@ -126,111 +125,6 @@ export function mergeSectionUp(
 /** Rename a section (the user names each in their own words — SPEC 3a). */
 export function renameSection(sections: Section[], sectionId: string, name: string): Section[] {
   return sections.map((s) => (s.id === sectionId ? { ...s, name } : s));
-}
-
-// ---------------------------------------------------------------------------
-// Marks (Phase 3b — question marks)
-// ---------------------------------------------------------------------------
-
-export interface Token {
-  text: string;
-  start: number;
-  end: number;
-}
-
-/** Split a verse's NFC text into whitespace-delimited tokens with char offsets. The
- *  offsets index into {@link verseText}, the stable basis for sub-verse marks. */
-export function tokenizeVerse(text: string): Token[] {
-  const tokens: Token[] = [];
-  const re = /\S+/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) {
-    tokens.push({ text: m[0], start: m.index, end: m.index + m[0].length });
-  }
-  return tokens;
-}
-
-/** A whole-verse mark (SPEC 3b): the confusing text is the whole verse. */
-export function makeVerseMark(verse: VerseSpan, id: string): Mark {
-  return { id, kind: 'verse', verseId: verse.verseId, text: verseText(verse) };
-}
-
-/**
- * A phrase/word mark over `[start, end)` characters of the verse's text. Stores the
- * exact selected substring so it can be revalidated later (see {@link reconcileMarks}).
- */
-export function makeSpanMark(
-  kind: 'phrase' | 'word',
-  verse: VerseSpan,
-  start: number,
-  end: number,
-  id: string,
-): Mark {
-  const full = verseText(verse);
-  return { id, kind, verseId: verse.verseId, span: { start, end }, text: full.slice(start, end) };
-}
-
-/** The text a mark currently resolves to against the passage: the selected substring
- *  for a still-valid span mark, else the whole (current) verse text. */
-export function resolvedMarkText(mark: Mark, verse: VerseSpan | undefined): string {
-  if (!verse || !verse.present) return mark.text;
-  const full = verseText(verse);
-  if (mark.span && full.slice(mark.span.start, mark.span.end) === mark.text) {
-    return mark.text;
-  }
-  return full;
-}
-
-/**
- * Reconcile every mark against the (possibly changed) passage — the single place the
- * PLAN §4.3 rule "degrade to whole-verse if the text later changes" is enforced.
- *
- * - A **span** mark whose stored substring no longer matches the verse's current text
- *   (translation switch, re-parse, or the verse became a gap) **degrades to a
- *   whole-verse mark** — `kind:'verse'`, `span` dropped, `text` refreshed to the verse.
- * - A still-valid span mark is left untouched.
- * - A whole-verse mark's text snapshot is refreshed to the current verse text.
- * - A mark whose verse is no longer in the passage at all (a reference change) is left
- *   as-is — never discarded (Principle 7).
- *
- * Sections are anchored by verse ID only and are unaffected by a text change, so they
- * are passed through unchanged (the UI re-checks them with {@link sectionsMatchPassage}).
- */
-export function reconcileMarks(map: StudyMap, passage: ParsedText): StudyMap {
-  const byId = new Map<string, VerseSpan>(allVerses(passage).map((v) => [v.verseId, v]));
-  let changed = false;
-
-  const marks = map.marks.map((mark): Mark => {
-    const verse = byId.get(mark.verseId);
-    if (!verse) return mark; // not in this passage — leave untouched
-
-    if (!mark.span) {
-      // Whole-verse mark: keep its anchor, refresh the text snapshot if present.
-      if (verse.present) {
-        const text = verseText(verse);
-        if (text !== mark.text) {
-          changed = true;
-          return { ...mark, text };
-        }
-      }
-      return mark;
-    }
-
-    // Span mark: still valid only if the exact substring is unchanged.
-    if (verse.present && verseText(verse).slice(mark.span.start, mark.span.end) === mark.text) {
-      return mark;
-    }
-    // Degrade to whole-verse.
-    changed = true;
-    return {
-      id: mark.id,
-      kind: 'verse',
-      verseId: mark.verseId,
-      text: verse.present ? verseText(verse) : mark.text,
-    };
-  });
-
-  return changed ? { ...map, marks } : map;
 }
 
 // ---------------------------------------------------------------------------

@@ -84,7 +84,7 @@ describe('resetPassage (§1.6 — change-passage clears the orphans)', () => {
       annotations: [{ id: 'a1', kind: 'question' } as unknown as Study['annotations'][number]],
       runningOrder: ['a1'],
       themeAim: { ...base.themeAim, theme: 'Old theme' },
-      map: { sections: [{ id: 'sec', startVerseId: 'LUKE.1.5', endVerseId: 'LUKE.1.6', name: '' }], marks: [] },
+      map: { sections: [{ id: 'sec', startVerseId: 'LUKE.1.5', endVerseId: 'LUKE.1.6', name: '' }] },
     });
     putStudyFullMock.mockResolvedValueOnce(undefined);
 

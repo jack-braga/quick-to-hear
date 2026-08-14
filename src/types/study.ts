@@ -95,7 +95,7 @@ export const SetupSchema = z.object({
 export type Setup = z.infer<typeof SetupSchema>;
 
 // ---------------------------------------------------------------------------
-// Phase 3 — Map (sections + question marks)
+// Survey — Map the passage into sections (SPEC Phase 3a)
 // ---------------------------------------------------------------------------
 
 export const SectionSchema = z.object({
@@ -107,29 +107,11 @@ export const SectionSchema = z.object({
 });
 export type Section = z.infer<typeof SectionSchema>;
 
-/** A verse / phrase / word the user did not understand (SPEC Phase 3b). */
-export const MarkSchema = z.object({
-  id: z.string(),
-  kind: z.enum(['verse', 'phrase', 'word']),
-  verseId: z.string(),
-  // v2 marks can span a multi-verse selection as ONE annotation (one margin card). Additive-
-  // optional: `verseId` remains the primary anchor (v1 + `reconcileMarks` key on it); when
-  // present, `verseIds` lists every verse the mark covers. Absent → a single-verse mark.
-  verseIds: z.array(z.string()).optional(),
-  // Character offsets into the verse's NFC text for phrase/word marks; whole-verse
-  // marks omit it. Degrades to whole-verse if the text later changes (PLAN §4.3).
-  span: z.object({ start: z.number(), end: z.number() }).optional(),
-  text: z.string().default(''),
-  // The user's own note about what confuses them (v2 "Mark confusing" — SPEC Phase 3b:
-  // "what confuses you here? they'll feel it too"). Additive-optional; distinct from `text`
-  // (the verse/phrase snapshot). Left untouched by `reconcileMarks`.
-  note: z.string().optional(),
-});
-export type Mark = z.infer<typeof MarkSchema>;
-
+// The v1 sub-verse **marks** (verse/phrase/word "did not understand", degrade-on-text-change) were
+// removed with §1.7 — the v2 reader anchors "mark confusing" as a plain `note` annotation by verse
+// id. `map` now carries only Survey sections.
 export const MapSchema = z.object({
   sections: z.array(SectionSchema).default([]),
-  marks: z.array(MarkSchema).default([]),
 });
 export type StudyMap = z.infer<typeof MapSchema>;
 
@@ -443,9 +425,9 @@ export const StudySchema = z.object({
   setup: SetupSchema.default({}),
   passage: PassageSchema,
   read: z.object({ count: z.number().default(0) }).default({ count: 0 }),
-  map: MapSchema.default({ sections: [], marks: [] }),
+  map: MapSchema.default({ sections: [] }),
   // v2.4 unified annotation surface (Note / Question / Cross-ref + floating). Additive —
-  // v1/old docs default to []; v2's reader reads this, not `map.marks`.
+  // v1/old docs default to []. This is where the v2 reader anchors every card.
   annotations: z.array(AnnotationSchema).default([]),
   // v2.6 Build lens: the running order of question-annotation ids (the sequence that exports).
   // Additive; empty means "default to verse order" (see `@/v2/build`).

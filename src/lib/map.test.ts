@@ -1,51 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  makeSpanMark,
-  makeVerseMark,
   mergeSectionUp,
   orderedSections,
-  reconcileMarks,
   renameSection,
-  resolvedMarkText,
   sectionVerseIds,
   sectionsMatchPassage,
   splitSectionAt,
-  tokenizeVerse,
   verseChipLabel,
   verseRefLabel,
   wholePassageSection,
 } from '@/lib/map';
-import { ParsedTextSchema, allVerses, type ParsedText } from '@/types/passage';
-import { MapSchema, type Section, type StudyMap } from '@/types/study';
+import { type Section } from '@/types/study';
 
-/** Build a one-prose-block passage from `[verseId, text, present?]` rows. */
-function pt(rows: Array<[string, string, boolean?]>): ParsedText {
-  return ParsedTextSchema.parse({
-    translationId: 'webbe',
-    blocks: [
-      {
-        kind: 'p',
-        verses: rows.map(([verseId, text, present = true]) => ({
-          verseId,
-          present,
-          fragments: present ? [{ text, qlevel: 0 }] : [],
-        })),
-      },
-    ],
-  });
-}
-
-const LUKE = pt([
-  ['LUKE.1.5', 'There was a priest named Zacharias.'],
-  ['LUKE.1.6', 'They were both righteous before God.'],
-  ['LUKE.1.7', 'They had no child, because Elizabeth was barren.'],
-]);
 const IDS = ['LUKE.1.5', 'LUKE.1.6', 'LUKE.1.7'];
-
-function map(partial: Partial<StudyMap> = {}): StudyMap {
-  return MapSchema.parse(partial);
-}
 
 describe('sections (Phase 3a)', () => {
   it('wholePassageSection spans first→last', () => {
@@ -136,94 +104,6 @@ describe('sections (Phase 3a)', () => {
 
   it('sectionVerseIds returns the covered verses in order', () => {
     expect(sectionVerseIds(wholePassageSection(IDS, 's'), IDS)).toEqual(IDS);
-  });
-});
-
-describe('marks (Phase 3b)', () => {
-  const verse = allVerses(LUKE)[0]!; // "There was a priest named Zacharias."
-
-  it('tokenizeVerse yields tokens with correct char offsets', () => {
-    const toks = tokenizeVerse('There was a priest');
-    expect(toks.map((t) => t.text)).toEqual(['There', 'was', 'a', 'priest']);
-    expect(toks[0]).toEqual({ text: 'There', start: 0, end: 5 });
-    expect(toks[3]).toEqual({ text: 'priest', start: 12, end: 18 });
-  });
-
-  it('makeVerseMark snapshots the whole verse, no span', () => {
-    const m = makeVerseMark(verse, 'm1');
-    expect(m).toEqual({
-      id: 'm1',
-      kind: 'verse',
-      verseId: 'LUKE.1.5',
-      text: 'There was a priest named Zacharias.',
-    });
-    expect(m.span).toBeUndefined();
-  });
-
-  it('makeSpanMark stores the exact substring at the char offsets', () => {
-    // "priest" begins at offset 12 in the verse text.
-    const start = 'There was a '.length;
-    const end = start + 'priest'.length;
-    const m = makeSpanMark('word', verse, start, end, 'm2');
-    expect(m).toMatchObject({ kind: 'word', verseId: 'LUKE.1.5', span: { start, end }, text: 'priest' });
-  });
-
-  it('resolvedMarkText: valid span → substring; whole-verse → verse text', () => {
-    const span = makeSpanMark('word', verse, 12, 18, 'm');
-    expect(resolvedMarkText(span, verse)).toBe('priest');
-    const whole = makeVerseMark(verse, 'm');
-    expect(resolvedMarkText(whole, verse)).toBe('There was a priest named Zacharias.');
-  });
-});
-
-describe('reconcileMarks (degrade-on-text-change, PLAN §4.3)', () => {
-  const verse = allVerses(LUKE)[0]!;
-
-  it('keeps a span mark when the underlying text is unchanged', () => {
-    const m = makeSpanMark('word', verse, 12, 18, 'm'); // "priest"
-    const result = reconcileMarks(map({ marks: [m] }), LUKE);
-    expect(result.marks[0]).toEqual(m); // untouched
-  });
-
-  it('degrades a span mark to whole-verse when the text changes', () => {
-    const m = makeSpanMark('phrase', verse, 12, 18, 'm'); // "priest" in WEBBE-ish
-    // A different translation: the char offsets no longer point at "priest".
-    const changed = pt([
-      ['LUKE.1.5', 'In the days of Herod there was a certain priest.'],
-      ['LUKE.1.6', 'They were both righteous before God.'],
-      ['LUKE.1.7', 'They had no child, because Elizabeth was barren.'],
-    ]);
-    const result = reconcileMarks(map({ marks: [m] }), changed);
-    const out = result.marks[0]!;
-    expect(out.kind).toBe('verse');
-    expect(out.span).toBeUndefined();
-    expect(out.verseId).toBe('LUKE.1.5');
-    expect(out.text).toBe('In the days of Herod there was a certain priest.');
-  });
-
-  it('degrades a span mark when its verse becomes a gap (present:false)', () => {
-    const m = makeSpanMark('word', verse, 12, 18, 'm');
-    const gapped = pt([
-      ['LUKE.1.5', '', false],
-      ['LUKE.1.6', 'They were both righteous before God.'],
-      ['LUKE.1.7', 'They had no child, because Elizabeth was barren.'],
-    ]);
-    const out = reconcileMarks(map({ marks: [m] }), gapped).marks[0]!;
-    expect(out.kind).toBe('verse');
-    expect(out.span).toBeUndefined();
-  });
-
-  it('refreshes a whole-verse mark’s text snapshot to the current verse', () => {
-    const stale = { id: 'm', kind: 'verse' as const, verseId: 'LUKE.1.5', text: 'old text' };
-    const out = reconcileMarks(map({ marks: [stale] }), LUKE).marks[0]!;
-    expect(out.text).toBe('There was a priest named Zacharias.');
-  });
-
-  it('leaves a mark whose verse is no longer in the passage untouched (never discards)', () => {
-    const orphan = makeSpanMark('word', verse, 12, 18, 'm');
-    const other = pt([['JOHN.1.1', 'In the beginning was the Word.']]);
-    const out = reconcileMarks(map({ marks: [orphan] }), other).marks[0]!;
-    expect(out).toEqual(orphan);
   });
 });
 

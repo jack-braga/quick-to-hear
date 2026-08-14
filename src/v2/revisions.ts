@@ -13,17 +13,6 @@ export function revisionsOf(a: Pick<Annotation, 'revisions'>): Revision[] {
   return a.revisions ?? [];
 }
 
-/** A card's revisions from one round (deepen own-work / weigh commentary), in append order. */
-export function revisionsByOrigin(a: Pick<Annotation, 'revisions'>, origin: RevisionOrigin): Revision[] {
-  return revisionsOf(a).filter((r) => r.origin === origin);
-}
-
-/** True when a card carries any 📖 book-sourced Weigh revision (used to flag "weighed against a
- *  commentary" and to check export integrity — a weigh revision should name its source). */
-export function hasBookSource(a: Pick<Annotation, 'revisions'>): boolean {
-  return revisionsOf(a).some((r) => r.origin === 'weigh' && (r.source ?? '').trim().length > 0);
-}
-
 /** Build a fresh revision (id supplied by the caller, keeping this pure). */
 export function makeRevision(id: string, origin: RevisionOrigin, over: Partial<Revision> = {}): Revision {
   return { id, origin, text: '', ...over };

@@ -75,7 +75,6 @@ function makeTestStudy(over: Partial<Study> = {}): Study {
         { id: 'sec1', startVerseId: 'LUKE.1.5', endVerseId: 'LUKE.1.6', name: 'A' },
         { id: 'sec2', startVerseId: 'LUKE.1.7', endVerseId: 'LUKE.1.7', name: 'B' },
       ],
-      marks: [],
     },
     themeAim: { ...base.themeAim, theme: 'God keeps his promises', authorAim: 'Trust him' },
     setup: { ...base.setup, durationMinutes: 45, primaryTranslationId: 'webbe' },
@@ -95,7 +94,7 @@ describe('coverageMap', () => {
     expect(
       coverageMap(makeTestStudy({ passage: { translations: {}, primaryId: null } })).hasSections,
     ).toBe(false);
-    const noSections = makeTestStudy({ map: { sections: [], marks: [] } });
+    const noSections = makeTestStudy({ map: { sections: [] } });
     expect(coverageMap(noSections).hasSections).toBe(false);
   });
 
