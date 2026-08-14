@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { analysePaste, assembleParsedText, looksLikeTranslationName } from '@/lib/paste';
+import { analysePaste, assembleParsedText, looksLikeTranslationName, preclean } from '@/lib/paste';
 import type { AssembleContext, PasteSegment } from '@/lib/paste';
 import { parseReference } from '@/lib/verse/reference';
 import { allVerses, verseIds, verseText } from '@/types/passage';
@@ -315,6 +315,15 @@ describe('preclean — OS-agnostic + invisible characters', () => {
     expect(analysis.detectedReference).toBe('John 3:16');
     const v16 = allVerses(passage).find((v) => v.verseId === 'JOHN.3.16')!;
     expect(verseText(v16)).toBe('For God soloved the world.');
+  });
+
+  it('§2.2 strips C0/C1/DEL control chars but keeps TAB, LF, and RTL isolates/ALM', () => {
+    // C0 (NUL/BEL/VT), DEL, C1 (NEL) are junk from a PDF/terminal copy → dropped; TAB + LF stay.
+    expect(preclean('A BCDEF\tG\nH')).toBe('ABCDEF\tG\nH');
+    // The Unicode 6.3 directional isolates + the Arabic letter mark are legitimate in RTL/Hebrew
+    // scripture and must NOT be stripped (§2.2).
+    const rtl = '⁦shalom⁩؜';
+    expect(preclean(rtl)).toBe(rtl);
   });
 });
 

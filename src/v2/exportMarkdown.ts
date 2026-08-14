@@ -23,13 +23,23 @@ function support(block: ExportBlock): string[] {
   return block.support.map((s) => `> ↗ Support passage — ${s.reference}`);
 }
 
+/** Escape a user caption for markdown alt-text: `\` (the escape char) and `]` (the alt-text
+ *  terminator) can break out of `![…]` and inject markup into the downloaded `.md`; a newline would
+ *  split the line. In-app previews are safe (React escapes) — this hardens the download (§2.1). */
+function escapeAlt(caption: string): string {
+  return caption
+    .replace(/\\/g, '\\\\')
+    .replace(/\]/g, '\\]')
+    .replace(/[\r\n]+/g, ' ');
+}
+
 /** Attached images as self-contained markdown — `![caption](data:…)`. `imageUrls` is resolved by the
  *  caller (base64 data URLs so the .md is portable); an unresolved image is simply omitted. */
 function images(block: ExportBlock, imageUrls: Record<string, string>): string[] {
   if (block.kind === 'spacer') return [];
   return block.images.flatMap((im) => {
     const url = imageUrls[im.id];
-    return url ? [`![${im.caption || 'image'}](${url})`] : [];
+    return url ? [`![${escapeAlt(im.caption || 'image')}](${url})`] : [];
   });
 }
 

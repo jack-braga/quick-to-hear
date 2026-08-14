@@ -74,4 +74,18 @@ describe('attached images in markdown', () => {
   it('omits an image whose bytes did not resolve (graceful — no broken markdown)', () => {
     expect(handoutMarkdown(studyWith([q]), {})).not.toContain('![');
   });
+
+  it('§2.1 escapes ] and \\ in the caption so it cannot break out of the alt text', () => {
+    const evil: Annotation = {
+      id: 'q2',
+      kind: 'question',
+      verseIds: ['LUKE.1.8'],
+      text: 'Q?',
+      images: [{ id: 'img1', caption: 'a\\b](javascript:alert(1))', w: 10, h: 10 }],
+    };
+    const md = handoutMarkdown(studyWith([evil]), { img1: 'data:image/png;base64,AAA' });
+    // The `\` is doubled and the `]` terminator is escaped (`\]`), so the injected `](…)` can't
+    // become a second link — the alt text runs to the real `](dataUrl)`.
+    expect(md).toContain('![a\\\\b\\](javascript:alert(1))](data:image/png;base64,AAA)');
+  });
 });
