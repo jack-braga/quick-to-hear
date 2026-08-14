@@ -32,7 +32,6 @@ export function extractReading(book: BuiltBook, opts: ExtractOptions): ParsedTex
 
   const blocks: Block[] = [];
   const noteIds = new Set<string>();
-  let emittedAny = false;
   let pending: Block[] = []; // non-verse blocks awaiting an in-range verse to anchor to
 
   for (const chapter of book.chapters) {
@@ -47,12 +46,11 @@ export function extractReading(book: BuiltBook, opts: ExtractOptions): ParsedTex
           pending = [];
           blocks.push({ ...block, verses });
           verses.forEach((v) => noteIds.add(v.verseId));
-          emittedAny = true;
-        } else if (!emittedAny) {
-          // Still before the range — these preceding non-verse blocks aren't ours.
-          pending = [];
         } else {
-          // Past the range — nothing more can be in range in a monotonic reading.
+          // This block has no in-range verses. Drop any pending non-verse blocks we were holding for
+          // a following verse — before the range, between the spans of a discontiguous verse list, or
+          // past it, they don't belong to an in-range verse. (A later block may still be in range for a
+          // verse list, so we keep scanning.)
           pending = [];
         }
       } else {

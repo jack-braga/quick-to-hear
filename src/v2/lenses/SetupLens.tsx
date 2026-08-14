@@ -346,7 +346,7 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
               <div className="flex flex-wrap gap-1.5">
                 {GENRE_OPTIONS.map((g) => {
                   const on = study.setup.genres.includes(g.value);
-                  const primary = study.setup.genres[0] === g.value;
+                  const isPrimaryGenre = study.setup.genres[0] === g.value;
                   return (
                     <button
                       key={g.value}
@@ -360,7 +360,7 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                           : 'border-line bg-panel text-ink-soft hover:border-lapis-edge hover:text-ink',
                       )}
                     >
-                      {primary && <span className="mr-1 text-[10px] text-lapis">★</span>}
+                      {isPrimaryGenre && <span className="mr-1 text-[10px] text-lapis">★</span>}
                       {g.label}
                     </button>
                   );
