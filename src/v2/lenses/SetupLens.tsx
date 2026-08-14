@@ -32,6 +32,19 @@ import { PastePanel } from '@/v2/lenses/PastePanel';
 
 /** A friendly, normalised label for a parsed reference (what the validator shows). */
 function normaliseRefLabel(ref: ParsedReference): string {
+  // A single-book verse list shows every part, e.g. "Luke 1:1, 16–17, 32" (§1.9) — otherwise the
+  // label would read "Luke 1:1" and hide that the loader takes the union of all the spans.
+  if (ref.verseList) {
+    let prevChapter = -1;
+    const parts = ref.segments.map(({ start, end }) => {
+      const head = start.chapter !== prevChapter ? `${start.chapter}:${start.verse}` : `${start.verse}`;
+      prevChapter = end.chapter;
+      if (end.verseId === start.verseId) return head;
+      if (end.chapter === start.chapter) return `${head}–${end.verse}`;
+      return `${head}–${end.chapter}:${end.verse}`;
+    });
+    return `${ref.start.book.name} ${parts.join(', ')}`;
+  }
   const s = ref.start;
   const e = ref.end;
   if (s.verseId === e.verseId) return `${s.book.name} ${s.chapter}:${s.verse}`;
@@ -223,6 +236,11 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                 Keep typing a reference — e.g. “Luke 1:5-25”, “Psalm 23”.
               </p>
             ) : null}
+            {parsed?.verseList && (
+              <p className="text-[13px] text-ink-soft">
+                A verse list — all {parsed.segments.length} parts will be loaded together.
+              </p>
+            )}
             {parsed?.extraPassages && (
               <p className="text-[13px] text-ink-soft">
                 More than one passage found — the first will be used.

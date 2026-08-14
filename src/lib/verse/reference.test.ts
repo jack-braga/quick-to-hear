@@ -45,6 +45,26 @@ describe('parseReference (bcv_parser @ kjv)', () => {
     const r = parseReference('Luke 1; John 3')!;
     expect(r.start.book.id).toBe('luke');
     expect(r.extraPassages).toBe(true);
+    expect(r.verseList).toBe(false); // different books — genuinely separate, not a verse list
+  });
+
+  it('treats a single-book discontiguous verse list as ONE passage, not "extra" (§1.9)', () => {
+    const r = parseReference('Luke 1:1,16-17,32')!;
+    // Several comma-spans, all in Luke 1 → a verse list, not separate passages.
+    expect(r.verseList).toBe(true);
+    expect(r.extraPassages).toBe(false);
+    // All spans are kept (the loader takes their union), not just the first.
+    expect(r.segments).toHaveLength(3);
+    expect(r.segments.map((s) => s.start.verse)).toEqual([1, 16, 32]);
+    // `start`/`end`/`osis` still expose the first span for single-passage callers.
+    expect(r.osis).toBe('Luke.1.1');
+    expect(r.start.verseId).toBe('LUKE.1.1');
+  });
+
+  it('a simple contiguous range is neither a verse list nor extra passages', () => {
+    const r = parseReference('Luke 1:5-25')!;
+    expect(r.verseList).toBe(false);
+    expect(r.extraPassages).toBe(false);
   });
 
   it('returns null for unparseable input', () => {

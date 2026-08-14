@@ -45,7 +45,12 @@ export interface ParsedReference {
   segments: { start: RefEndpoint; end: RefEndpoint }[];
   /** True when start/end share a book (the M1-supported case). */
   singleBook: boolean;
-  /** True when the input contained more than one distinct passage (we use the first). */
+  /** True when the input is a **single-book discontiguous verse list** (one match, several
+   *  comma-spans, all in the start book — `Luke 1:1,16-17,32`). The loader extracts the union of
+   *  every span (not just the first), so this is not "more than one passage". */
+  verseList: boolean;
+  /** True when the input contained genuinely **separate passages** (more than one match, or spans
+   *  spanning different books) — we use the first. A same-book verse list is NOT this. */
   extraPassages: boolean;
 }
 
@@ -89,6 +94,12 @@ export function parseReference(input: string): ParsedReference | null {
   if (segments.length === 0) return null;
   const first = segments[0]!;
 
+  // A single-book verse list (several comma-spans all in the start book — mirrors the union the
+  // loader extracts) is one passage, not several; only a second bcv match or a cross-book span set
+  // is genuinely "more than one passage" (§1.9).
+  const verseList =
+    segments.length > 1 && segments.every((s) => s.start.book.id === first.start.book.id);
+
   return {
     input: trimmed,
     osis: spans[0]!,
@@ -97,7 +108,8 @@ export function parseReference(input: string): ParsedReference | null {
     end: first.end,
     segments,
     singleBook: first.start.book.id === first.end.book.id,
-    extraPassages: matches.length > 1 || spans.length > 1,
+    verseList,
+    extraPassages: matches.length > 1 || (spans.length > 1 && !verseList),
   };
 }
 
