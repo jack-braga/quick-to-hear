@@ -60,6 +60,13 @@ describe('parseMentions', () => {
     expect(shape('email jack@busable.com today')).toEqual(['T:email jack@busable.com today']);
   });
 
+  it('does not chip a mid-word @ref even when the tail parses as a reference (§1.10d)', () => {
+    // `me@John 3:16` — the `@` does not start a word, so it stays literal (matches the editor).
+    expect(shape('write to me@John 3:16 please')).toEqual(['T:write to me@John 3:16 please']);
+    // …but a real word-start mention right after still chips.
+    expect(shape('me @John 3:16')).toEqual(['T:me ', 'M:John 3:16']);
+  });
+
   it('grabs only the reference, not the following prose', () => {
     // "John 3 and Paul" must chip "John 3", leaving " and Paul" as text.
     expect(shape('read @John 3 and Paul')).toEqual(['T:read ', 'M:John 3', 'T: and Paul']);

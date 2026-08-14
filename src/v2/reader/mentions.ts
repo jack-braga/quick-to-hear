@@ -52,7 +52,10 @@ export function parseMentions(text: string): MentionSegment[] {
   let i = 0;
   let textStart = 0;
   while (i < text.length) {
-    if (text[i] === '@') {
+    // The `@` must start a word (index 0 or preceded by whitespace) — the same guard the editor's
+    // `pendingRange` applies (§1.10d), so `me@John 3:16` (an email) never chips or exports as a
+    // support passage. A mid-word `@ref` in an already-saved study now renders as plain text.
+    if (text[i] === '@' && (i === 0 || /\s/.test(text[i - 1]!))) {
       const found = longestReference(text.slice(i + 1, i + 1 + MAX_REF));
       if (found) {
         if (i > textStart) segs.push({ type: 'text', value: text.slice(textStart, i) });
