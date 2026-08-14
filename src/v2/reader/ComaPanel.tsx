@@ -54,7 +54,7 @@ export interface ComaPanelProps {
 }
 
 export function ComaPanel(props: ComaPanelProps) {
-  const { study, annotations, focusAnnotationId } = props;
+  const { study, annotations, focusAnnotationId, onFocusHandled } = props;
   const genreSets = useMemo(() => comaSetsForGenres(study.setup.genres), [study.setup.genres]);
   // Which text-types to show; empty = all (chips only appear when 2+ genres are set up).
   const [activeGenres, setActiveGenres] = useState<Set<string>>(new Set());
@@ -67,8 +67,10 @@ export function ComaPanel(props: ComaPanelProps) {
     if (!focusAnnotationId) return;
     const el = document.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focusAnnotationId)}"]`);
     el?.focus();
-    props.onFocusHandled();
-  }, [focusAnnotationId, props]);
+    onFocusHandled();
+    // Depend on the specific fields, not the whole `props` object (new identity each render), so
+    // this focus effect runs only when the focus request changes (§6.4).
+  }, [focusAnnotationId, onFocusHandled]);
 
   let attribution = '';
   try {

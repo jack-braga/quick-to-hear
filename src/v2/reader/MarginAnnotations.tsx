@@ -115,7 +115,7 @@ export interface MarginAnnotationsProps {
 }
 
 export function MarginAnnotations(props: MarginAnnotationsProps) {
-  const { passage, litVerseId, focusAnnotationId } = props;
+  const { passage, litVerseId, focusAnnotationId, onFocusHandled } = props;
   // Spacers are Build-only blank blocks — never cards in the authoring panels.
   const annotations = props.annotations.filter((a) => a.kind !== 'spacer');
   const byId = useMemo(() => new Map(allVerses(passage).map((v) => [v.verseId, v])), [passage]);
@@ -156,8 +156,10 @@ export function MarginAnnotations(props: MarginAnnotationsProps) {
     if (!focusAnnotationId) return;
     const el = document.querySelector<HTMLElement>(`[data-focus="${CSS.escape(focusAnnotationId)}"]`);
     el?.focus();
-    props.onFocusHandled();
-  }, [focusAnnotationId, props, ordered.length]);
+    onFocusHandled();
+    // Depend on the specific fields, not the whole `props` object (new identity each render), so
+    // this focus effect runs only when the focus request (or the list length) changes (§6.4).
+  }, [focusAnnotationId, onFocusHandled, ordered.length]);
 
   const contextOf = (a: Annotation): string =>
     a.verseIds
