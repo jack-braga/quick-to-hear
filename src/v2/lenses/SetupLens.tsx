@@ -59,7 +59,14 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
   const [pasteMode, setPasteMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const parsed = useMemo(() => parseReference(reference), [reference]);
+  // Parse the effective reference. Before a passage exists we parse what the user is typing; once a
+  // passage is loaded (typed OR pasted) its own reference is authoritative — otherwise a paste-first
+  // setup (which writes the reference to the store, not this local input) would leave `parsed` null
+  // and hide the "+ WEBBE / + ASV" comparison-add buttons permanently.
+  const parsed = useMemo(
+    () => parseReference(hasTranslations ? (primary?.reference ?? study.setup.reference) : reference),
+    [hasTranslations, primary?.reference, study.setup.reference, reference],
+  );
 
   // Book completion: only while a bare book token is typed (no chapter yet).
   const bookToken = reference.trim().match(/^([1-3]?\s?[A-Za-z]+)$/)?.[1];
