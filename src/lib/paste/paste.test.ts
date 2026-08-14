@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { analysePaste, assembleParsedText } from '@/lib/paste';
-import type { AssembleContext } from '@/lib/paste';
+import { analysePaste, assembleParsedText, looksLikeTranslationName } from '@/lib/paste';
+import type { AssembleContext, PasteSegment } from '@/lib/paste';
 import { parseReference } from '@/lib/verse/reference';
 import { allVerses, verseIds, verseText } from '@/types/passage';
 
@@ -210,6 +210,64 @@ describe('regression — a stanza’s first un-numbered line is poetry, not a he
     expect(verseText(v46)).toMatch(/And Mary said/);
     expect(verseText(v46)).toMatch(/My soul glorifies the Lord/);
     expect(verseIds(passage)).toEqual(['LUKE.1.46', 'LUKE.1.47']);
+  });
+});
+
+describe('edge cases — lone verse-number line, mid-verse start, name-vs-prose', () => {
+  it('§1.10a keeps the verse boundary when a poetry verse number sits on its own line', () => {
+    // The verse number "2" is on its own physical line; its text follows on the next line.
+    const raw = [
+      'Psalm 46:1-2',
+      'World English Bible',
+      '1 God is our refuge and strength,',
+      '    a very present help in trouble.',
+      '2',
+      '    Therefore we won’t be afraid, though the earth changes,',
+    ].join('\n');
+    const { passage } = run(raw);
+    // Without the fix, "Therefore…" folds into verse 1 and PS.46.2 is never created.
+    expect(verseIds(passage)).toEqual(['PS.46.1', 'PS.46.2']);
+    const v2 = allVerses(passage).find((v) => v.verseId === 'PS.46.2')!;
+    expect(verseText(v2)).toMatch(/^Therefore/);
+    const v1 = allVerses(passage).find((v) => v.verseId === 'PS.46.1')!;
+    expect(verseText(v1)).not.toMatch(/Therefore/);
+  });
+
+  it('§1.10b a mid-verse-start segment stream floors to verse 1, never a phantom verse 0', () => {
+    // Simulates the review screen re-assembling user edits: the first verse's marker was
+    // removed, so assembly opens with a continuation segment and nothing yet open.
+    const segments: PasteSegment[] = [
+      { id: 's0', kind: 'verse', verseNumber: null, startsVerse: false, indent: 0, text: 'In the beginning was the Word,', flagged: false },
+      { id: 's1', kind: 'verse', verseNumber: 2, startsVerse: true, indent: 0, text: 'The same was in the beginning with God.', flagged: false },
+    ];
+    const ctx: AssembleContext = { bookOsis: 'JOHN', startChapter: 1, translationId: 'pasted', reference: 'John 1:1-2' };
+    const passage = assembleParsedText(segments, ctx);
+    // The opening text lands in verse 1 (not JOHN.1.0), and verse 2 follows in the same chapter.
+    expect(verseIds(passage)).toEqual(['JOHN.1.1', 'JOHN.1.2']);
+    expect(verseIds(passage).some((id) => id.endsWith('.0'))).toBe(false);
+  });
+
+  it('§1.10c does not drop a real scripture line that carries a version-ish keyword', () => {
+    // A verse-like line with "testament"/"standard" must NOT be mistaken for a name and stripped.
+    expect(looksLikeTranslationName('This cup is the new testament in my blood')).toBe(false);
+    expect(looksLikeTranslationName('he raised the standard against them')).toBe(false);
+    expect(looksLikeTranslationName('16 For God so loved the world')).toBe(false); // leading number
+    // Genuine Title-Case names still detect (including one internal lowercase word).
+    expect(looksLikeTranslationName('New International Version')).toBe(true);
+    expect(looksLikeTranslationName('American Standard Version')).toBe(true);
+    expect(looksLikeTranslationName('The Bible in Basic English')).toBe(true);
+  });
+
+  it('§1.10c keeps a lone reference + a following verse-like line as scripture, not a name', () => {
+    // Reference on its own line, then a verse line that happens to contain "testament".
+    const raw = [
+      'Luke 22:20',
+      '20 This cup is the new testament in my blood, which is poured out for you',
+    ].join('\n');
+    const { analysis } = run(raw);
+    expect(analysis.detectedReference).toBe('Luke 22:20');
+    // The verse line survived as a segment (was not consumed as the translation name).
+    expect(analysis.segments.some((s) => /new testament in my blood/.test(s.text))).toBe(true);
   });
 });
 

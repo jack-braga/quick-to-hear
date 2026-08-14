@@ -417,27 +417,36 @@ export function assembleParsedText(segments: PasteSegment[], ctx: AssembleContex
       closeBlock();
       continue;
     }
-    if (!text) continue;
     const qlevel = qlevelFor(s.kind, s.indent);
     const blockKind: 'p' | 'q' = s.kind === 'poetry' ? 'q' : 'p';
 
     if (s.startsVerse && s.verseNumber != null) {
+      // Open the verse boundary even when this marker line carries no body text — a lone
+      // verse-number line in poetry (§1.10a). The following continuation fragment attaches
+      // here; a verse left with no fragments at all is dropped in the cleanup pass below.
       const n = s.verseNumber;
       if (n <= prevNumber) chapter += 1; // verse numbers reset → next chapter
       prevNumber = n;
       const verseId = makeVerseId(ctx.bookOsis, chapter, n);
       const block = ensureBlock(blockKind);
-      openVerse = { verseId, present: true, fragments: [{ text, qlevel }] };
+      openVerse = { verseId, present: true, fragments: [] };
       block.verses.push(openVerse);
+      if (text) openVerse.fragments.push({ text, qlevel });
+    } else if (!text) {
+      continue; // a blank continuation line — nothing to append
     } else if (openVerse) {
       // Continuation of the current verse — append the fragment where the verse already
       // lives (so a poetry line continuing a prose-started verse stays one verse, never
       // duplicating its number across two blocks).
       openVerse.fragments.push({ text, qlevel });
     } else {
-      // A continuation with nothing open (paste began mid-verse) — treat as a fresh verse.
-      const n = s.verseNumber ?? prevNumber + 1;
-      if (n <= prevNumber) chapter += 1;
+      // A continuation with nothing open (the paste — or the user's review edits — began
+      // mid-verse). Treat it as a fresh verse, but floor the number to ≥1 so a missing first
+      // marker can't mint a phantom verse 0 (§1.10b). A floored opening verse belongs to the
+      // passage's first chapter and must never roll the chapter over.
+      const raw = s.verseNumber ?? prevNumber + 1;
+      const n = Math.max(1, raw);
+      if (raw >= 1 && n <= prevNumber) chapter += 1;
       prevNumber = n;
       const verseId = makeVerseId(ctx.bookOsis, chapter, n);
       const block = ensureBlock(blockKind);
@@ -446,12 +455,17 @@ export function assembleParsedText(segments: PasteSegment[], ctx: AssembleContex
     }
   }
 
+  // Drop any verse left with no body text — a lone verse-number line with nothing following
+  // it (§1.10a) — and any block thereby emptied (an editorial heading keeps its own `text`).
+  for (const b of blocks) b.verses = b.verses.filter((v) => v.fragments.length > 0);
+  const keptBlocks = blocks.filter((b) => b.verses.length > 0 || (b.text?.length ?? 0) > 0);
+
   return {
     translationId: ctx.translationId,
     versification: 'kjv',
     reference: ctx.reference,
     source: 'pasted',
-    blocks,
+    blocks: keptBlocks,
     notes: [],
   };
 }

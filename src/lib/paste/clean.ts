@@ -107,10 +107,22 @@ export function stripInlineMarkers(s: string): string {
 // ---------------------------------------------------------------------------
 
 /** Looks like a translation-name line (for stripping + recovery): contains a version-ish
- *  keyword, is short, and has no sentence punctuation. */
+ *  keyword, is short, and has no sentence punctuation.
+ *
+ *  Some real scripture lines carry a version-ish keyword too ("…the new **testament** in my
+ *  blood", "the **standard** raised against him") and would be wrongly dropped as the name
+ *  (§1.10c). Two guards keep verse-like prose out:
+ *   1. a line that **starts with a verse number** is verse text, never a name;
+ *   2. a translation name is a short **Title-Case label** ("New International Version") — prose
+ *      gives itself away with several lowercase-leading function words (is/the/in/of/my/…), so
+ *      more than one of them means "this reads as a sentence, not a name". */
 export function looksLikeTranslationName(trimmed: string): boolean {
   if (!trimmed || trimmed.length > 60) return false;
   if (/[.!?]$/.test(trimmed)) return false;
+  if (/^\d{1,3}\b/.test(trimmed)) return false; // a leading verse number → verse text
+  const words = trimmed.split(/\s+/).filter((w) => /[A-Za-z]/.test(w));
+  const lowercaseLeading = words.filter((w) => /^[a-z]/.test(w)).length;
+  if (lowercaseLeading > 1) return false; // reads as prose, not a Title-Case name
   return /\b(version|translation|bible|standard|testament|edition|revised|douay|septuagint)\b/i.test(
     trimmed,
   );
