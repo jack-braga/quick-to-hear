@@ -12,7 +12,9 @@ fixed is at the bottom (§9) and in the git log. Gate is green at every commit
 > **Implementation status (2026-08-14 — executing `docs/HANDOFF-sweep-fixes.md`):**
 > - ✅ **Group A** (`33dcd56`): §1.4, §1.5, §1.6, §1.10f — done.
 > - ✅ **Group B** (`b366c82` + `10586f3`): §1.10a, §1.10b, §1.10c, §1.1 (owner-verified live) — done.
-> - ⏭️ Groups C–O pending. See the handoff for the owner-triaged decision on each.
+> - ✅ **Group C** (`456385a`): §1.8 — done. **Group D** (`b5e92a1`): §1.10d — done. **Group E**
+>   (`a18ab08`): §1.9 — done.
+> - ⏭️ Groups F–O pending. See the handoff for the owner-triaged decision on each.
 
 > Severity is the reviewer's, re-checked by me. "Latent" = real defect with no currently-reachable
 > trigger (guard it before the feature that would reach it lands).

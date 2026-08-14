@@ -4,13 +4,36 @@ import { BUNDLED_TRANSLATIONS, findTranslation, loadReading } from '@/lib/bible'
 import { newId } from '@/lib/id';
 import { mergeSectionUp, renameSection, splitSectionAt, wholePassageSection } from '@/lib/map';
 import { parseReference } from '@/lib/verse';
-import { addSecondary, primaryText, promotePrimary, removeTranslation, translationOrder } from '@/lib/passage';
+import {
+  addSecondary,
+  primaryText,
+  promotePrimary,
+  removeTranslation,
+  translationOrder,
+} from '@/lib/passage';
 import { verseIdInRange } from '@/lib/verse/ids';
 import { cn } from '@/lib/utils';
 import { allVerses, verseIds } from '@/types/passage';
 import { useStudyStore } from '@/store/study';
-import type { Annotation, AnnotationKind, AnnotationOrigin, MentionMeta, NoteFlag, QuestionType, Revision, Section, Study, ThemeAimRevision } from '@/types/study';
-import { annotationMeta, makeAnnotation, toneFor, verseTones as verseTonesByVerse, type AnnotationTone } from '@/v2/annotations';
+import type {
+  Annotation,
+  AnnotationKind,
+  AnnotationOrigin,
+  MentionMeta,
+  NoteFlag,
+  QuestionType,
+  Revision,
+  Section,
+  Study,
+  ThemeAimRevision,
+} from '@/types/study';
+import {
+  annotationMeta,
+  makeAnnotation,
+  toneFor,
+  verseTones as verseTonesByVerse,
+  type AnnotationTone,
+} from '@/v2/annotations';
 import { CommandPalette } from '@/v2/CommandPalette';
 import { DayNightToggle } from '@/v2/DayNightToggle';
 import { LensRail } from '@/v2/LensRail';
@@ -79,7 +102,9 @@ function loadViewed(studyId: string): Set<string> {
   try {
     const raw = localStorage.getItem(viewedKey(studyId));
     const parsed: unknown = raw ? JSON.parse(raw) : null;
-    return Array.isArray(parsed) ? new Set(parsed.filter((x): x is string => typeof x === 'string')) : new Set();
+    return Array.isArray(parsed)
+      ? new Set(parsed.filter((x): x is string => typeof x === 'string'))
+      : new Set();
   } catch {
     return new Set();
   }
@@ -89,6 +114,10 @@ export function ReaderShell({ study }: { study: Study }) {
   const applyToCurrent = useStudyStore((s) => s.applyToCurrent);
   const setPassage = useStudyStore((s) => s.setPassage);
   const updateSetup = useStudyStore((s) => s.updateSetup);
+  // Multi-tab guard (§3.3): another tab saved a newer copy of this study. Informational — it
+  // offers a reload, never blocks the (last-write-wins) save.
+  const conflict = useStudyStore((s) => s.conflict);
+  const reloadCurrent = useStudyStore((s) => s.reloadCurrent);
 
   const passage = primaryText(study.passage);
   const sections = study.map.sections;
@@ -96,11 +125,16 @@ export function ReaderShell({ study }: { study: Study }) {
 
   const [lens, setLens] = useState<LensId>(() => loadLens(study.id, passage != null));
   // Build lens: which export document the centre previews (Participant / Leader / Parallel).
-  const [buildVariant, setBuildVariant] = useState<'participant' | 'leader' | 'parallel'>('participant');
+  const [buildVariant, setBuildVariant] = useState<'participant' | 'leader' | 'parallel'>(
+    'participant',
+  );
   // Attached-image data URLs for the live Build preview, resolved from the image store; re-run when
   // the set of image ids changes (a caption edit doesn't touch bytes) or we enter Build.
   const [buildImageUrls, setBuildImageUrls] = useState<Record<string, string>>({});
-  const imageIdsKey = annotations.flatMap((a) => a.images ?? []).map((r) => r.id).join(',');
+  const imageIdsKey = annotations
+    .flatMap((a) => a.images ?? [])
+    .map((r) => r.id)
+    .join(',');
   useEffect(() => {
     if (lens !== 'build') return;
     let live = true;
@@ -119,7 +153,10 @@ export function ReaderShell({ study }: { study: Study }) {
   const [selected, setSelected] = useState<string[]>([]);
   const [lastAnchor, setLastAnchor] = useState<string | null>(null);
   const [hoveredVerse, setHoveredVerse] = useState<string | null>(null);
-  const [litAnnotation, setLitAnnotation] = useState<{ ids: string[]; tone: AnnotationTone } | null>(null);
+  const [litAnnotation, setLitAnnotation] = useState<{
+    ids: string[];
+    tone: AnnotationTone;
+  } | null>(null);
   const [flash, setFlash] = useState<{ verseId: string; tone: AnnotationTone } | null>(null);
   const [focusAnnotationId, setFocusAnnotationId] = useState<string | null>(null);
   const clearFocusAnnotation = useCallback(() => setFocusAnnotationId(null), []);
@@ -129,7 +166,10 @@ export function ReaderShell({ study }: { study: Study }) {
   // Inline anchor-capture (Slice 4): the card whose anchor the next passage selection sets.
   const [capturingId, setCapturingId] = useState<string | null>(null);
 
-  const model = useMemo(() => (passage ? buildReaderModel(passage, sections) : null), [passage, sections]);
+  const model = useMemo(
+    () => (passage ? buildReaderModel(passage, sections) : null),
+    [passage, sections],
+  );
   // Manuscript mode renders a flattened copy of the model (display-only; the data is untouched).
   const renderModel = useMemo(
     () => (model && readingMode === 'manuscript' ? manuscriptModel(model) : model),
@@ -199,7 +239,11 @@ export function ReaderShell({ study }: { study: Study }) {
   // same tick as the selection, so this early-returns and never wipes the anchor to empty.
   useEffect(() => {
     if (!capturingId || !passage) return;
-    const present = new Set(allVerses(passage).filter((v) => v.present).map((v) => v.verseId));
+    const present = new Set(
+      allVerses(passage)
+        .filter((v) => v.present)
+        .map((v) => v.verseId),
+    );
     onEditAnnotation(capturingId, { verseIds: selected.filter((id) => present.has(id)) });
     // onEditAnnotation/passage are intentionally omitted — this must run only on selection changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,7 +263,8 @@ export function ReaderShell({ study }: { study: Study }) {
     setFocusSectionId(newSectionId);
   };
 
-  const onMerge = (sectionId: string) => setSections((prev) => mergeSectionUp(prev, sectionId, pvIds));
+  const onMerge = (sectionId: string) =>
+    setSections((prev) => mergeSectionUp(prev, sectionId, pvIds));
 
   const onRename = (sectionId: string, name: string) => {
     if (sectionId === '') {
@@ -251,13 +296,22 @@ export function ReaderShell({ study }: { study: Study }) {
   // current lens's origin. (Map offers mark/note; Questions offers question/note/mark.)
   const onAction = (kind: ActionKind) => {
     if (!passage || selected.length === 0) return;
-    const present = new Set(allVerses(passage).filter((v) => v.present).map((v) => v.verseId));
+    const present = new Set(
+      allVerses(passage)
+        .filter((v) => v.present)
+        .map((v) => v.verseId),
+    );
     const verseIdsSel = selected.filter((id) => present.has(id));
     clearSelection();
     if (verseIdsSel.length === 0) return;
     const a =
       kind === 'mark'
-        ? makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, flag: 'confusing', origin: lensOrigin })
+        ? makeAnnotation(newId(), {
+            kind: 'note',
+            verseIds: verseIdsSel,
+            flag: 'confusing',
+            origin: lensOrigin,
+          })
         : kind === 'ask'
           ? makeAnnotation(newId(), { kind: 'question', verseIds: verseIdsSel, origin: lensOrigin })
           : makeAnnotation(newId(), { kind: 'note', verseIds: verseIdsSel, origin: lensOrigin });
@@ -269,20 +323,33 @@ export function ReaderShell({ study }: { study: Study }) {
   // Add an unanchored card. `origin` defaults to the current lens, but a lens may add a *prior*
   // lens's card-type on demand (e.g. Write jotting a Survey comment) — that card keeps the origin of
   // the type's home lens, so the chips + source line stay meaningful wherever it was created.
-  const onAddCard = (kind: AnnotationKind, flag?: NoteFlag, origin: AnnotationOrigin = lensOrigin) =>
-    addAnnotation(makeAnnotation(newId(), { kind, verseIds: [], flag, origin }));
+  const onAddCard = (
+    kind: AnnotationKind,
+    flag?: NoteFlag,
+    origin: AnnotationOrigin = lensOrigin,
+  ) => addAnnotation(makeAnnotation(newId(), { kind, verseIds: [], flag, origin }));
 
   // Recycle-forward (Write lens): seed an EMPTY question at a prior card's anchor (copy the verses
   // only — never the content, rule 1). The user writes the question + its expected answer.
   const onMakeQuestion = (source: Annotation) =>
-    addAnnotation(makeAnnotation(newId(), { kind: 'question', verseIds: [...source.verseIds], origin: 'questions' }));
+    addAnnotation(
+      makeAnnotation(newId(), {
+        kind: 'question',
+        verseIds: [...source.verseIds],
+        origin: 'questions',
+      }),
+    );
 
   // Recycle-forward (Write lens): seed a study note FROM a prior card, carrying its text (+ any
   // reference mentions) forward — a study note is your own prose, so reusing your words is not
   // "generating" content; it's user-triggered recycle-forward.
   const onMakeStudyNote = (source: Annotation) =>
     addAnnotation({
-      ...makeAnnotation(newId(), { kind: 'study-note', verseIds: [...source.verseIds], origin: 'questions' }),
+      ...makeAnnotation(newId(), {
+        kind: 'study-note',
+        verseIds: [...source.verseIds],
+        origin: 'questions',
+      }),
       text: source.text,
       ...(source.mentions ? { mentions: source.mentions } : {}),
     });
@@ -291,7 +358,10 @@ export function ReaderShell({ study }: { study: Study }) {
   // question; the user fills the `____` blanks + writes the expected answer.
   const onAddFromFormula = (stem: string) => {
     const id = newId();
-    addAnnotation({ ...makeAnnotation(id, { kind: 'question', verseIds: [], origin: 'questions' }), text: stem });
+    addAnnotation({
+      ...makeAnnotation(id, { kind: 'question', verseIds: [], origin: 'questions' }),
+      text: stem,
+    });
     setFocusAnnotationId(id);
   };
 
@@ -337,7 +407,10 @@ export function ReaderShell({ study }: { study: Study }) {
       ...s,
       annotations: s.annotations.map((a) =>
         a.id === cardId
-          ? { ...a, revisions: (a.revisions ?? []).map((r) => (r.id === revId ? { ...r, ...patch } : r)) }
+          ? {
+              ...a,
+              revisions: (a.revisions ?? []).map((r) => (r.id === revId ? { ...r, ...patch } : r)),
+            }
           : a,
       ),
     }));
@@ -345,7 +418,9 @@ export function ReaderShell({ study }: { study: Study }) {
     applyToCurrent((s) => ({
       ...s,
       annotations: s.annotations.map((a) =>
-        a.id === cardId ? { ...a, revisions: (a.revisions ?? []).filter((r) => r.id !== revId) } : a,
+        a.id === cardId
+          ? { ...a, revisions: (a.revisions ?? []).filter((r) => r.id !== revId) }
+          : a,
       ),
     }));
 
@@ -359,18 +434,28 @@ export function ReaderShell({ study }: { study: Study }) {
       const key = revKey(field);
       return { ...s, themeAim: { ...s.themeAim, [key]: [...s.themeAim[key], { text: '' }] } };
     });
-  const onEditThemeRevision = (field: ThemeField, index: number, patch: Partial<ThemeAimRevision>) =>
+  const onEditThemeRevision = (
+    field: ThemeField,
+    index: number,
+    patch: Partial<ThemeAimRevision>,
+  ) =>
     applyToCurrent((s) => {
       const key = revKey(field);
       return {
         ...s,
-        themeAim: { ...s.themeAim, [key]: s.themeAim[key].map((r, i) => (i === index ? { ...r, ...patch } : r)) },
+        themeAim: {
+          ...s.themeAim,
+          [key]: s.themeAim[key].map((r, i) => (i === index ? { ...r, ...patch } : r)),
+        },
       };
     });
   const onRemoveThemeRevision = (field: ThemeField, index: number) =>
     applyToCurrent((s) => {
       const key = revKey(field);
-      return { ...s, themeAim: { ...s.themeAim, [key]: s.themeAim[key].filter((_, i) => i !== index) } };
+      return {
+        ...s,
+        themeAim: { ...s.themeAim, [key]: s.themeAim[key].filter((_, i) => i !== index) },
+      };
     });
 
   // ---- inline anchor capture (Slice 4) -----------------------------------------------------
@@ -451,7 +536,12 @@ export function ReaderShell({ study }: { study: Study }) {
     [study.passage, primaryId, viewedSet],
   );
   const availableTranslations = useMemo(
-    () => BUNDLED_TRANSLATIONS.filter((t) => !study.passage.translations[t.id]).map((t) => ({ id: t.id, name: t.name, shortName: t.shortName })),
+    () =>
+      BUNDLED_TRANSLATIONS.filter((t) => !study.passage.translations[t.id]).map((t) => ({
+        id: t.id,
+        name: t.name,
+        shortName: t.shortName,
+      })),
     [study.passage],
   );
   // Viewed translations in display order (primary first). Two or more → the parallel view.
@@ -505,7 +595,8 @@ export function ReaderShell({ study }: { study: Study }) {
 
   // ---- top-bar / leaf labels --------------------------------------------------------------
   const tr = passage ? findTranslation(passage.translationId) : undefined;
-  const reference = study.setup.title || study.setup.reference || passage?.reference || 'Untitled study';
+  const reference =
+    study.setup.title || study.setup.reference || passage?.reference || 'Untitled study';
   const leafTitle = study.setup.title || passage?.reference || study.setup.reference || 'Passage';
   const leafMeta = passage ? `${tr?.shortName ?? passage.translationId} · public domain` : '';
 
@@ -513,14 +604,18 @@ export function ReaderShell({ study }: { study: Study }) {
   const litForCanvas = litAnnotation
     ? { ids: new Set(litAnnotation.ids), tone: litAnnotation.tone }
     : null;
-  const capturingCard = capturingId ? (annotations.find((a) => a.id === capturingId) ?? null) : null;
+  const capturingCard = capturingId
+    ? (annotations.find((a) => a.id === capturingId) ?? null)
+    : null;
 
   let center: React.ReactNode;
   let margin: React.ReactNode;
 
   if (lens === 'setup') {
     center = <SetupLens study={study} onLoaded={() => setLens('read')} />;
-    margin = <MarginPlaceholder text="Load a passage on the left, then read it through before you map and mark it." />;
+    margin = (
+      <MarginPlaceholder text="Load a passage on the left, then read it through before you map and mark it." />
+    );
   } else if (!passage || !model) {
     center = <EmptyLeaf onSetup={() => setLens('setup')} />;
     margin = <MarginPlaceholder text="No passage yet." />;
@@ -537,7 +632,9 @@ export function ReaderShell({ study }: { study: Study }) {
                 onClick={() => setBuildVariant(v)}
                 className={cn(
                   'px-3.5 py-1 font-sans text-[12.5px] capitalize',
-                  buildVariant === v ? 'bg-lapis text-white dark:text-[#16181d]' : 'bg-leaf text-ink-soft hover:text-ink',
+                  buildVariant === v
+                    ? 'bg-lapis text-white dark:text-[#16181d]'
+                    : 'bg-leaf text-ink-soft hover:text-ink',
                 )}
               >
                 {v}
@@ -546,7 +643,9 @@ export function ReaderShell({ study }: { study: Study }) {
           </div>
           {/* per-study font size — scales the whole export (preview + print) */}
           <div className="inline-flex items-center gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">Aa Font</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-faint">
+              Aa Font
+            </span>
             <div className="inline-flex overflow-hidden rounded-lg border border-line">
               {(['s', 'm', 'l'] as const).map((sz) => (
                 <button
@@ -637,8 +736,10 @@ export function ReaderShell({ study }: { study: Study }) {
   } else {
     // Map + Questions are always interactive; COMA becomes interactive only while anchor-capturing
     // an answer-card (it has no action bar — you create via ✎ Answer, not select-to-create).
-    const interactive = lens === 'map' || lens === 'questions' || (lens === 'coma' && capturingId != null);
-    const actionKinds: ActionKind[] = lens === 'questions' ? ['ask', 'note', 'mark'] : ['mark', 'note'];
+    const interactive =
+      lens === 'map' || lens === 'questions' || (lens === 'coma' && capturingId != null);
+    const actionKinds: ActionKind[] =
+      lens === 'questions' ? ['ask', 'note', 'mark'] : ['mark', 'note'];
     // Read is pure reading — suppress the verse tones (#4e); every other lens paints them.
     const canvasTones = lens === 'read' ? NO_TONES : verseToneSets;
     center = parallelActive ? (
@@ -766,46 +867,75 @@ export function ReaderShell({ study }: { study: Study }) {
 
   return (
     <div className="grid h-dvh grid-rows-[auto_1fr_auto] bg-desk text-ink">
-      {/* top bar */}
-      <header className="flex h-14 items-center gap-5 border-b border-line bg-[color-mix(in_srgb,var(--desk)_82%,var(--leaf))] px-[22px]">
-        <div className="flex min-w-0 items-baseline gap-2.5">
-          <a href="#/" className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-faint hover:text-ink">
-            Quick&nbsp;to&nbsp;Hear
+      {/* top bar (+ the conflict banner) — one grid row so the banner pushes content down */}
+      <div>
+        {/* top bar */}
+        <header className="flex h-14 items-center gap-5 border-b border-line bg-[color-mix(in_srgb,var(--desk)_82%,var(--leaf))] px-[22px]">
+          <div className="flex min-w-0 items-baseline gap-2.5">
+            <a
+              href="#/"
+              className="font-mono text-[11px] uppercase tracking-[0.16em] text-ink-faint hover:text-ink"
+            >
+              Quick&nbsp;to&nbsp;Hear
+            </a>
+            <span className="truncate font-scripture text-[19px] tracking-[0.01em]">
+              {reference}
+            </span>
+          </div>
+          {passage && (
+            <TranslationControls
+              mode={readingMode}
+              onModeChange={changeReadingMode}
+              translations={loadedTranslations}
+              available={availableTranslations}
+              onSetPrimary={onSetPrimary}
+              onToggleView={onToggleView}
+              onAdd={(id) => void addTranslation(id)}
+              onRemove={(id) => void removeSecondary(id)}
+            />
+          )}
+          <div className="flex-1" />
+          {/* quick-jump / command palette — moved here so the footer is pure phase navigation */}
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            title="Jump to a verse or reference in the passage ( / )"
+            aria-label="Jump to a verse or reference"
+            className="grid size-7 shrink-0 place-items-center rounded-md bg-lapis font-mono text-[13px] font-semibold text-white dark:text-[#10131a]"
+          >
+            /
+          </button>
+          <a
+            href="#/about"
+            title="Attribution & further reading"
+            className="hidden font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint hover:text-ink sm:inline"
+          >
+            About
           </a>
-          <span className="truncate font-scripture text-[19px] tracking-[0.01em]">{reference}</span>
-        </div>
-        {passage && (
-          <TranslationControls
-            mode={readingMode}
-            onModeChange={changeReadingMode}
-            translations={loadedTranslations}
-            available={availableTranslations}
-            onSetPrimary={onSetPrimary}
-            onToggleView={onToggleView}
-            onAdd={(id) => void addTranslation(id)}
-            onRemove={(id) => void removeSecondary(id)}
-          />
+          <DayNightToggle />
+        </header>
+
+        {/* multi-tab conflict banner (§3.3) — another tab saved a newer copy of this study. It
+          offers a reload; it does not block this tab's own (last-write-wins) save. */}
+        {conflict && (
+          <div
+            role="status"
+            className="flex flex-wrap items-center justify-center gap-3 border-b border-[#b98a1e]/50 bg-[#b98a1e]/[0.1] px-4 py-2 text-[13px] text-ink"
+          >
+            <span>
+              This study changed in another tab. Your unsaved edits here will overwrite it when they
+              save.
+            </span>
+            <button
+              type="button"
+              onClick={() => void reloadCurrent()}
+              className="rounded-md border border-[#b98a1e]/60 bg-panel px-2.5 py-1 font-sans text-[12.5px] font-medium text-ink hover:border-[#b98a1e]"
+            >
+              Reload the other tab’s version
+            </button>
+          </div>
         )}
-        <div className="flex-1" />
-        {/* quick-jump / command palette — moved here so the footer is pure phase navigation */}
-        <button
-          type="button"
-          onClick={() => setPaletteOpen(true)}
-          title="Jump to a verse or reference in the passage ( / )"
-          aria-label="Jump to a verse or reference"
-          className="grid size-7 shrink-0 place-items-center rounded-md bg-lapis font-mono text-[13px] font-semibold text-white dark:text-[#10131a]"
-        >
-          /
-        </button>
-        <a
-          href="#/about"
-          title="Attribution & further reading"
-          className="hidden font-mono text-[11px] uppercase tracking-[0.1em] text-ink-faint hover:text-ink sm:inline"
-        >
-          About
-        </a>
-        <DayNightToggle />
-      </header>
+      </div>
 
       {/* main — passage/lens + margin (the lens rail now lives in the footer) */}
       <div className="grid grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1fr)_300px] lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -821,8 +951,8 @@ export function ReaderShell({ study }: { study: Study }) {
       {capturingCard && (
         <div className="fixed left-1/2 top-16 z-40 flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-lg bg-lapis px-3.5 py-2 text-[12.5px] text-white shadow-[0_12px_30px_-8px_rgba(0,0,0,0.5)] dark:text-[#14161c]">
           <span>
-            ⌖ <b className="font-semibold">Anchoring {annotationMeta(capturingCard).tag}</b> — select
-            verse(s) in the passage · Esc to cancel
+            ⌖ <b className="font-semibold">Anchoring {annotationMeta(capturingCard).tag}</b> —
+            select verse(s) in the passage · Esc to cancel
           </span>
           <button
             type="button"

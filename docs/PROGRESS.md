@@ -12,8 +12,13 @@
 >   paste — `acceptMarker` detects a chapter boundary (reset-to-1 OR BibleGateway's chapter number
 >   before the unnumbered verse 1). **Owner-verified live** against a real Luke 1:79–2:2 NIV paste.
 >   PD-rebuilt fixture (rule 7). 357 unit.
-> - ⏭️ **Group C next** — drop Hebrew psalm numbering (§1.8).
-> - Groups D–O pending (see the handoff for the suggested sequence).
+> - ✅ **Group C** (`456385a`) — dropped the Hebrew-Psalms versification remap (§1.8); assume KJV
+>   numbering + a plain note on the paste-comparison screen. Browser-verified.
+> - ✅ **Group D** (`b5e92a1`) — `@` must start a word to chip (§1.10d), matching the editor.
+> - ✅ **Group E** (`a18ab08`) — single-book verse list labelled accurately, not "extra passages"
+>   (§1.9); new `verseList` flag. Browser-verified.
+> - ⏭️ **Group F next** — multi-tab conflict banner (§3.3, detection already wired).
+> - Groups G–O pending (see the handoff for the suggested sequence).
 
 ---
 
