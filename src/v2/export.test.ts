@@ -87,4 +87,15 @@ describe('projectForExport', () => {
     const projected = projectForExport({ ...s, setup: { ...s.setup, title: 'The birth foretold' } });
     expect(projected.setup.reference).toBe('The birth foretold');
   });
+
+  it('excludes reserved ("not in study") questions, so the audit sees only what exports', () => {
+    const withReserved: Annotation[] = [
+      { id: 'q1', kind: 'question', verseIds: ['LUKE.1.8'], text: 'Kept', expectedAnswer: 'A', questionType: 'observation' },
+      { id: 'q2', kind: 'question', verseIds: ['LUKE.1.13'], text: 'Held back', expectedAnswer: 'B', questionType: 'meaning', reserved: true },
+    ];
+    const projected = projectForExport(studyWith(withReserved));
+    if (projected.build.format !== 'study') return;
+    expect(projected.build.questions.map((q) => q.id)).toEqual(['q1']);
+    expect(projected.build.order).toEqual(['q1']);
+  });
 });

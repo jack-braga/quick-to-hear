@@ -42,7 +42,9 @@ export function CheckLens({ study }: { study: Study }) {
   const audit = useMemo(() => auditResults(projected), [projected]);
   const coverage = useMemo(() => coverageMap(projected), [projected]);
 
-  const questions = orderedQuestions(study.annotations, study.runningOrder);
+  // Held-back ("in study" off / reserved) questions don't export, so the Check stats + canExport
+  // count only what will actually print — consistent with the audit (projectForExport) and exportModel.
+  const questions = orderedQuestions(study.annotations, study.runningOrder).filter((a) => !a.reserved);
   const ready = questions.filter(isQuestionReady).length;
   const tr = passage ? findTranslation(passage.translationId) : undefined;
   const canExport = questions.length > 0;

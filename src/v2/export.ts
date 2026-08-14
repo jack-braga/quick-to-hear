@@ -6,12 +6,14 @@ import { resolveImageDataUrls } from '@/v2/print/supportTexts';
 import { mentionKey, parseMentions } from '@/v2/reader/mentions';
 
 /**
- * Export adapter (v2.7) — project a v2 study onto the v1 export **model** so the whole tested
- * export pipeline (`handoutModel`/`leaderModel` → markdown + print) is reused unchanged.
+ * Audit adapter — project a v2 study (`annotations` + `runningOrder`) onto the v1-shaped `Study`
+ * that the tested audit (`auditResults` / `coverageMap`) reads, so the Check lens audits the v2 study
+ * without duplicating the audit. (The v1 handout/leader export models this projection once also fed
+ * were removed with v1; the actual v2 documents render from `exportModel` — see `exportMarkdown` /
+ * `print/ExportPreview` — not from this projection.)
  *
- * The v2 authoring model is `annotations` + `runningOrder`; the v1 export reads `build.questions`
- * (ordered), `build.supportPassages`, `map.sections`, etc. This pure projection fills a v1-shaped
- * `build` from the v2 data:
+ * The v1 audit reads `build.questions` (ordered), `build.supportPassages`, `map.sections`, etc. This
+ * pure projection fills a v1-shaped `build` from the v2 data:
  *  - question annotations → `build.questions` in the running order (missing type/weight get sane
  *    defaults; the expected answer carries the SPEC-6e discipline into the leader's notes);
  *  - a note's inline `@`-mentions marked **include-for-group** → `build.supportPassages`, attached to
@@ -23,7 +25,10 @@ import { mentionKey, parseMentions } from '@/v2/reader/mentions';
  * empty (the handout/leader render fine without them).
  */
 export function projectForExport(study: Study): Study {
-  const ordered = orderedQuestions(study.annotations, study.runningOrder);
+  // Match what actually exports: `exportModel` drops any question held back via the "in study" toggle
+  // (`reserved`), so the audit must drop them too — otherwise coverage, type-balance, know/feel/do,
+  // expected-answer and load-bearing all certify questions the document never shows.
+  const ordered = orderedQuestions(study.annotations, study.runningOrder).filter((a) => !a.reserved);
 
   const questions: Question[] = ordered.map((a) => ({
     id: a.id,
