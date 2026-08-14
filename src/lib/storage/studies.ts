@@ -23,6 +23,10 @@ import { toSummary, type Passage, type Study, type StudySummary } from '@/types/
 /** Envelope tag written into every exported project file, for friendly detection. */
 export const EXPORT_FORMAT = 'quick-to-hear/study-project';
 
+/** Quarantine key prefix for a failed *load* (import quarantines keep random ids). A stable
+ *  `load:<studyId>` key dedupes repeated failed reads of the same study (§1.10f). */
+const LOAD_QUARANTINE_PREFIX = 'load:';
+
 /** An attached image embedded in a project file (base64 — JSON can't carry a Blob). */
 export interface EnvelopeImage {
   id: string;
@@ -51,11 +55,26 @@ function toBody(study: Study): Omit<Study, 'passage'> {
 
 export async function listStudies(): Promise<StudySummary[]> {
   const db = await getDB();
-  const bodies = await db.getAll(STORE_STUDIES);
-  // Bodies have no passage; rejoin an empty one so `toSummary` sees a full Study.
+  // Pull keys alongside values so a ghost is hidden by its *store key* (which is what the
+  // quarantine is keyed on), not a body field it might be missing. Both arrays are key-ordered.
+  const [bodies, bodyKeys, quarantineKeys] = await Promise.all([
+    db.getAll(STORE_STUDIES),
+    db.getAllKeys(STORE_STUDIES),
+    db.getAllKeys(STORE_QUARANTINE),
+  ]);
+  // Hide any study that has been quarantined on a failed load — its Home row would be a "ghost"
+  // that opens to nothing (§1.10f). Load-quarantines use a stable `load:<id>` key (see getStudy).
+  const ghostIds = new Set(
+    quarantineKeys
+      .filter((k): k is string => typeof k === 'string' && k.startsWith(LOAD_QUARANTINE_PREFIX))
+      .map((k) => k.slice(LOAD_QUARANTINE_PREFIX.length)),
+  );
+  // Bodies have no passage; rejoin an empty one so `toSummary` sees a full Study. Guard the sort
+  // key so one malformed (undated) body can never crash the whole Home list (rule 6).
   return bodies
+    .filter((_body, i) => !ghostIds.has(String(bodyKeys[i])))
     .map((body) => toSummary({ ...body, passage: { translations: {}, primaryId: null } }))
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
 }
 
 export async function getStudy(id: string): Promise<Study | null> {
@@ -67,8 +86,15 @@ export async function getStudy(id: string): Promise<Study | null> {
   const storedPassage = (await db.get(STORE_PASSAGES, id)) ?? null;
   const result = hydrate({ ...body, passage: storedPassage }, { id, now: nowIso() });
   if (result.ok) return result.study;
-  // A body that will not hydrate is quarantined rather than lost, and read as absent.
-  await quarantineRaw({ ...body, passage: storedPassage }, 'load', result.reason);
+  // A body that will not hydrate is quarantined rather than lost, and read as absent. Key the
+  // quarantine record by the study id so re-reading the same broken study overwrites its record
+  // instead of appending a fresh one every read (§1.10f — the quarantine store grew unbounded).
+  await quarantineRaw(
+    { ...body, passage: storedPassage },
+    'load',
+    result.reason,
+    `${LOAD_QUARANTINE_PREFIX}${id}`,
+  );
   return null;
 }
 
@@ -208,8 +234,7 @@ function extractEnvelopeImages(parsed: unknown): EnvelopeImage[] {
 }
 
 export type ImportResult =
-  | { ok: true; study: Study; upgraded: boolean }
-  | { ok: false; error: string };
+  { ok: true; study: Study; upgraded: boolean } | { ok: false; error: string };
 
 /**
  * Import a project file. **Always mints a fresh study id** (owner decision) so a
@@ -322,17 +347,20 @@ async function quarantineRaw(
   raw: unknown,
   source: QuarantineRecord['source'],
   reason: string,
+  /** A stable key dedupes repeated quarantines of the same source; omitted → a fresh random id. */
+  key?: string,
 ): Promise<void> {
   try {
     const db = await getDB();
+    const recordKey = key ?? newId();
     const record: QuarantineRecord = {
-      id: newId(),
+      id: recordKey,
       quarantinedAt: nowIso(),
       reason,
       source,
       raw,
     };
-    await db.put(STORE_QUARANTINE, record, record.id);
+    await db.put(STORE_QUARANTINE, record, recordKey);
   } catch {
     // Quarantine is a best-effort backstop; never let it throw over the caller.
   }

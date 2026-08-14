@@ -35,7 +35,8 @@ function normaliseRefLabel(ref: ParsedReference): string {
   const s = ref.start;
   const e = ref.end;
   if (s.verseId === e.verseId) return `${s.book.name} ${s.chapter}:${s.verse}`;
-  if (s.book.id !== e.book.id) return `${s.book.name} ${s.chapter}:${s.verse} – ${e.book.name} ${e.chapter}:${e.verse}`;
+  if (s.book.id !== e.book.id)
+    return `${s.book.name} ${s.chapter}:${s.verse} – ${e.book.name} ${e.chapter}:${e.verse}`;
   if (s.chapter === e.chapter) return `${s.book.name} ${s.chapter}:${s.verse}–${e.verse}`;
   return `${s.book.name} ${s.chapter}:${s.verse}–${e.chapter}:${e.verse}`;
 }
@@ -47,6 +48,7 @@ const LABEL = 'block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-
 export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => void }) {
   const updateSetup = useStudyStore((s) => s.updateSetup);
   const setPassage = useStudyStore((s) => s.setPassage);
+  const resetPassage = useStudyStore((s) => s.resetPassage);
 
   const passage = study.passage;
   const primary = primaryText(passage);
@@ -57,6 +59,9 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pasteMode, setPasteMode] = useState(false);
+  // Two-step confirm before "change passage" clears the annotations/theme/map anchored to the
+  // old text (§1.6) — an inline prompt rather than a native confirm() (testable, non-blocking).
+  const [confirmingChange, setConfirmingChange] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Parse the effective reference. Before a passage exists we parse what the user is typing; once a
@@ -64,7 +69,8 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
   // setup (which writes the reference to the store, not this local input) would leave `parsed` null
   // and hide the "+ WEBBE / + ASV" comparison-add buttons permanently.
   const parsed = useMemo(
-    () => parseReference(hasTranslations ? (primary?.reference ?? study.setup.reference) : reference),
+    () =>
+      parseReference(hasTranslations ? (primary?.reference ?? study.setup.reference) : reference),
     [hasTranslations, primary?.reference, study.setup.reference, reference],
   );
 
@@ -104,19 +110,35 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
     // Just re-designate the primary — every loaded translation stays (the old primary becomes a
     // comparison text). (Using `setPrimary` here would drop the previous primary — that's the switch
     // semantic, not what the radio in a multi-translation list means.)
-    await setPassage(promotePrimary(passage, id));
-    updateSetup({ primaryTranslationId: id });
+    setError(null);
+    try {
+      await setPassage(promotePrimary(passage, id));
+      updateSetup({ primaryTranslationId: id });
+    } catch {
+      setError('Could not save the primary translation — please try again.');
+    }
   };
 
   const remove = async (id: string) => {
-    await setPassage(removeTranslation(passage, id));
+    setError(null);
+    try {
+      await setPassage(removeTranslation(passage, id));
+    } catch {
+      setError('Could not remove that translation — please try again.');
+    }
   };
 
   const changePassage = async () => {
-    await setPassage({ translations: {}, primaryId: null });
-    setReference('');
     setError(null);
-    setTimeout(() => inputRef.current?.focus(), 0);
+    try {
+      // Clears the cards, marks, theme & aim anchored to the old passage (§1.6).
+      await resetPassage();
+      setConfirmingChange(false);
+      setReference('');
+      setTimeout(() => inputRef.current?.focus(), 0);
+    } catch {
+      setError('Could not change the passage — please try again.');
+    }
   };
 
   // Multi-genre: toggle a text-type in/out of `genres`; the first stays the primary (drives the
@@ -197,25 +219,61 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                 <span className="font-mono text-[11px] text-ink-faint">{parsed.osis}</span>
               </p>
             ) : reference.trim() ? (
-              <p className="text-[13px] text-ink-faint">Keep typing a reference — e.g. “Luke 1:5-25”, “Psalm 23”.</p>
+              <p className="text-[13px] text-ink-faint">
+                Keep typing a reference — e.g. “Luke 1:5-25”, “Psalm 23”.
+              </p>
             ) : null}
             {parsed?.extraPassages && (
-              <p className="text-[13px] text-ink-soft">More than one passage found — the first will be used.</p>
+              <p className="text-[13px] text-ink-soft">
+                More than one passage found — the first will be used.
+              </p>
             )}
           </div>
         ) : (
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">Passage</span>
-            <span className="rounded-md border border-line bg-panel px-2.5 py-1 font-scripture text-[15px]">
-              {primary?.reference || study.setup.reference}
-            </span>
-            <button
-              type="button"
-              onClick={() => void changePassage()}
-              className="font-mono text-[12px] text-ink-faint underline underline-offset-2 hover:text-ink"
-            >
-              change passage
-            </button>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-ink-faint">
+                Passage
+              </span>
+              <span className="rounded-md border border-line bg-panel px-2.5 py-1 font-scripture text-[15px]">
+                {primary?.reference || study.setup.reference}
+              </span>
+              {!confirmingChange && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmingChange(true)}
+                  className="font-mono text-[12px] text-ink-faint underline underline-offset-2 hover:text-ink"
+                >
+                  change passage
+                </button>
+              )}
+            </div>
+            {confirmingChange && (
+              <div className="space-y-2 rounded-lg border border-rubric/40 bg-rubric/5 px-3 py-2.5">
+                <p className="text-[13px] text-ink-soft">
+                  Changing the passage clears the questions, comments, marks, and theme &amp; aim
+                  anchored to{' '}
+                  <b className="font-semibold">{primary?.reference || study.setup.reference}</b>.
+                  This can’t be undone.
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void changePassage()}
+                    className="rounded-lg bg-rubric px-3 py-1.5 font-sans text-[13px] font-medium text-white hover:opacity-90"
+                  >
+                    Clear and change
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingChange(false)}
+                    className="rounded-lg border border-line bg-panel px-3 py-1.5 font-sans text-[13px] text-ink hover:border-lapis-edge"
+                  >
+                    Keep it
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -252,7 +310,11 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                       />
                       <span className="font-medium">
                         {tr?.name ?? text.translationId.replace(/^pasted-/, '').replace(/-/g, ' ')}
-                        {tr && <span className="ml-1.5 font-mono text-[11px] text-ink-faint">{tr.shortName}</span>}
+                        {tr && (
+                          <span className="ml-1.5 font-mono text-[11px] text-ink-faint">
+                            {tr.shortName}
+                          </span>
+                        )}
                       </span>
                     </button>
                     {isPrimary && (
@@ -280,7 +342,9 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
           )}
 
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <span className="text-[13px] text-ink-soft">{hasTranslations ? 'Add another:' : 'Import:'}</span>
+            <span className="text-[13px] text-ink-soft">
+              {hasTranslations ? 'Add another:' : 'Import:'}
+            </span>
             {parsed &&
               availableBundled.map((t) => (
                 <button
@@ -303,8 +367,8 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
           </div>
           {!parsed && !hasTranslations && (
             <p className="text-[13px] text-ink-faint">
-              Enter a valid reference to import a bundled translation — or paste your own (it can carry
-              its own reference).
+              Enter a valid reference to import a bundled translation — or paste your own (it can
+              carry its own reference).
             </p>
           )}
           {error && <p className="text-[13px] text-rubric">{error}</p>}
@@ -313,7 +377,8 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
         {/* 3 — optional title */}
         <div className="space-y-2">
           <label htmlFor="v2-title" className={LABEL}>
-            Study title <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
+            Study title{' '}
+            <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
           </label>
           <input
             id="v2-title"
@@ -329,8 +394,12 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
           <div className="space-y-4 border-t border-line pt-6">
             {/* A titled divider so the after-load fields read as one grouped block, not "extra stuff". */}
             <div className="space-y-0.5">
-              <h2 className="font-scripture text-[16px] leading-tight text-ink">The shape of the study</h2>
-              <p className="text-[12px] text-ink-faint">Drives the COMA prompts, the timing, and the handout.</p>
+              <h2 className="font-scripture text-[16px] leading-tight text-ink">
+                The shape of the study
+              </h2>
+              <p className="text-[12px] text-ink-faint">
+                Drives the COMA prompts, the timing, and the handout.
+              </p>
             </div>
             {/* text-type(s) — a passage can be more than one genre; the first (★) is primary */}
             <div className="space-y-2">
@@ -368,7 +437,8 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
               </div>
               {study.setup.genres.length > 0 && (
                 <p className="text-[12px] text-ink-faint">
-                  Shapes the COMA prompts: {study.setup.genres.map((g) => GENRE_LABELS[g]).join(' · ')}
+                  Shapes the COMA prompts:{' '}
+                  {study.setup.genres.map((g) => GENRE_LABELS[g]).join(' · ')}
                   {study.setup.genres.length > 1 && ' — the reading tip follows the primary (★).'}
                 </p>
               )}
@@ -386,7 +456,9 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                   id="v2-duration"
                   className={FIELD}
                   value={study.setup.durationMinutes ?? ''}
-                  onChange={(e) => updateSetup({ durationMinutes: e.target.value ? Number(e.target.value) : null })}
+                  onChange={(e) =>
+                    updateSetup({ durationMinutes: e.target.value ? Number(e.target.value) : null })
+                  }
                 >
                   <option value="">Choose a length…</option>
                   {DURATION_OPTIONS.map((d) => (
@@ -408,7 +480,9 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                   className={FIELD}
                   value={study.setup.groupComposition ?? ''}
                   onChange={(e) =>
-                    updateSetup({ groupComposition: (e.target.value || null) as GroupComposition | null })
+                    updateSetup({
+                      groupComposition: (e.target.value || null) as GroupComposition | null,
+                    })
                   }
                 >
                   <option value="">Choose…</option>
@@ -419,7 +493,8 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
                   ))}
                 </select>
                 <p className="text-[12px] text-ink-faint">
-                  A mixed or not-yet-Christian group asks the study to make the gospel plain (the audit checks it).
+                  A mixed or not-yet-Christian group asks the study to make the gospel plain (the
+                  audit checks it).
                 </p>
               </div>
             </div>
@@ -427,7 +502,8 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
             <div className="space-y-2">
               <div className="flex items-center gap-1.5">
                 <label htmlFor="v2-series" className={LABEL}>
-                  Series note <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
+                  Series note{' '}
+                  <span className="normal-case tracking-normal text-ink-faint">(optional)</span>
                 </label>
                 <Help helpKey="p1.series" label="Series note" />
               </div>
@@ -443,7 +519,9 @@ export function SetupLens({ study, onLoaded }: { study: Study; onLoaded?: () => 
             <div className="space-y-2">
               <label htmlFor="v2-intro" className={LABEL}>
                 Introduction{' '}
-                <span className="normal-case tracking-normal text-ink-faint">(optional — printed on the handout)</span>
+                <span className="normal-case tracking-normal text-ink-faint">
+                  (optional — printed on the handout)
+                </span>
               </label>
               <textarea
                 id="v2-intro"

@@ -1,7 +1,7 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { __resetDbForTests } from '@/lib/storage/db';
+import { __resetDbForTests, getDB, STORE_STUDIES } from '@/lib/storage/db';
 import {
   deleteStudy,
   exportStudyBlob,
@@ -55,6 +55,37 @@ describe('storage CRUD', () => {
 
   it('returns null for an unknown id', async () => {
     expect(await getStudy('nope')).toBeNull();
+  });
+});
+
+describe('load-quarantine of an un-hydratable study (§1.10f)', () => {
+  /** Write a structurally-broken body straight into the store (a value hydrate rejects). */
+  async function putBrokenBody(id: string) {
+    const db = await getDB();
+    await db.put(STORE_STUDIES, { setup: { durationMinutes: 'nope' } } as never, id);
+  }
+
+  it('re-reading a broken study quarantines ONCE (keyed by id), not once per read', async () => {
+    await putBrokenBody('broken');
+
+    expect(await getStudy('broken')).toBeNull();
+    expect(await getStudy('broken')).toBeNull();
+    expect(await getStudy('broken')).toBeNull();
+
+    // The quarantine store must not grow unbounded — the stable `load:<id>` key overwrites.
+    expect(await listQuarantine()).toHaveLength(1);
+  });
+
+  it('hides the broken study from the Home list once it has been quarantined', async () => {
+    await putStudyFull(freshStudy('good', 'Luke 1'));
+    await putBrokenBody('broken');
+
+    // A broken body is a clickable "ghost" until first read; reading it quarantines it …
+    expect(await getStudy('broken')).toBeNull();
+
+    // … after which the Home list shows only the real study, not the ghost.
+    const ids = (await listStudies()).map((r) => r.id);
+    expect(ids).toEqual(['good']);
   });
 });
 
