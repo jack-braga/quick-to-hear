@@ -345,6 +345,10 @@ export const QuestionSchema = z.object({
   // promotion while it is empty.
   expectedAnswer: z.string().default(''),
   weight: WeightSchema.default('medium'),
+  // Real per-question minutes (the v2 Build lens sets `estimateMinutes`; the audit projection
+  // carries it here so the time check matches the exported document — §1.2). Falls back to the
+  // `weight` bucket when absent. Additive-optional.
+  minutes: z.number().optional(),
   loadBearing: z.boolean().default(false),
   gospelPlain: z.boolean().optional(),
   aimComponent: AimComponentSchema.optional(),

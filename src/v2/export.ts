@@ -1,9 +1,10 @@
 import { downloadTextFile, slugify } from '@/lib/download';
 import { emptyStudyBuild, studyLabel, type Question, type Study, type SupportPassage } from '@/types/study';
+import { annotationMinutes } from '@/v2/annotations';
 import { orderedQuestions } from '@/v2/build';
+import { orderedOutput, supportFor } from '@/v2/exportModel';
 import { handoutMarkdown, leaderMarkdown } from '@/v2/exportMarkdown';
 import { resolveImageDataUrls } from '@/v2/print/supportTexts';
-import { mentionKey, parseMentions } from '@/v2/reader/mentions';
 
 /**
  * Audit adapter — project a v2 study (`annotations` + `runningOrder`) onto the v1-shaped `Study`
@@ -13,12 +14,15 @@ import { mentionKey, parseMentions } from '@/v2/reader/mentions';
  * `print/ExportPreview` — not from this projection.)
  *
  * The v1 audit reads `build.questions` (ordered), `build.supportPassages`, `map.sections`, etc. This
- * pure projection fills a v1-shaped `build` from the v2 data:
- *  - question annotations → `build.questions` in the running order (missing type/weight get sane
- *    defaults; the expected answer carries the SPEC-6e discipline into the leader's notes);
- *  - a note's inline `@`-mentions marked **include-for-group** → `build.supportPassages`, attached to
- *    a question that shares the note's verses (so they print at its point of need), else a background
- *    box; a prep-only mention (the default) prints nothing (cross-ref collapse — no standalone card);
+ * pure projection fills a v1-shaped `build` from the **same v2 data the exported document renders
+ * from** (`exportModel`), so the audit certifies what actually prints (§1.2):
+ *  - question annotations → `build.questions` in the running order, each carrying its **real minutes**
+ *    (the Build lens' `estimateMinutes`, via `annotationMinutes`) so the time check matches the export
+ *    rather than collapsing every question to the medium weight bucket;
+ *  - the included references on each output item (a question's attached `mentions`, a study note's
+ *    inline `@`-mentions marked **include-for-group** — the exact source `exportModel.supportFor`
+ *    uses) → `build.supportPassages`; a question's are attached (quoted, timed), a study note's are a
+ *    background box; a prep-only mention (the default) prints nothing (cross-ref collapse);
  *  - an optional study **title** becomes the document heading.
  *
  * Theme/aim, intro, and the prayer point arrive with the Theme & aim lens; until then they're
@@ -37,32 +41,25 @@ export function projectForExport(study: Study): Study {
     type: a.questionType ?? 'observation',
     expectedAnswer: a.expectedAnswer ?? '',
     weight: a.weight ?? 'medium',
+    minutes: annotationMinutes(a), // real per-question minutes → the time check matches the export
     loadBearing: a.loadBearing ?? false,
     ...(a.gospelPlain ? { gospelPlain: true } : {}),
     ...(a.aimComponent ? { aimComponent: a.aimComponent } : {}),
   }));
 
-  // A reference is an inline @-mention inside a note; it prints only when that mention is marked
-  // include-for-group. Attach it to a question sharing the host note's verses (its point of need),
-  // else a background box. De-duped by OSIS so the same passage prints once.
+  // The support passages that print, derived from the SAME source the export uses (`supportFor`):
+  // a question's included `mentions` (attached → quoted, timed) + a study note's inline included
+  // `@`-mentions (a background box). One entry per (item, reference) — matching how the export
+  // counts a question's own references — so the time check lines up with the document.
   const supportPassages: SupportPassage[] = [];
-  const seenOsis = new Set<string>();
-  for (const note of study.annotations) {
-    if (note.kind !== 'note' || !note.mentions) continue;
-    const host = ordered.find((q) => q.verseIds.some((v) => note.verseIds.includes(v)));
-    for (const seg of parseMentions(note.text)) {
-      if (seg.type !== 'mention') continue;
-      const osis = mentionKey(seg.ref); // the full multi-span identity (matches the metadata key)
-      const meta = note.mentions[osis];
-      if (!meta?.includeForGroup || seenOsis.has(osis)) continue;
-      seenOsis.add(osis);
+  for (const item of orderedOutput(study.annotations, study.runningOrder).filter((a) => !a.reserved)) {
+    for (const ref of supportFor(item)) {
       supportPassages.push({
-        id: `${note.id}:${osis}`,
-        reference: seg.reference,
-        type: host ? ('quoted' as const) : ('background' as const),
+        id: `${item.id}:${ref.osis}`,
+        reference: ref.reference,
+        type: item.kind === 'question' ? ('quoted' as const) : ('background' as const),
         text: null,
-        ...(host ? { attachedToQuestionId: host.id } : {}),
-        ...(meta.returnQuestion?.trim() ? { returnQuestion: meta.returnQuestion.trim() } : {}),
+        ...(item.kind === 'question' ? { attachedToQuestionId: item.id } : {}),
       });
     }
   }

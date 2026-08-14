@@ -35,13 +35,16 @@ export const WEIGHT_MINUTES: Record<Weight, number> = { light: 1, medium: 3, hea
 /** A support passage costs 3–5 minutes (SPEC 6b/6f); we estimate the midpoint. */
 export const SUPPORT_MINUTES = 4;
 
-export function questionMinutes(q: Pick<Question, 'weight'>): number {
-  return WEIGHT_MINUTES[q.weight];
+export function questionMinutes(q: Pick<Question, 'weight' | 'minutes'>): number {
+  // Prefer the real per-question estimate (the v2 Build lens sets it) over the coarse weight
+  // bucket, so the audit's timing matches the exported document (§1.2).
+  return q.minutes ?? WEIGHT_MINUTES[q.weight];
 }
 
-/** The running time estimate: every question's weight-minutes plus each support passage. */
+/** The running time estimate: every question's minutes (explicit, else its weight bucket) plus
+ *  each support passage. */
 export function estimatedMinutes(
-  questions: Pick<Question, 'weight'>[],
+  questions: Pick<Question, 'weight' | 'minutes'>[],
   supportPassages: unknown[] = [],
 ): number {
   const q = questions.reduce((sum, x) => sum + questionMinutes(x), 0);

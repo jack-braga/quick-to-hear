@@ -311,7 +311,10 @@ export function auditResults(study: Study): AuditItemResult[] {
   if (duration == null) {
     push('time-vs-length', 'na', 'Set a session length in Phase 1 to check timing.');
   } else if (build) {
-    const minutes = estimatedMinutes(build.questions, build.supportPassages);
+    // Time only the support passages attached to a question — the exported document (exportModel)
+    // times a question plus its own included references, not a study note's background refs (§1.2).
+    const timedSupport = build.supportPassages.filter((s) => s.attachedToQuestionId != null);
+    const minutes = estimatedMinutes(build.questions, timedSupport);
     if (minutes > duration) push('time-vs-length', 'unmet', `≈ ${minutes} min of ${duration} — over; trim or drop.`);
     else push('time-vs-length', 'met', `≈ ${minutes} min of ${duration} — fits, err low.`);
   }
