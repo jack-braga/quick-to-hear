@@ -1,5 +1,18 @@
 # Progress Tracker — Quick to Hear
 
+> 🔧 **ACTIVE: sweep-fixes implementation (2026-08-14).** Executing `docs/HANDOFF-sweep-fixes.md`
+> (owner-triaged decisions from `docs/SWEEP-FINDINGS.md`), group by group A→O, each committed +
+> pushed to `main`, gate green (`typecheck && lint && test && build && test:e2e`). Baseline was
+> 347 unit / 37 e2e. **Progress:**
+> - ✅ **Group A** (`33dcd56`) — store/persistence hardening (§1.4 setPassage dirty-before-write,
+>   §1.5 SetupLens swallowed errors, §1.6 change-passage confirm+clear via new `resetPassage`,
+>   §1.10f getStudy quarantine dedup + ghost-row hiding). Browser-verified. 351 unit.
+> - ⏭️ **Group B next** — paste parser overhaul (§1.1 multi-chapter + §1.10a/b/c). **Needs the
+>   owner in the loop for the §1.1 cross-chapter paste test.**
+> - Groups C–O pending (see the handoff for the suggested sequence).
+
+---
+
 > ⚠️ **v1 IS COMPLETE (Stages 0–10) AND NOW FROZEN AS A REFERENCE.** The active line of work is
 > the **v2 text-central overhaul** — a clean break (no users, studies non-upgradable, v1 not
 > maintained). **If you're here to build v2, read `docs/V2-SESSION-PROMPT.md` and

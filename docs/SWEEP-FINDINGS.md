@@ -9,6 +9,10 @@ A full correctness / completeness / refactor / clean / a11y / performance / secu
 fixed is at the bottom (§9) and in the git log. Gate is green at every commit
 (`typecheck && lint && test && build && test:e2e`); the final state is **347 unit tests + 37 e2e**.
 
+> **Implementation status (2026-08-14 — executing `docs/HANDOFF-sweep-fixes.md`):**
+> - ✅ **Group A** (`33dcd56`): §1.4, §1.5, §1.6, §1.10f — done.
+> - ⏭️ Groups B–O pending. See the handoff for the owner-triaged decision on each.
+
 > Severity is the reviewer's, re-checked by me. "Latent" = real defect with no currently-reachable
 > trigger (guard it before the feature that would reach it lands).
 
