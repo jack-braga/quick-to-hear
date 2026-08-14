@@ -67,13 +67,13 @@ template), `../krenoda` (theming, Zustand, vitest jsdom+fake-indexeddb).
 ## Stack (locked — see `PLAN.md` §2)
 
 React 18 + Vite + TypeScript (**strict**) · shadcn/ui + Tailwind (`darkMode:'class'`) ·
-**Zustand** (study store) + `react-hook-form` (fields) · `idb` (IndexedDB) · `zod` ·
-`react-router-dom` **HashRouter** · **`@openbibleinfo/bcv_parser`** (reference parsing) ·
+**Zustand** (study store) + controlled inputs (fields — no form library) · `idb` (IndexedDB) · `zod` ·
+`react-router-dom` **HashRouter** · **`bible-passage-reference-parser`** (`bcv_parser`, reference parsing) ·
 `react-markdown` + `js-yaml` (content) · Vitest **jsdom + fake-indexeddb** + Playwright ·
 GitHub Pages (official Pages Actions, `base:"/quick-to-hear/"`) · `vite-plugin-pwa`
 (Bibles via runtimeCaching) · light/dark/system theming (krenoda-style, no next-themes).
-Bundled Bibles: **WEBBE + ASV + BSB** (no KJV). Verse IDs **anchored to the `kjv`
-versification** (`bcv_parser` set to `kjv`); the three share KJV numbering so they
+Bundled Bibles: **WEBBE + ASV** (no KJV; BSB deferred — PLAN §8 #4, not shipped). Verse IDs
+**anchored to the `kjv` versification** (`bcv_parser` set to `kjv`); they share KJV numbering so they
 align by number-equality + a per-verse `present` flag; cross-versification mapping is
 M3-only. (Verified — see PROGRESS decision log.) Modelled on `../local-ledger`; Bible pipeline from
 `../twice-daily`.
