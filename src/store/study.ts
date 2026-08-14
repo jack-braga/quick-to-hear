@@ -22,8 +22,8 @@ import { makeStudy, toSummary, type Passage, type Setup, type Study, type StudyS
  * actions that produce a new `current` and set `dirty`; the {@link useAutosave} hook
  * is the sole thing that decides *when* the dirty study is persisted.
  *
- * Per-field text will commit to the store on blur (react-hook-form arrives with the
- * Phase-1 form in Stage 2); Stage 1 uses plain controlled inputs + {@link updateSetup}.
+ * Fields commit to the store as the user edits (plain controlled inputs — no form library);
+ * see {@link updateSetup} and the other reducer-style actions.
  */
 
 interface StudyState {

@@ -12,9 +12,10 @@ import { Help } from '@/v2/Help';
  * see {@link ThemeBand}). Rather than a stack of independent fields, the parts are drawn as one
  * connected flow — theme → author's aim → group aim → know/feel/do → Christ → prayer — with
  * connectors that name the relationship, so the *spine* is visible. Every field stays editable and
- * writes straight to the store; these already flow into the leader's notes (`leaderModel` reads
- * `study.themeAim`) and the prayer point lands on both documents via `projectForExport`. The tool
- * prompts and frames — it never writes the content (Inviolable rule 1).
+ * writes straight to the store; these already flow into the exported documents — the leader's notes
+ * carry the theme/aim (rendered from `study.themeAim` by `exportMarkdown` / `ExportPreview`), and the
+ * prayer point prints on both the handout and the leader's notes. The tool prompts and frames — it
+ * never writes the content (Inviolable rule 1).
  */
 const LABEL = 'flex items-center gap-1.5 font-mono text-[9.5px] uppercase tracking-[0.1em] text-ink-faint';
 const AREA =
