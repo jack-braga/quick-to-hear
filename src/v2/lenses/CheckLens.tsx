@@ -142,6 +142,9 @@ export function CheckLens({ study }: { study: Study }) {
               >
                 {r.status === 'met' ? '✓' : r.status === 'unmet' ? '•' : '—'}
               </span>
+              <span className="sr-only">
+                {r.status === 'met' ? 'Met: ' : r.status === 'unmet' ? 'Needs a look: ' : 'Not applicable: '}
+              </span>
               <div className="min-w-0">
                 <div className="text-[13.5px] text-ink">{CHECK_LABELS[r.id]}</div>
                 <div className="text-[12px] text-ink-soft">{r.summary}</div>

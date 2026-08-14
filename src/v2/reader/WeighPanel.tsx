@@ -98,6 +98,7 @@ function SupersedeCard({
             <textarea
               ref={autoGrow}
               rows={2}
+              aria-label={`Revised ${label.toLowerCase()}`}
               data-weigh-primary={label.toLowerCase()}
               className={PRIMARY_INPUT}
               value={view.primary}
@@ -110,6 +111,7 @@ function SupersedeCard({
             <div className="mt-1 flex items-center gap-1 font-mono text-[9.5px] text-ink-faint">
               📖
               <input
+                aria-label={`Commentary source for the revised ${label.toLowerCase()}`}
                 className="w-full border-none bg-transparent p-0 font-mono text-[9.5px] text-ink-soft outline-none placeholder:text-ink-faint"
                 value={revisions[lastIndex]?.source ?? ''}
                 placeholder="commentary + reference…"
