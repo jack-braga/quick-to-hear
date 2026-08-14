@@ -17,8 +17,16 @@
 > - ✅ **Group D** (`b5e92a1`) — `@` must start a word to chip (§1.10d), matching the editor.
 > - ✅ **Group E** (`a18ab08`) — single-book verse list labelled accurately, not "extra passages"
 >   (§1.9); new `verseList` flag. Browser-verified.
-> - ⏭️ **Group F next** — multi-tab conflict banner (§3.3, detection already wired).
-> - Groups G–O pending (see the handoff for the suggested sequence).
+> - ✅ **Group F** (`541b858`) — multi-tab conflict banner (§3.3). Browser-verified.
+> - ✅ **Group G** (`75463fe`) — COMA answers scoped to their genre's prompt row (§1.3); new
+>   `comaGenre`. +component test.
+> - ✅ **Group H** (`6387148`) — the Check audit reads the real exported support + minutes (§1.2):
+>   projectForExport rebuilt on `exportModel` (real minutes via `Question.minutes`; support from
+>   `supportFor`). Time check == exportModel.totalMinutes (unit-proven).
+> - ✅ **Group I** (`7b1c609`) — deleted v1 vestiges: map.marks (§1.7), recycle.ts + recycleToPool
+>   (§6.1), dead revisions exports (§6.2). Kept map.sections. 345 unit.
+> - ⏭️ **Group J next** — security (caption escape + control-char strip, §2.1/§2.2).
+> - Groups K–O pending (see the handoff for the suggested sequence).
 
 ---
 

@@ -14,7 +14,9 @@ fixed is at the bottom (§9) and in the git log. Gate is green at every commit
 > - ✅ **Group B** (`b366c82` + `10586f3`): §1.10a, §1.10b, §1.10c, §1.1 (owner-verified live) — done.
 > - ✅ **Group C** (`456385a`): §1.8 — done. **Group D** (`b5e92a1`): §1.10d — done. **Group E**
 >   (`a18ab08`): §1.9 — done.
-> - ⏭️ Groups F–O pending. See the handoff for the owner-triaged decision on each.
+> - ✅ **Group F** (`541b858`): §3.3 — done. **Group G** (`75463fe`): §1.3 — done. **Group H**
+>   (`6387148`): §1.2 — done. **Group I** (`7b1c609`): §1.7 + §6.1 + §6.2 — done.
+> - ⏭️ Groups J–O pending. See the handoff for the owner-triaged decision on each.
 
 > Severity is the reviewer's, re-checked by me. "Latent" = real defect with no currently-reachable
 > trigger (guard it before the feature that would reach it lands).
