@@ -956,9 +956,3 @@ test('v2.8 attribution page: only COMA is framed as verbatim', async ({ page }) 
   await expect(page.getByText(/Reproduced verbatim, by permission/i)).toBeVisible();
   await expect(page.getByText(/paraphrased and cited, never quoted at length/i)).toBeVisible();
 });
-
-test('v1 is archived under /v1/ and reachable', async ({ page }) => {
-  await page.goto('./#/v1/');
-  await expect(page.getByText(/archived v1 workbook/i)).toBeVisible();
-  await expect(page.getByRole('heading', { name: /prepare a bible study/i })).toBeVisible();
-});

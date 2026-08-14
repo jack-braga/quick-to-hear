@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { projectForExport } from '@/v2/export';
-import { handoutModel, leaderModel } from '@/lib/export';
 import { makeStudy, type Annotation, type Study } from '@/types/study';
-
-const OPTS = { copyrightLine: '© test', translationName: 'WEBBE', supportTexts: {} };
 
 function studyWith(annotations: Annotation[], runningOrder: string[] = []): Study {
   const s = makeStudy('s1', '2026-01-01T00:00:00.000Z');
@@ -89,22 +86,5 @@ describe('projectForExport', () => {
     const s = studyWith(anns);
     const projected = projectForExport({ ...s, setup: { ...s.setup, title: 'The birth foretold' } });
     expect(projected.setup.reference).toBe('The birth foretold');
-  });
-
-  it('feeds the v1 export models: handout excludes answers, leader keeps them', () => {
-    const projected = projectForExport(studyWith(anns));
-    const handout = handoutModel(projected, OPTS);
-    const leader = leaderModel(projected, OPTS);
-
-    expect(handout.questions.map((q) => q.number)).toEqual([1, 2]);
-    // The handout is defined by exclusion — it must carry no expected answers.
-    expect(JSON.stringify(handout)).not.toContain('For unbelief.');
-    // The cross-ref prints at its question's point of need.
-    expect(handout.questions[0]!.support[0]?.reference).toBe('Malachi 4:5-6');
-
-    // The leader carries the expected answer + the anchor + the type.
-    const lq = leader.questions.find((q) => q.expectedAnswer === 'For unbelief.');
-    expect(lq?.type).toBe('meaning');
-    expect(lq?.anchorLabel).toContain('Luke 1:13');
   });
 });

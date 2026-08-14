@@ -8,8 +8,7 @@ import { Help } from '@/v2/Help';
 
 /**
  * The v2 landing (ROADMAP-v2 §2) — the leaf-on-a-desk aesthetic applied to the study list.
- * v2 is the default app at `/`; the frozen v1 workbook lives under `/v1/`. Studies are shared
- * (same store / IndexedDB) — v2.2 doesn't change the schema, so a study opens in either app.
+ * Studies live in the shared store / IndexedDB.
  */
 export default function Home() {
   const navigate = useNavigate();
@@ -89,12 +88,6 @@ export default function Home() {
               e.target.value = '';
             }}
           />
-          <a
-            href="#/v1/"
-            className="ml-auto font-mono text-[12px] text-ink-faint underline underline-offset-2 hover:text-ink"
-          >
-            open v1 (archived) →
-          </a>
         </div>
 
         {error && (

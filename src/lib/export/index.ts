@@ -1,18 +1,31 @@
 import { findTranslation } from '@/lib/bible';
 import { comaContent, translationCopyright, trapsContent } from '@/lib/content';
-import { downloadTextFile, slugify } from '@/lib/download';
-import { studyLabel, type Study } from '@/types/study';
 import type { ParsedText } from '@/types/passage';
-import { handoutModel, leaderModel, type ExportOptions } from './model';
-import { handoutToMarkdown, leaderToMarkdown } from './markdown';
-import { resolveSupportTexts } from './support';
+import type { Study } from '@/types/study';
 
-export * from './model';
-export * from './markdown';
-export { resolveSupportTexts } from './support';
+/**
+ * Shared export options — the copyright line, translation name, and method attributions that ride
+ * every export (Inviolable rules 7 + 8). Read from the shipped method/translation files so they
+ * can't drift.
+ *
+ * This is all that survived of the old `@/lib/export`: the v1 handout/leader `model.ts`, `markdown.ts`,
+ * and support-text fetch were removed with v1 in the cleanup sweep (2026-08). The v2 export model +
+ * renderers live in `src/v2/` (`exportModel` / `exportMarkdown` / `print/ExportPreview`), which consume
+ * the {@link ExportOptions} this module assembles. Pure/sync.
+ */
+export interface ExportOptions {
+  /** verseId → parsed text for each support passage (fetched at export time). */
+  supportTexts?: Record<string, ParsedText | null>;
+  /** The exact translation copyright line (Inviolable rule 7) — resolved by the caller. */
+  copyrightLine: string;
+  /** The primary translation's display name (for the passage credit). */
+  translationName: string;
+  /** Method/COMA attribution lines shown in the leader's notes (SPEC §7). */
+  methodAttributions?: string[];
+}
 
-/** The method/COMA attribution lines shown in the leader's notes (SPEC §7 — credits travel
- *  with the content). Read from the shipped method files, so they can't drift. */
+/** The method/COMA attribution lines shown in the leader's notes (SPEC §7 — credits travel with the
+ *  content). Read from the shipped method files, so they can't drift. */
 function methodAttributions(): string[] {
   const out: string[] = [];
   try {
@@ -29,9 +42,9 @@ function methodAttributions(): string[] {
 }
 
 /**
- * Assemble the {@link ExportOptions} for a study given already-fetched support texts:
- * the exact translation copyright line (Inviolable rule 7), the translation display name,
- * and the method attributions. Pure/sync — the async fetch is {@link resolveSupportTexts}.
+ * Assemble the {@link ExportOptions} for a study given already-fetched support texts: the exact
+ * translation copyright line (Inviolable rule 7), the translation display name, and the method
+ * attributions.
  */
 export function exportOptions(
   study: Study,
@@ -44,30 +57,4 @@ export function exportOptions(
     translationName: findTranslation(translationId)?.name ?? translationId.toUpperCase(),
     methodAttributions: methodAttributions(),
   };
-}
-
-/** Resolve support texts + options in one step (used by the async markdown downloads). */
-async function resolveOptions(study: Study): Promise<ExportOptions> {
-  const supportTexts = await resolveSupportTexts(study);
-  return exportOptions(study, supportTexts);
-}
-
-export async function buildHandoutMarkdown(study: Study): Promise<string> {
-  return handoutToMarkdown(handoutModel(study, await resolveOptions(study)));
-}
-
-export async function buildLeaderMarkdown(study: Study): Promise<string> {
-  return leaderToMarkdown(leaderModel(study, await resolveOptions(study)));
-}
-
-function baseName(study: Study): string {
-  return slugify(studyLabel({ reference: study.setup.reference }));
-}
-
-export async function downloadHandoutMarkdown(study: Study): Promise<void> {
-  downloadTextFile(`${baseName(study)}-handout.md`, await buildHandoutMarkdown(study));
-}
-
-export async function downloadLeaderMarkdown(study: Study): Promise<void> {
-  downloadTextFile(`${baseName(study)}-leader.md`, await buildLeaderMarkdown(study));
 }
