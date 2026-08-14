@@ -787,6 +787,16 @@ export function ReaderShell({ study }: { study: Study }) {
           />
         )}
         <div className="flex-1" />
+        {/* quick-jump / command palette — moved here so the footer is pure phase navigation */}
+        <button
+          type="button"
+          onClick={() => setPaletteOpen(true)}
+          title="Jump to a verse or reference in the passage ( / )"
+          aria-label="Jump to a verse or reference"
+          className="grid size-7 shrink-0 place-items-center rounded-md bg-lapis font-mono text-[13px] font-semibold text-white dark:text-[#10131a]"
+        >
+          /
+        </button>
         <a
           href="#/about"
           title="Attribution & further reading"
@@ -824,7 +834,7 @@ export function ReaderShell({ study }: { study: Study }) {
         </div>
       )}
 
-      <LensRail lens={lens} onLens={setLens} onOpenPalette={() => setPaletteOpen(true)} />
+      <LensRail lens={lens} onLens={setLens} />
 
       <CommandPalette
         open={paletteOpen}

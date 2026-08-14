@@ -5,17 +5,17 @@ import { LensIcon } from '@/v2/LensIcon';
 /**
  * The bottom **lens rail** (flow-redesign, owner-confirmed "Option B"): the step icons moved out of
  * the header into the footer, where they double as the progress indicator, flanked by `← prev` and
- * `Next →`. The `/` quick-jump palette trigger lives on the far left (its keyboard shortcut still
- * works everywhere). Clicking any step still jumps to it; the buttons keep their `NN Name` labels.
+ * `Next →`. The `/` quick-jump palette trigger lives in the **header top-right** (its keyboard shortcut
+ * still works everywhere), so the footer is pure phase navigation. Clicking any step jumps to it. The
+ * prev/next labels are `whitespace-nowrap` with equal-width flanks, so the footer height stays constant
+ * and the icon rail stays centred whatever the neighbouring lens name is.
  */
 export function LensRail({
   lens,
   onLens,
-  onOpenPalette,
 }: {
   lens: LensId;
   onLens: (id: LensId) => void;
-  onOpenPalette: () => void;
 }) {
   const i = LENSES.findIndex((l) => l.id === lens);
   const prev = i > 0 ? LENSES[i - 1] : null;
@@ -23,17 +23,7 @@ export function LensRail({
 
   return (
     <footer className="flex items-center gap-2 border-t border-line bg-[color-mix(in_srgb,var(--desk)_82%,var(--leaf))] px-3 py-2">
-      <button
-        type="button"
-        onClick={onOpenPalette}
-        title="Jump to a verse or reference in the passage ( / )"
-        aria-label="Jump to a verse or reference"
-        className="grid size-7 shrink-0 place-items-center rounded-md bg-lapis font-mono text-[13px] font-semibold text-white dark:text-[#10131a]"
-      >
-        /
-      </button>
-
-      <div className="hidden w-[116px] shrink-0 sm:block">
+      <div className="hidden shrink-0 sm:block sm:w-[168px]">
         {prev && (
           <button
             type="button"
@@ -70,12 +60,12 @@ export function LensRail({
         ))}
       </nav>
 
-      <div className="flex w-[116px] shrink-0 justify-end sm:w-[140px]">
+      <div className="flex w-[116px] shrink-0 justify-end sm:w-[168px]">
         {next && (
           <button
             type="button"
             onClick={() => onLens(next.id)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-lapis px-3 py-1.5 text-[12.5px] font-medium text-white dark:text-[#16181d]"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-lapis px-3 py-1.5 text-[12.5px] font-medium text-white dark:text-[#16181d]"
           >
             <span className="hidden sm:inline">Next:&nbsp;</span>
             {next.name}
