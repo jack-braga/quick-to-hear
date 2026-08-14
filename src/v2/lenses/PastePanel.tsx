@@ -78,8 +78,10 @@ function SegmentRow({
           inputMode="numeric"
           value={s.verseNumber ?? ''}
           onChange={(e) => {
-            const n = e.target.value.trim();
-            onChange({ verseNumber: n ? Number(n.replace(/\D/g, '')) : null });
+            // Strip non-digits first: a non-numeric entry (e.g. "abc") must clear the number
+            // (null), not coerce to 0 — Number('') is 0, which would mint a verse 0 on assemble.
+            const digits = e.target.value.replace(/\D/g, '');
+            onChange({ verseNumber: digits ? Number(digits) : null });
           }}
         />
       ) : (
